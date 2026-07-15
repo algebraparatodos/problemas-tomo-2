@@ -2,7 +2,7 @@
    ÁLGEBRA PARA TODOS · engine.js
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
-   archivo que se edita para cambiar algo común a las 50 landings
+   archivo que se edita para cambiar algo común a las landings
    (paleta, tipografías, layout, sonido, footer, modo compacto...).
 
    Cada landing de Kajabi solo carga este script y le pasa un
