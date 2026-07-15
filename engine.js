@@ -212,7 +212,7 @@
     canvas.width = innerWidth;
     canvas.height = innerHeight;
 
-    var colors =  ['#FF6FA5', '#FF3D81', '#FFB6D9', '#E8497B', '#FF85B3'];
+    var colors =  ['#75AADB', '#FFFFFF', '#FCBF49', '#A9CCE8', '#4A90D9'];
     var pieces = [];
     var total = 100;
     for (var i = 0; i < total; i++) {
