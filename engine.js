@@ -214,7 +214,7 @@
 
     var colors = ['#5BCD9A', '#97A1D8', '#E8B85C', '#D65252', '#7FD1C5'];
     var pieces = [];
-    var total = 70;
+    var total = 100;
     for (var i = 0; i < total; i++) {
       var isBalloon = Math.random() < 0.15;
       pieces.push({
