@@ -111,6 +111,10 @@
     '.apt-act__check-btn:active{ transform:scale(.98); }',
     '.apt-act__check-btn:disabled{ opacity:.5; cursor:default; }',
     '.apt-act__check-btn:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
+    '.apt-act__skip-btn{ background:none; border:none; color:var(--ink-soft); font-family:var(--font-mono); font-size:12.5px; text-decoration:underline; text-underline-offset:3px; cursor:pointer; padding:4px 0; align-self:center; -webkit-tap-highlight-color:transparent; }',
+    '.apt-act__skip-btn:hover{ color:var(--chalk-light); }',
+    '.apt-act__skip-btn:focus-visible{ outline:2px solid var(--chalk-light); outline-offset:2px; border-radius:2px; }',
+    '.apt-act.is-answered .apt-act__skip-btn{ display:none; }',
     '.apt-act__feedback{ border-radius:var(--radius); padding:18px 16px; display:flex; gap:12px; align-items:flex-start; border:1px solid transparent; }',
     '.apt-act__feedback--correct{ background:var(--correct-bg); border-color:rgba(91,205,154,0.35); }',
     '.apt-act__feedback--wrong{ background:var(--wrong-bg); border-color:rgba(214,82,82,0.35); }',
@@ -458,6 +462,7 @@
         '</div>' +
         '<div class="apt-act__card"><div class="apt-act__content" aria-live="polite"></div></div>' +
         interactionHTML +
+        '<button type="button" class="apt-act__skip-btn">Prefiero otro caso →</button>' +
         '<div class="apt-act__feedback apt-act__feedback--hidden"></div>' +
         '<div class="apt-act__actions">' +
           actionsHTML +
@@ -477,6 +482,7 @@
       choicesWrap: root.querySelector('.apt-act__choices'),
       grid: root.querySelector('.apt-act__grid'),
       checkBtn: root.querySelector('.apt-act__check-btn'),
+      skipBtn: root.querySelector('.apt-act__skip-btn'),
       retryBtn: root.querySelector('.apt-act__retry-btn'),
       showAnswerBtn: root.querySelector('.apt-act__showanswer-btn'),
       feedback: root.querySelector('.apt-act__feedback'),
@@ -648,6 +654,7 @@
       }
 
       refs.nextBtn.addEventListener('click', newRound);
+      refs.skipBtn.addEventListener('click', newRound);
 
       function updateMuteBtn() {
         refs.muteBtn.textContent = muted ? '🔇' : '🔊';
