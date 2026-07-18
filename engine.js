@@ -30,7 +30,10 @@
    El engine se encarga de: inyectar fuentes + CSS + KaTeX (si
    hace falta) + el fix de fondo del body, armar todo el
    esqueleto visual, manejar el ciclo de una ronda, sonido
-   sintetizado + confetti/globos + mute persistente compartido.
+   sintetizado + confetti/globos + mute persistente compartido +
+   botón "Reportar un problema" en el footer (abre un modal,
+   manda mensaje + URL de la landing a un Google Form compartido,
+   totalmente anónimo — sin nombre ni email).
    ============================================================ */
 (function (global) {
   'use strict';
@@ -41,6 +44,16 @@
   var KATEX_CSS_ID = 'apt-engine-katex-css';
   var KATEX_JS_ID = 'apt-engine-katex-js';
   var MUTE_KEY = 'apt_sound_muted'; // clave COMPARTIDA entre todas las actividades del sitio
+
+  /* ------------------------------------------------------------
+     "Reportar un problema" — Google Form compartido por TODAS
+     las actividades. Un solo lugar centralizado: cambiar el form
+     acá alcanza para las 50 landings.
+     ------------------------------------------------------------ */
+  var REPORT_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLScr7mmwJ1QPpj8Bh4sYf0N3uNG77xbSVNc9AfZ64_erQM5NZg/formResponse';
+  var REPORT_ENTRY_MESSAGE = 'entry.1465382734';
+  var REPORT_ENTRY_URL = 'entry.833697682';
+  var REPORT_MODAL_ID = 'apt-report-modal';
 
   /* ------------------------------------------------------------
      CSS — escopado bajo .apt-act. Cada landing tiene UNA sola
@@ -149,6 +162,36 @@
     '.apt-act__mute-btn{ width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:50%; border:1px solid rgba(151,161,216,0.3); background:transparent; font-size:14px; line-height:1; cursor:pointer; padding:0; transition:background .15s ease, border-color .15s ease, transform .08s ease; -webkit-tap-highlight-color:transparent; }',
     '.apt-act__mute-btn:active{ transform:scale(.92); }',
     '.apt-act__mute-btn:focus-visible{ outline:2px solid var(--chalk-light); outline-offset:2px; }',
+    '.apt-act__report-btn{ width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:50%; border:1px solid rgba(151,161,216,0.3); background:transparent; font-size:13px; line-height:1; cursor:pointer; padding:0; transition:background .15s ease, border-color .15s ease, transform .08s ease; -webkit-tap-highlight-color:transparent; }',
+    '.apt-act__report-btn:active{ transform:scale(.92); }',
+    '.apt-act__report-btn:focus-visible{ outline:2px solid var(--chalk-light); outline-offset:2px; }',
+    /* -- Modal de "Reportar un problema" — vive fuera de .apt-act (se
+       agrega directo a document.body), así que NO puede depender de
+       las variables --chalk/--ink/etc. (no las hereda). Colores a
+       mano, mismos valores exactos que la paleta pizarrón. -- */
+    '.apt-report-modal{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:16px; z-index:2147483000; font-family:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace; }',
+    '.apt-report-modal--hidden{ display:none; }',
+    '.apt-report-modal__card{ width:100%; max-width:360px; background:#16161C; border:1px solid rgba(151,161,216,0.18); border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,.5); padding:22px 20px; display:flex; flex-direction:column; gap:12px; box-sizing:border-box; }',
+    '.apt-report-modal__title{ font-family:"Lora",Georgia,"Times New Roman",serif; font-weight:700; font-size:18px; color:#F5F5F7; margin:0; }',
+    '.apt-report-modal__desc{ font-size:12.5px; color:#A7ACC0; line-height:1.5; margin:0; }',
+    '.apt-report-modal__form{ display:flex; flex-direction:column; gap:10px; }',
+    '.apt-report-modal__form--hidden{ display:none; }',
+    '.apt-report-modal__textarea{ width:100%; min-height:100px; resize:vertical; font-family:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace; font-size:14px; color:#F5F5F7; background:rgba(151,161,216,0.07); border:2px solid rgba(151,161,216,0.3); border-radius:10px; padding:10px; box-sizing:border-box; }',
+    '.apt-report-modal__textarea:focus{ outline:none; border-color:#97A1D8; background:rgba(151,161,216,0.14); }',
+    '.apt-report-modal__error{ font-size:12.5px; color:#D65252; margin:0; }',
+    '.apt-report-modal__error--hidden{ display:none; }',
+    '.apt-report-modal__actions{ display:flex; gap:8px; }',
+    '.apt-report-modal__cancel-btn{ flex:1 1 0; font-family:"Lora",Georgia,"Times New Roman",serif; font-weight:700; font-size:14px; color:#97A1D8; background:transparent; border:2px solid #97A1D8; border-radius:12px; padding:12px; cursor:pointer; -webkit-tap-highlight-color:transparent; }',
+    '.apt-report-modal__send-btn{ flex:1 1 0; font-family:"Lora",Georgia,"Times New Roman",serif; font-weight:700; font-size:14px; color:#fff; background:#48507D; border:none; border-radius:12px; padding:12px; cursor:pointer; -webkit-tap-highlight-color:transparent; }',
+    '.apt-report-modal__send-btn:hover{ background:#5A639A; }',
+    '.apt-report-modal__send-btn:disabled{ opacity:.6; cursor:default; }',
+    '.apt-report-modal__success{ display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; padding:6px 0; }',
+    '.apt-report-modal__success--hidden{ display:none; }',
+    '.apt-report-modal__success p{ font-size:14px; color:#CFEEDF; margin:0; }',
+    '.apt-report-modal__success svg{ width:34px; height:34px; }',
+    '.apt-report-modal__success svg path{ fill:none; stroke:#5BCD9A; stroke-width:5; stroke-linecap:round; stroke-linejoin:round; }',
+    '.apt-report-modal__close-btn{ font-family:"Lora",Georgia,"Times New Roman",serif; font-weight:700; font-size:14px; color:#fff; background:#48507D; border:none; border-radius:12px; padding:10px 20px; cursor:pointer; -webkit-tap-highlight-color:transparent; }',
+    '.apt-report-modal__close-btn:hover{ background:#5A639A; }',
     /* -- modo compacto: se activa al responder -- */
     '.apt-act.is-answered .apt-act__subtitle{ display:none; }',
     '.apt-act.is-answered .apt-act__topbar{ padding-top:0; }',
@@ -338,6 +381,103 @@
   }
 
   /* ------------------------------------------------------------
+     "Reportar un problema" — construcción y control del modal
+     ------------------------------------------------------------ */
+  function ensureReportModal() {
+    var existing = document.getElementById(REPORT_MODAL_ID);
+    if (existing) return existing;
+
+    var modal = document.createElement('div');
+    modal.id = REPORT_MODAL_ID;
+    modal.className = 'apt-report-modal apt-report-modal--hidden';
+    modal.innerHTML =
+      '<div class="apt-report-modal__card" role="dialog" aria-modal="true" aria-label="Reportar un problema">' +
+        '<h2 class="apt-report-modal__title">Reportar un problema</h2>' +
+        '<div class="apt-report-modal__form">' +
+          '<p class="apt-report-modal__desc">Contanos qué encontraste raro en este ejercicio: un enunciado que no cierra, un botón que no responde, algo que se ve mal. Es anónimo — guardamos automáticamente en qué ejercicio estás para poder revisarlo.</p>' +
+          '<textarea class="apt-report-modal__textarea" maxlength="500" placeholder="Escribí acá tu mensaje..."></textarea>' +
+          '<p class="apt-report-modal__error apt-report-modal__error--hidden">No se pudo enviar. Revisá tu conexión e intentá de nuevo.</p>' +
+          '<div class="apt-report-modal__actions">' +
+            '<button type="button" class="apt-report-modal__cancel-btn">Cancelar</button>' +
+            '<button type="button" class="apt-report-modal__send-btn">Enviar</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="apt-report-modal__success apt-report-modal__success--hidden">' +
+          '<svg viewBox="0 0 34 34"><path d="M6 18 L14 26 L28 8"/></svg>' +
+          '<p>¡Gracias! Lo vamos a revisar.</p>' +
+          '<button type="button" class="apt-report-modal__close-btn">Cerrar</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(modal);
+
+    var card = modal.querySelector('.apt-report-modal__card');
+    var formBlock = modal.querySelector('.apt-report-modal__form');
+    var textarea = modal.querySelector('.apt-report-modal__textarea');
+    var errorEl = modal.querySelector('.apt-report-modal__error');
+    var sendBtn = modal.querySelector('.apt-report-modal__send-btn');
+    var cancelBtn = modal.querySelector('.apt-report-modal__cancel-btn');
+    var successBlock = modal.querySelector('.apt-report-modal__success');
+    var closeBtn = modal.querySelector('.apt-report-modal__close-btn');
+
+    function closeModal() { modal.classList.add('apt-report-modal--hidden'); }
+
+    function resetModal() {
+      textarea.value = '';
+      errorEl.classList.add('apt-report-modal__error--hidden');
+      formBlock.classList.remove('apt-report-modal__form--hidden');
+      successBlock.classList.add('apt-report-modal__success--hidden');
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Enviar';
+    }
+
+    function sendReport() {
+      var msg = textarea.value.trim();
+      if (!msg) { textarea.focus(); return; }
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Enviando...';
+      errorEl.classList.add('apt-report-modal__error--hidden');
+
+      var params = new URLSearchParams();
+      params.set(REPORT_ENTRY_MESSAGE, msg);
+      params.set(REPORT_ENTRY_URL, window.location.href);
+
+      fetch(REPORT_FORM_ACTION, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
+      }).then(function () {
+        formBlock.classList.add('apt-report-modal__form--hidden');
+        successBlock.classList.remove('apt-report-modal__success--hidden');
+      }).catch(function () {
+        errorEl.classList.remove('apt-report-modal__error--hidden');
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Enviar';
+      });
+    }
+
+    sendBtn.addEventListener('click', sendReport);
+    cancelBtn.addEventListener('click', closeModal);
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+    card.addEventListener('click', function (e) { e.stopPropagation(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !modal.classList.contains('apt-report-modal--hidden')) closeModal();
+    });
+
+    modal._openReport = function () {
+      resetModal();
+      modal.classList.remove('apt-report-modal--hidden');
+      textarea.focus();
+    };
+    return modal;
+  }
+
+  function openReportModal() {
+    ensureReportModal()._openReport();
+  }
+
+  /* ------------------------------------------------------------
      Helpers de la grilla con control de signo −/+
      ------------------------------------------------------------ */
   function buildSignSeg() {
@@ -471,6 +611,7 @@
         '<div class="apt-act__footer">' +
           '<a class="apt-act__brand-link" href="https://www.instagram.com/soyjuanisilva/" target="_blank" rel="noopener">Álgebra Para Todos</a>' +
           '<span class="apt-act__footer-right">' +
+            '<button type="button" class="apt-act__report-btn" aria-label="Reportar un problema">🚩</button>' +
             '<button type="button" class="apt-act__mute-btn" aria-pressed="false" aria-label="Silenciar sonidos">🔊</button>' +
             '<span class="apt-act__streak">Racha: <b>0</b></span>' +
           '</span>' +
@@ -488,6 +629,7 @@
       feedback: root.querySelector('.apt-act__feedback'),
       nextBtn: root.querySelector('.apt-act__next-btn'),
       muteBtn: root.querySelector('.apt-act__mute-btn'),
+      reportBtn: root.querySelector('.apt-act__report-btn'),
       streakEl: root.querySelector('.apt-act__streak b')
     };
   }
@@ -666,6 +808,8 @@
         updateMuteBtn();
       });
       updateMuteBtn();
+
+      if (refs.reportBtn) refs.reportBtn.addEventListener('click', openReportModal);
 
       newRound();
     }
