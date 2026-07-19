@@ -478,6 +478,45 @@
   }
 
   /* ------------------------------------------------------------
+     Footer compartido (marca + 🚩 reportar + 🔇/🔊 mute + racha).
+     ÚNICA implementación: la usa tanto el modo genérico (buildSkeleton,
+     abajo) como cualquier actividad custom vía AptActivity.mountFooter().
+     Nunca duplicar este HTML/CSS en el archivo de una actividad.
+     ------------------------------------------------------------ */
+  function mountFooter(container) {
+    ensureAssets();
+    container.className = 'apt-act__footer';
+    container.innerHTML =
+      '<a class="apt-act__brand-link" href="https://www.instagram.com/soyjuanisilva/" target="_blank" rel="noopener">Álgebra Para Todos</a>' +
+      '<span class="apt-act__footer-right">' +
+        '<button type="button" class="apt-act__report-btn" aria-label="Reportar un problema">🚩</button>' +
+        '<button type="button" class="apt-act__mute-btn" aria-pressed="false" aria-label="Silenciar sonidos">🔊</button>' +
+        '<span class="apt-act__streak">Racha: <b>0</b></span>' +
+      '</span>';
+
+    var reportBtn = container.querySelector('.apt-act__report-btn');
+    var muteBtn = container.querySelector('.apt-act__mute-btn');
+    var streakB = container.querySelector('.apt-act__streak b');
+
+    reportBtn.addEventListener('click', openReportModal);
+
+    function updateMuteBtn() {
+      muteBtn.textContent = muted ? '🔇' : '🔊';
+      muteBtn.setAttribute('aria-pressed', String(muted));
+    }
+    muteBtn.addEventListener('click', function () {
+      muted = !muted;
+      try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (e) { /* sin persistencia si está bloqueado */ }
+      updateMuteBtn();
+    });
+    updateMuteBtn();
+
+    return {
+      setStreak: function (n) { streakB.textContent = String(n); }
+    };
+  }
+
+  /* ------------------------------------------------------------
      Helpers de la grilla con control de signo −/+
      ------------------------------------------------------------ */
   function buildSignSeg() {
@@ -608,15 +647,10 @@
           actionsHTML +
           '<button type="button" class="apt-act__next-btn apt-act__next-btn--hidden">' + (cfg.nextLabel || 'Probar con otro caso →') + '</button>' +
         '</div>' +
-        '<div class="apt-act__footer">' +
-          '<a class="apt-act__brand-link" href="https://www.instagram.com/soyjuanisilva/" target="_blank" rel="noopener">Álgebra Para Todos</a>' +
-          '<span class="apt-act__footer-right">' +
-            '<button type="button" class="apt-act__report-btn" aria-label="Reportar un problema">🚩</button>' +
-            '<button type="button" class="apt-act__mute-btn" aria-pressed="false" aria-label="Silenciar sonidos">🔊</button>' +
-            '<span class="apt-act__streak">Racha: <b>0</b></span>' +
-          '</span>' +
-        '</div>' +
+        '<div class="apt-act__footer-slot"></div>' +
       '</div>';
+
+    var footerCtl = mountFooter(root.querySelector('.apt-act__footer-slot'));
 
     return {
       content: root.querySelector('.apt-act__content'),
@@ -628,9 +662,7 @@
       showAnswerBtn: root.querySelector('.apt-act__showanswer-btn'),
       feedback: root.querySelector('.apt-act__feedback'),
       nextBtn: root.querySelector('.apt-act__next-btn'),
-      muteBtn: root.querySelector('.apt-act__mute-btn'),
-      reportBtn: root.querySelector('.apt-act__report-btn'),
-      streakEl: root.querySelector('.apt-act__streak b')
+      footerCtl: footerCtl
     };
   }
 
@@ -706,7 +738,7 @@
       function registerResult(correct) {
         if (correct) { playCorrectSound(); celebrate(); } else { playWrongSound(); }
         streak = correct ? streak + 1 : 0;
-        refs.streakEl.textContent = String(streak);
+        refs.footerCtl.setStreak(streak);
       }
 
       function answerChoice(value, btnEl) {
@@ -798,24 +830,28 @@
       refs.nextBtn.addEventListener('click', newRound);
       refs.skipBtn.addEventListener('click', newRound);
 
-      function updateMuteBtn() {
-        refs.muteBtn.textContent = muted ? '🔇' : '🔊';
-        refs.muteBtn.setAttribute('aria-pressed', String(muted));
-      }
-      refs.muteBtn.addEventListener('click', function () {
-        muted = !muted;
-        try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (e) { /* sin persistencia si está bloqueado */ }
-        updateMuteBtn();
-      });
-      updateMuteBtn();
-
-      if (refs.reportBtn) refs.reportBtn.addEventListener('click', openReportModal);
-
       newRound();
     }
 
     if (cfg.needsKatex) { ensureKatex(start); } else { start(); }
   }
 
-  global.AptActivity = { init: init };
+  function isMuted() { return muted; }
+  function toggleMute() {
+    muted = !muted;
+    try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (e) { /* sin persistencia si está bloqueado */ }
+    return muted;
+  }
+
+  global.AptActivity = {
+    init: init,
+    mountFooter: mountFooter,
+    ensureAssets: ensureAssets,
+    openReportModal: openReportModal,
+    playCorrectSound: playCorrectSound,
+    playWrongSound: playWrongSound,
+    celebrate: celebrate,
+    isMuted: isMuted,
+    toggleMute: toggleMute
+  };
 })(window);
