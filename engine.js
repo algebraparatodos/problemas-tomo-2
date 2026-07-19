@@ -91,6 +91,7 @@
     '.apt-act__content .katex{ color:var(--ink); }',
     '.apt-act__choices{ display:flex; gap:8px; }',
     '.apt-act__choices--stacked{ flex-direction:column; }',
+    '.apt-act__phase--hidden{ display:none; }',
     '.apt-act__choice-btn{ flex:1 1 0; font-family:var(--font-serif); font-weight:700; padding:12px 4px; border-radius:12px; border:2px solid var(--chalk-light); background:transparent; color:var(--chalk-light); cursor:pointer; min-height:52px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; transition:transform .08s ease, background .15s ease, color .15s ease; -webkit-tap-highlight-color:transparent; }',
     '.apt-act__choices--stacked .apt-act__choice-btn{ flex-direction:row; padding:16px 18px; font-size:16px; }',
     '.apt-act__choice-main{ font-size:16px; }',
@@ -105,7 +106,21 @@
     '.apt-act__bracket--right{ border-right:3px solid var(--ink-soft); border-radius:0 5px 5px 0; }',
     '.apt-act__grid{ display:grid; gap:8px 6px; padding:4px 4px; }',
     '.apt-act__divider{ width:2px; background:var(--chalk-light); opacity:.45; justify-self:center; }',
+    '.apt-act__solution{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 8px; margin-bottom:4px; }',
+    '.apt-act__eq{ font-family:var(--font-serif); font-weight:700; font-size:18px; color:var(--ink); }',
+    '.apt-act__op{ font-family:var(--font-serif); font-weight:700; font-size:18px; color:var(--ink-soft); }',
+    '.apt-act__paramlabel{ font-family:var(--font-serif); font-weight:700; font-size:17px; color:var(--ink); }',
+    '.apt-act__vec{ display:flex; align-items:stretch; gap:3px; }',
+    '.apt-act__vec-bracket{ width:6px; border-top:2.5px solid var(--ink-soft); border-bottom:2.5px solid var(--ink-soft); flex:0 0 auto; }',
+    '.apt-act__vec-bracket--left{ border-left:2.5px solid var(--ink-soft); border-radius:4px 0 0 4px; }',
+    '.apt-act__vec-bracket--right{ border-right:2.5px solid var(--ink-soft); border-radius:0 4px 4px 0; }',
+    '.apt-act__vec-col{ display:flex; flex-direction:column; gap:5px; padding:4px 2px; }',
+    '.apt-act__vec .apt-act__cellwrap{ gap:2px; }',
+    '.apt-act__vec .apt-act__signseg{ flex-basis:26px; width:26px; }',
+    '.apt-act__vec .apt-act__cell{ width:40px; flex:0 0 auto; }',
     '.apt-act__cellwrap{ display:flex; align-items:stretch; gap:3px; }',
+    '.apt-act__lockcell{ display:flex; align-items:center; justify-content:center; min-height:40px; font-family:var(--font-mono); font-weight:500; font-size:clamp(15px,4.2vw,18px); color:var(--ink-soft); background:rgba(151,161,216,0.04); border:2px dashed rgba(151,161,216,0.28); border-radius:8px; }',
+    '.apt-act__question{ text-align:center; font-family:var(--font-mono); font-size:14.5px; color:var(--ink-soft); margin:0 0 12px; }',
     '.apt-act__signseg{ flex:0 0 34px; width:34px; display:flex; border:2px solid rgba(151,161,216,0.3); border-radius:7px; overflow:hidden; }',
     '.apt-act__signseg-btn{ flex:1 1 50%; min-width:0; border:none; background:transparent; color:var(--ink-soft); font-family:var(--font-mono); font-weight:700; font-size:13px; cursor:pointer; padding:0; -webkit-tap-highlight-color:transparent; }',
     '.apt-act__signseg-btn + .apt-act__signseg-btn{ border-left:1px solid rgba(151,161,216,0.3); }',
@@ -560,12 +575,25 @@
       'repeat(' + divAfter + ', minmax(62px,74px)) 10px repeat(' + (cols - divAfter) + ', minmax(62px,74px))';
     for (var r = 0; r < rows; r++) {
       for (var c = 0; c < cols; c++) {
+        var lockedVal = gridCfg.lockedValue ? gridCfg.lockedValue(current, r, c) : null;
+        var gridCol = c < divAfter ? c + 1 : c + 2;
+
+        if (lockedVal !== null && lockedVal !== undefined) {
+          var lock = document.createElement('div');
+          lock.className = 'apt-act__lockcell';
+          lock.textContent = String(lockedVal);
+          lock.style.gridRow = String(r + 1);
+          lock.style.gridColumn = String(gridCol);
+          gridEl.appendChild(lock);
+          continue;
+        }
+
         var wrap = document.createElement('div');
         wrap.className = 'apt-act__cellwrap';
         wrap.dataset.row = r;
         wrap.dataset.col = c;
         wrap.style.gridRow = String(r + 1);
-        wrap.style.gridColumn = String(c < divAfter ? c + 1 : c + 2);
+        wrap.style.gridColumn = String(gridCol);
 
         var signSeg = buildSignSeg();
         var input = document.createElement('input');
@@ -590,21 +618,139 @@
     gridEl.appendChild(divider);
   }
 
-  function readStudentMatrix(gridEl, gridCfg) {
+  function readStudentMatrix(gridEl, gridCfg, current) {
     var rows = gridCfg.rows, cols = gridCfg.cols;
     var M = [];
     for (var r = 0; r < rows; r++) { M.push(new Array(cols).fill(null)); }
     var hasEmpty = false;
+    for (var r2 = 0; r2 < rows; r2++) {
+      for (var c2 = 0; c2 < cols; c2++) {
+        var lockedVal = gridCfg.lockedValue ? gridCfg.lockedValue(current, r2, c2) : null;
+        if (lockedVal !== null && lockedVal !== undefined) M[r2][c2] = lockedVal;
+      }
+    }
     gridEl.querySelectorAll('.apt-act__cellwrap').forEach(function (wrap) {
-      var r2 = +wrap.dataset.row, c2 = +wrap.dataset.col;
+      var r3 = +wrap.dataset.row, c3 = +wrap.dataset.col;
       var input = wrap.querySelector('.apt-act__cell');
       var raw = input.value.trim();
-      if (raw === '') { hasEmpty = true; M[r2][c2] = null; return; }
+      if (raw === '') { hasEmpty = true; M[r3][c3] = null; return; }
       var n = parseInt(raw, 10);
       var sign = getSign(wrap);
-      M[r2][c2] = sign === '-' ? -n : n;
+      M[r3][c3] = sign === '-' ? -n : n;
     });
     return { matrix: M, hasEmpty: hasEmpty };
+  }
+
+  /* ------------------------------------------------------------
+     Helpers del modo 'vectors' (solución tipo S = p + v1·t1 + ...)
+     ------------------------------------------------------------ */
+  function buildVecBlock(key, rows) {
+    var vec = document.createElement('div');
+    vec.className = 'apt-act__vec';
+    var left = document.createElement('span');
+    left.className = 'apt-act__vec-bracket apt-act__vec-bracket--left';
+    var right = document.createElement('span');
+    right.className = 'apt-act__vec-bracket apt-act__vec-bracket--right';
+    var col = document.createElement('div');
+    col.className = 'apt-act__vec-col';
+    for (var r = 0; r < rows; r++) {
+      var wrap = document.createElement('div');
+      wrap.className = 'apt-act__cellwrap';
+      wrap.dataset.key = key;
+      wrap.dataset.row = r;
+      var signSeg = buildSignSeg();
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.inputMode = 'numeric';
+      input.autocomplete = 'off';
+      input.className = 'apt-act__cell';
+      input.setAttribute('aria-label', 'Componente ' + (r + 1));
+      input.addEventListener('input', function () {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 2);
+      });
+      wrap.appendChild(signSeg);
+      wrap.appendChild(input);
+      col.appendChild(wrap);
+    }
+    vec.appendChild(left);
+    vec.appendChild(col);
+    vec.appendChild(right);
+    return vec;
+  }
+
+  function buildVectorsUI(container, vecCfg, current) {
+    container.innerHTML = '';
+    var rows = vecCfg.rows(current);
+    var count = vecCfg.count(current);
+    var hasParticular = vecCfg.hasParticular !== false;
+
+    if (hasParticular) {
+      var eq = document.createElement('span');
+      eq.className = 'apt-act__eq';
+      eq.textContent = 'S =';
+      container.appendChild(eq);
+      container.appendChild(buildVecBlock('p', rows));
+    }
+
+    for (var i = 0; i < count; i++) {
+      if (hasParticular || i > 0) {
+        var plus = document.createElement('span');
+        plus.className = 'apt-act__op';
+        plus.textContent = '+';
+        container.appendChild(plus);
+      }
+      container.appendChild(buildVecBlock('d' + i, rows));
+      var label = document.createElement('span');
+      label.className = 'apt-act__paramlabel';
+      label.textContent = '· ' + vecCfg.paramLabel(current, i);
+      container.appendChild(label);
+    }
+  }
+
+  function readVectorBlock(container, key, rows) {
+    var vals = [];
+    var hasEmpty = false;
+    for (var r = 0; r < rows; r++) {
+      var wrap = container.querySelector('.apt-act__cellwrap[data-key="' + key + '"][data-row="' + r + '"]');
+      var input = wrap.querySelector('.apt-act__cell');
+      var raw = input.value.trim();
+      var v;
+      if (raw === '') { hasEmpty = true; v = 0; } else v = parseInt(raw, 10);
+      var sign = getSign(wrap);
+      vals.push(sign === '-' ? -v : v);
+    }
+    return { vals: vals, hasEmpty: hasEmpty };
+  }
+
+  function colorVectorBlock(container, key, rows, cls) {
+    for (var r = 0; r < rows; r++) {
+      var wrap = container.querySelector('.apt-act__cellwrap[data-key="' + key + '"][data-row="' + r + '"]');
+      wrap.classList.remove('is-correct', 'is-wrong');
+      if (cls) wrap.classList.add(cls);
+      wrap.querySelector('.apt-act__cell').disabled = true;
+      setSignDisabled(wrap, true);
+    }
+  }
+
+  function fillVectorBlock(container, key, vals) {
+    vals.forEach(function (val, r) {
+      var wrap = container.querySelector('.apt-act__cellwrap[data-key="' + key + '"][data-row="' + r + '"]');
+      setSign(wrap, val < 0 ? '-' : '+');
+      var input = wrap.querySelector('.apt-act__cell');
+      input.value = String(Math.abs(val));
+      wrap.classList.remove('is-wrong');
+      wrap.classList.add('is-correct');
+      setSignDisabled(wrap, true);
+      input.disabled = true;
+    });
+  }
+
+  function retryVectorsUI(container) {
+    container.querySelectorAll('.apt-act__cellwrap').forEach(function (wrap) {
+      wrap.classList.remove('is-correct', 'is-wrong');
+      wrap.querySelector('.apt-act__cell').disabled = false;
+      setSignDisabled(wrap, false);
+    });
   }
 
   /* ------------------------------------------------------------
@@ -667,6 +813,380 @@
   }
 
   /* ------------------------------------------------------------
+     Esqueleto + ciclo del modo 'phases' (varias fases encadenadas,
+     cada una choices/grid/vectors). Reutiliza los mismos helpers
+     que el modo genérico (buildGrid, buildVectorsUI, mountFooter,
+     sonido) — cero lógica duplicada.
+     ------------------------------------------------------------ */
+  function buildPhasesSkeleton(root, cfg) {
+    root.classList.add('apt-act');
+
+    var phasesHTML = cfg.phases.map(function (phase, idx) {
+      var interactionHTML;
+      if (phase.mode === 'grid') {
+        interactionHTML =
+          '<div class="apt-act__matrixwrap">' +
+            '<span class="apt-act__bracket apt-act__bracket--left"></span>' +
+            '<div class="apt-act__grid"></div>' +
+            '<span class="apt-act__bracket apt-act__bracket--right"></span>' +
+          '</div>' +
+          '<p class="apt-act__hint">' + (phase.hint || 'Tocá − o + para cambiar el signo de cada número.') + '</p>' +
+          '<button type="button" class="apt-act__check-btn">Comprobar</button>';
+      } else if (phase.mode === 'vectors') {
+        interactionHTML =
+          '<div class="apt-act__solution"></div>' +
+          '<p class="apt-act__hint">' + (phase.hint || 'Tocá − o + para cambiar el signo de cada número.') + '</p>' +
+          '<button type="button" class="apt-act__check-btn">Comprobar</button>';
+      } else {
+        interactionHTML = '<div class="apt-act__choices"></div>';
+      }
+      var hasAnswer = !!(phase.getAnswerGrid || phase.getAnswerVectors);
+      var actionsHTML =
+        '<div class="apt-act__actions-row">' +
+          '<button type="button" class="apt-act__retry-btn apt-act__retry-btn--hidden">Reintentar</button>' +
+          (hasAnswer ? '<button type="button" class="apt-act__retry-btn apt-act__retry-btn--hidden apt-act__showanswer-btn">Ver respuesta</button>' : '') +
+        '</div>';
+
+      return '<div class="apt-act__phase' + (idx > 0 ? ' apt-act__phase--hidden' : '') + '" data-phase="' + idx + '">' +
+        '<p class="apt-act__question">' + (phase.question || '') + '</p>' +
+        interactionHTML +
+        '<div class="apt-act__feedback apt-act__feedback--hidden"></div>' +
+        actionsHTML +
+      '</div>';
+    }).join('');
+
+    root.innerHTML =
+      '<div class="apt-act__app">' +
+        '<div class="apt-act__topbar">' +
+          '<p class="apt-act__eyebrow">' + (cfg.eyebrow || '') + '</p>' +
+          '<h1 class="apt-act__title">' + (cfg.title || '') + '</h1>' +
+          '<p class="apt-act__subtitle">' + (cfg.subtitle || '') + '</p>' +
+        '</div>' +
+        '<div class="apt-act__card"><div class="apt-act__content" aria-live="polite"></div></div>' +
+        phasesHTML +
+        '<button type="button" class="apt-act__next-btn apt-act__next-btn--hidden">' + (cfg.nextLabel || 'Probar con otro caso →') + '</button>' +
+        '<div class="apt-act__footer-slot"></div>' +
+      '</div>';
+
+    var footerCtl = mountFooter(root.querySelector('.apt-act__footer-slot'));
+
+    var phaseRefs = [];
+    root.querySelectorAll('.apt-act__phase').forEach(function (el) {
+      phaseRefs.push({
+        el: el,
+        choicesWrap: el.querySelector('.apt-act__choices'),
+        grid: el.querySelector('.apt-act__grid'),
+        solution: el.querySelector('.apt-act__solution'),
+        checkBtn: el.querySelector('.apt-act__check-btn'),
+        feedback: el.querySelector('.apt-act__feedback'),
+        retryBtn: el.querySelector('.apt-act__retry-btn'),
+        showAnswerBtn: el.querySelector('.apt-act__showanswer-btn')
+      });
+    });
+
+    return {
+      content: root.querySelector('.apt-act__content'),
+      phaseRefs: phaseRefs,
+      nextBtn: root.querySelector('.apt-act__next-btn'),
+      footerCtl: footerCtl
+    };
+  }
+
+  function startPhases(root, cfg) {
+    var refs = buildPhasesSkeleton(root, cfg);
+    var current = null;
+    var streak = 0;
+    var phaseAnswered = [];
+
+    function registerRoundResult(correct) {
+      if (correct) { playCorrectSound(); celebrate(); } else { playWrongSound(); }
+      streak = correct ? streak + 1 : 0;
+      refs.footerCtl.setStreak(streak);
+    }
+
+    function showPhaseFeedback(idx, correct, bodyHTML) {
+      var p = refs.phaseRefs[idx];
+      p.feedback.className = 'apt-act__feedback ' + (correct ? 'apt-act__feedback--correct' : 'apt-act__feedback--wrong');
+      p.feedback.innerHTML = (correct ? CHECK_SVG : CROSS_SVG) +
+        '<div class="apt-act__feedback-text"><strong>' + (correct ? '¡Correcto!' : 'No es correcto') + '</strong>' + bodyHTML + '</div>';
+    }
+
+    function resetPhaseUI(idx) {
+      var p = refs.phaseRefs[idx];
+      p.feedback.className = 'apt-act__feedback apt-act__feedback--hidden';
+      if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
+      if (p.showAnswerBtn) p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
+      phaseAnswered[idx] = false;
+    }
+
+    function advanceOrFinish(idx) {
+      var isLast = idx === cfg.phases.length - 1;
+      if (isLast) {
+        registerRoundResult(true);
+        refs.nextBtn.classList.remove('apt-act__next-btn--hidden');
+      } else {
+        revealPhase(idx + 1);
+        root.classList.remove('is-answered');
+      }
+    }
+
+    function revealPhase(idx) {
+      var phaseCfg = cfg.phases[idx];
+      var p = refs.phaseRefs[idx];
+      p.el.classList.remove('apt-act__phase--hidden');
+
+      if (phaseCfg.mode === 'choices') {
+        p.choicesWrap.innerHTML = '';
+        p.choicesWrap.classList.toggle('apt-act__choices--stacked', phaseCfg.choices.length <= 2);
+        phaseCfg.choices.forEach(function (choice) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'apt-act__choice-btn';
+          btn.dataset.value = choice.value;
+          btn.innerHTML = '<span class="apt-act__choice-main">' + choice.label + '</span>' +
+            (choice.sub ? '<span class="apt-act__choice-sub">' + choice.sub + '</span>' : '');
+          btn.addEventListener('click', function () { answerChoicePhase(idx, choice.value, btn); });
+          p.choicesWrap.appendChild(btn);
+        });
+        if (p.retryBtn) p.retryBtn.onclick = function () { retryChoicePhase(idx); };
+      } else if (phaseCfg.mode === 'grid') {
+        buildGrid(p.grid, phaseCfg.grid, phaseCfg, current);
+        p.checkBtn.disabled = false;
+        p.checkBtn.onclick = function () { checkGridPhase(idx); };
+        if (p.retryBtn) p.retryBtn.onclick = function () { retryGridPhase(idx); };
+        if (p.showAnswerBtn) p.showAnswerBtn.onclick = function () { showAnswerGridPhase(idx); };
+      } else if (phaseCfg.mode === 'vectors') {
+        buildVectorsUI(p.solution, phaseCfg.vectors, current);
+        p.checkBtn.disabled = false;
+        p.checkBtn.onclick = function () { checkVectorsPhase(idx); };
+        if (p.retryBtn) p.retryBtn.onclick = function () { retryVectorsPhase(idx); };
+        if (p.showAnswerBtn) p.showAnswerBtn.onclick = function () { showAnswerVectorsPhase(idx); };
+      }
+    }
+
+    // ---------- choices ----------
+    function answerChoicePhase(idx, value, btnEl) {
+      if (phaseAnswered[idx]) return;
+      phaseAnswered[idx] = true;
+      var phaseCfg = cfg.phases[idx];
+      var p = refs.phaseRefs[idx];
+      p.choicesWrap.querySelectorAll('.apt-act__choice-btn').forEach(function (b) { b.disabled = true; });
+      btnEl.classList.add('is-selected');
+      root.classList.add('is-answered');
+
+      var correct = phaseCfg.check(current, value);
+      showPhaseFeedback(idx, correct, phaseCfg.explain(current, correct, value));
+
+      var isLast = idx === cfg.phases.length - 1;
+      if (correct) {
+        advanceOrFinish(idx);
+      } else {
+        if (p.retryBtn) p.retryBtn.classList.remove('apt-act__retry-btn--hidden');
+        refs.nextBtn.classList.remove('apt-act__next-btn--hidden');
+        if (isLast) registerRoundResult(false);
+      }
+    }
+
+    function retryChoicePhase(idx) {
+      if (!phaseAnswered[idx]) return;
+      var p = refs.phaseRefs[idx];
+      root.classList.remove('is-answered');
+      p.feedback.className = 'apt-act__feedback apt-act__feedback--hidden';
+      if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
+      refs.nextBtn.classList.add('apt-act__next-btn--hidden');
+      p.choicesWrap.querySelectorAll('.apt-act__choice-btn').forEach(function (b) {
+        b.disabled = false;
+        b.classList.remove('is-selected');
+      });
+      phaseAnswered[idx] = false;
+    }
+
+    // ---------- grid ----------
+    function checkGridPhase(idx) {
+      if (phaseAnswered[idx]) return;
+      phaseAnswered[idx] = true;
+      var phaseCfg = cfg.phases[idx];
+      var p = refs.phaseRefs[idx];
+      root.classList.add('is-answered');
+
+      var read = readStudentMatrix(p.grid, phaseCfg.grid, current);
+      var result = phaseCfg.checkGrid(current, read.matrix, read.hasEmpty);
+      var correct = !!result.correct;
+
+      p.grid.querySelectorAll('.apt-act__cellwrap').forEach(function (wrap) {
+        var r = +wrap.dataset.row, c = +wrap.dataset.col;
+        wrap.classList.remove('is-correct', 'is-wrong');
+        var st = result.cellStatus && result.cellStatus[r] && result.cellStatus[r][c];
+        if (st === 'correct') wrap.classList.add('is-correct');
+        else if (st === 'wrong') wrap.classList.add('is-wrong');
+        wrap.querySelector('.apt-act__cell').disabled = true;
+        setSignDisabled(wrap, true);
+      });
+
+      showPhaseFeedback(idx, correct, result.feedbackText);
+      p.checkBtn.disabled = true;
+
+      var isLast = idx === cfg.phases.length - 1;
+      if (correct) {
+        if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
+        if (p.showAnswerBtn) p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
+        advanceOrFinish(idx);
+      } else {
+        if (p.retryBtn) p.retryBtn.classList.remove('apt-act__retry-btn--hidden');
+        if (p.showAnswerBtn) p.showAnswerBtn.classList.remove('apt-act__retry-btn--hidden');
+        refs.nextBtn.classList.remove('apt-act__next-btn--hidden');
+        if (isLast) registerRoundResult(false);
+      }
+    }
+
+    function retryGridPhase(idx) {
+      if (!phaseAnswered[idx]) return;
+      var p = refs.phaseRefs[idx];
+      root.classList.remove('is-answered');
+      p.grid.querySelectorAll('.apt-act__cellwrap').forEach(function (wrap) {
+        wrap.classList.remove('is-correct', 'is-wrong');
+        wrap.querySelector('.apt-act__cell').disabled = false;
+        setSignDisabled(wrap, false);
+      });
+      p.feedback.className = 'apt-act__feedback apt-act__feedback--hidden';
+      if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
+      if (p.showAnswerBtn) p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
+      refs.nextBtn.classList.add('apt-act__next-btn--hidden');
+      p.checkBtn.disabled = false;
+      phaseAnswered[idx] = false;
+    }
+
+    function showAnswerGridPhase(idx) {
+      var phaseCfg = cfg.phases[idx];
+      var p = refs.phaseRefs[idx];
+      var answerMatrix = phaseCfg.getAnswerGrid(current);
+      p.grid.querySelectorAll('.apt-act__cellwrap').forEach(function (wrap) {
+        var r = +wrap.dataset.row, c = +wrap.dataset.col;
+        var val = answerMatrix[r][c];
+        var input = wrap.querySelector('.apt-act__cell');
+        setSign(wrap, val < 0 ? '-' : '+');
+        input.value = String(Math.abs(val));
+        wrap.classList.remove('is-wrong');
+        wrap.classList.add('is-correct');
+        setSignDisabled(wrap, true);
+        input.disabled = true;
+      });
+      if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
+      p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
+      p.feedback.className = 'apt-act__feedback apt-act__feedback--correct';
+      p.feedback.innerHTML = CHECK_SVG +
+        '<div class="apt-act__feedback-text"><strong>' + (phaseCfg.answerTitle || 'La respuesta correcta') + '</strong>' + (phaseCfg.answerText || '') + '</div>';
+
+      var isLast = idx === cfg.phases.length - 1;
+      if (isLast) { refs.nextBtn.classList.remove('apt-act__next-btn--hidden'); }
+      else { revealPhase(idx + 1); root.classList.remove('is-answered'); }
+    }
+
+    // ---------- vectors ----------
+    function checkVectorsPhase(idx) {
+      if (phaseAnswered[idx]) return;
+      phaseAnswered[idx] = true;
+      var phaseCfg = cfg.phases[idx];
+      var p = refs.phaseRefs[idx];
+      root.classList.add('is-answered');
+
+      var rows = phaseCfg.vectors.rows(current);
+      var count = phaseCfg.vectors.count(current);
+      var hasParticular = phaseCfg.vectors.hasParticular !== false;
+
+      var particularRead = hasParticular ? readVectorBlock(p.solution, 'p', rows) : null;
+      var vectorReads = [];
+      for (var i = 0; i < count; i++) vectorReads.push(readVectorBlock(p.solution, 'd' + i, rows));
+      var hasEmpty = (particularRead && particularRead.hasEmpty) || vectorReads.some(function (v) { return v.hasEmpty; });
+
+      var result = phaseCfg.checkVectors(
+        current,
+        particularRead ? particularRead.vals : null,
+        vectorReads.map(function (v) { return v.vals; }),
+        hasEmpty
+      );
+      var correct = !!result.correct;
+
+      function statusToClass(st) {
+        if (st === 'correct') return 'is-correct';
+        if (st === 'wrong') return 'is-wrong';
+        return null;
+      }
+      if (hasParticular) colorVectorBlock(p.solution, 'p', rows, statusToClass(result.particularStatus));
+      vectorReads.forEach(function (_, i) {
+        var st = result.vectorStatuses && result.vectorStatuses[i];
+        colorVectorBlock(p.solution, 'd' + i, rows, statusToClass(st));
+      });
+
+      showPhaseFeedback(idx, correct, result.feedbackText);
+      p.checkBtn.disabled = true;
+
+      var isLast = idx === cfg.phases.length - 1;
+      if (correct) {
+        if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
+        if (p.showAnswerBtn) p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
+        advanceOrFinish(idx);
+      } else {
+        if (p.retryBtn) p.retryBtn.classList.remove('apt-act__retry-btn--hidden');
+        if (p.showAnswerBtn) p.showAnswerBtn.classList.remove('apt-act__retry-btn--hidden');
+        refs.nextBtn.classList.remove('apt-act__next-btn--hidden');
+        if (isLast) registerRoundResult(false);
+      }
+    }
+
+    function retryVectorsPhase(idx) {
+      if (!phaseAnswered[idx]) return;
+      var p = refs.phaseRefs[idx];
+      root.classList.remove('is-answered');
+      retryVectorsUI(p.solution);
+      p.feedback.className = 'apt-act__feedback apt-act__feedback--hidden';
+      if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
+      if (p.showAnswerBtn) p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
+      refs.nextBtn.classList.add('apt-act__next-btn--hidden');
+      p.checkBtn.disabled = false;
+      phaseAnswered[idx] = false;
+    }
+
+    function showAnswerVectorsPhase(idx) {
+      var phaseCfg = cfg.phases[idx];
+      var p = refs.phaseRefs[idx];
+      var answer = phaseCfg.getAnswerVectors(current);
+      if (answer.particular) fillVectorBlock(p.solution, 'p', answer.particular);
+      (answer.vectors || []).forEach(function (v, i) { fillVectorBlock(p.solution, 'd' + i, v); });
+
+      if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
+      p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
+      p.feedback.className = 'apt-act__feedback apt-act__feedback--correct';
+      p.feedback.innerHTML = CHECK_SVG +
+        '<div class="apt-act__feedback-text"><strong>' + (phaseCfg.answerTitle || 'Una respuesta posible') + '</strong>' + (phaseCfg.answerText || '') + '</div>';
+
+      var isLast = idx === cfg.phases.length - 1;
+      if (isLast) { refs.nextBtn.classList.remove('apt-act__next-btn--hidden'); }
+      else { revealPhase(idx + 1); root.classList.remove('is-answered'); }
+    }
+
+    // ---------- ronda nueva ----------
+    function newRound() {
+      current = cfg.generate();
+      cfg.renderContent(refs.content, current);
+      root.classList.remove('is-answered');
+      refs.nextBtn.classList.add('apt-act__next-btn--hidden');
+
+      cfg.phases.forEach(function (phaseCfg, idx) {
+        var p = refs.phaseRefs[idx];
+        if (idx === 0) p.el.classList.remove('apt-act__phase--hidden');
+        else p.el.classList.add('apt-act__phase--hidden');
+        resetPhaseUI(idx);
+      });
+
+      revealPhase(0);
+    }
+
+    refs.nextBtn.addEventListener('click', newRound);
+    newRound();
+  }
+
+  /* ------------------------------------------------------------
      init(config) — API pública que usa cada landing
      ------------------------------------------------------------ */
   function init(cfg) {
@@ -681,6 +1201,12 @@
       } else {
         document.body.appendChild(root);
       }
+    }
+
+    if (cfg.mode === 'phases') {
+      if (cfg.needsKatex) { ensureKatex(function () { startPhases(root, cfg); }); }
+      else { startPhases(root, cfg); }
+      return;
     }
 
     function start() {
@@ -760,7 +1286,7 @@
         if (answered) return;
         root.classList.add('is-answered');
 
-        var read = readStudentMatrix(refs.grid, cfg.grid);
+        var read = readStudentMatrix(refs.grid, cfg.grid, current);
         var result = cfg.checkGrid(current, read.matrix, read.hasEmpty);
         var correct = !!result.correct;
 
