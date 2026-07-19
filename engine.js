@@ -142,7 +142,6 @@
     '.apt-act__skip-btn{ background:none; border:none; color:var(--ink-soft); font-family:var(--font-mono); font-size:12.5px; text-decoration:underline; text-underline-offset:3px; cursor:pointer; padding:4px 0; align-self:center; -webkit-tap-highlight-color:transparent; }',
     '.apt-act__skip-btn:hover{ color:var(--chalk-light); }',
     '.apt-act__skip-btn:focus-visible{ outline:2px solid var(--chalk-light); outline-offset:2px; border-radius:2px; }',
-    '.apt-act.is-answered .apt-act__skip-btn{ display:none; }',
     '.apt-act__feedback{ border-radius:var(--radius); padding:18px 16px; display:flex; gap:12px; align-items:flex-start; border:1px solid transparent; }',
     '.apt-act__feedback--correct{ background:var(--correct-bg); border-color:rgba(91,205,154,0.35); }',
     '.apt-act__feedback--wrong{ background:var(--wrong-bg); border-color:rgba(214,82,82,0.35); }',
@@ -151,12 +150,18 @@
     '.apt-act__mark path{ fill:none; stroke-width:5; stroke-linecap:round; stroke-linejoin:round; }',
     '.apt-act__feedback--correct .apt-act__mark path{ stroke:var(--correct); }',
     '.apt-act__feedback--wrong .apt-act__mark path{ stroke:var(--wrong); }',
-    '.apt-act__feedback-text{ font-family:var(--font-mono); font-size:14.5px; line-height:1.6; }',
-    '.apt-act__feedback-text strong{ display:block; font-family:var(--font-serif); font-weight:700; font-size:16px; margin-bottom:5px; }',
+    '.apt-act__feedback-text{ font-family:var(--font-mono); font-size:14.5px; line-height:1.6; flex:1 1 auto; min-width:0; }',
+    '.apt-act__feedback-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:5px; }',
+    '.apt-act__feedback-text strong{ font-family:var(--font-serif); font-weight:700; font-size:16px; }',
     '.apt-act__feedback--correct .apt-act__feedback-text strong{ color:var(--correct); }',
     '.apt-act__feedback--wrong .apt-act__feedback-text strong{ color:var(--wrong); }',
     '.apt-act__feedback--correct .apt-act__feedback-text{ color:#CFEEDF; }',
     '.apt-act__feedback--wrong .apt-act__feedback-text{ color:#F3D2D2; }',
+    '.apt-act__feedback-toggle{ flex:0 0 auto; width:22px; height:22px; padding:0; border-radius:50%; border:1px solid currentColor; background:transparent; color:inherit; font-size:14px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; opacity:.65; -webkit-tap-highlight-color:transparent; }',
+    '.apt-act__feedback-toggle:hover{ opacity:1; }',
+    '.apt-act__feedback-toggle:focus-visible{ outline:2px solid currentColor; outline-offset:2px; }',
+    '.apt-act__feedback--collapsed .apt-act__feedback-head{ margin-bottom:0; }',
+    '.apt-act__feedback--collapsed .apt-act__feedback-body{ display:none; }',
     '.apt-act__actions{ display:flex; flex-direction:column; gap:8px; }',
     '.apt-act__actions-row{ display:flex; gap:8px; }',
     '.apt-act__retry-btn{ font-family:var(--font-serif); font-weight:700; font-size:14.5px; color:var(--chalk-light); background:transparent; border:2px solid var(--chalk-light); border-radius:12px; padding:13px 10px; min-height:50px; cursor:pointer; transition:background .15s ease, color .15s ease, transform .08s ease; -webkit-tap-highlight-color:transparent; flex:1 1 0; }',
@@ -224,13 +229,48 @@
     '.apt-act.is-answered .apt-act__feedback{ padding:12px 14px; gap:10px; }',
     '.apt-act.is-answered .apt-act__mark{ width:26px; height:26px; }',
     '.apt-act.is-answered .apt-act__feedback-text{ font-size:13px; line-height:1.45; }',
-    '.apt-act.is-answered .apt-act__feedback-text strong{ font-size:14px; margin-bottom:3px; }',
+    '.apt-act.is-answered .apt-act__feedback-text strong{ font-size:14px; }',
+    '.apt-act.is-answered .apt-act__feedback-head{ margin-bottom:3px; }',
     '.apt-act.is-answered .apt-act__next-btn{ padding:11px; min-height:42px; font-size:14px; }',
     '.apt-act.is-answered .apt-act__retry-btn{ padding:11px; min-height:42px; font-size:13px; }'
   ].join('\n');
 
   var CHECK_SVG = '<svg class="apt-act__mark" viewBox="0 0 34 34"><path d="M6 18 L14 26 L28 8"/></svg>';
   var CROSS_SVG = '<svg class="apt-act__mark" viewBox="0 0 34 34"><path d="M8 8 L26 26 M26 8 L8 26"/></svg>';
+  var FEEDBACK_COLLAPSE_MS = 4000;
+
+  /* ------------------------------------------------------------
+     Feedback compartido — ÚNICA implementación para las 4 fases,
+     el modo genérico y "ver respuesta". El título (¡Correcto! /
+     No es correcto) queda siempre visible con su color; el cuerpo
+     con la explicación se auto-contrae a los 4s para no ocupar
+     tanta pantalla, y el usuario puede expandir/contraer a mano
+     tocando el +/− de la esquina en cualquier momento.
+     ------------------------------------------------------------ */
+  function renderFeedback(el, correct, title, bodyHTML) {
+    if (el._collapseTimer) { clearTimeout(el._collapseTimer); el._collapseTimer = null; }
+    el.className = 'apt-act__feedback ' + (correct ? 'apt-act__feedback--correct' : 'apt-act__feedback--wrong');
+    el.innerHTML = (correct ? CHECK_SVG : CROSS_SVG) +
+      '<div class="apt-act__feedback-text">' +
+        '<div class="apt-act__feedback-head">' +
+          '<strong>' + title + '</strong>' +
+          '<button type="button" class="apt-act__feedback-toggle" aria-label="Contraer explicación">−</button>' +
+        '</div>' +
+        '<div class="apt-act__feedback-body">' + bodyHTML + '</div>' +
+      '</div>';
+
+    var toggleBtn = el.querySelector('.apt-act__feedback-toggle');
+    function setCollapsed(collapsed) {
+      el.classList.toggle('apt-act__feedback--collapsed', collapsed);
+      toggleBtn.textContent = collapsed ? '+' : '−';
+      toggleBtn.setAttribute('aria-label', collapsed ? 'Expandir explicación' : 'Contraer explicación');
+    }
+    toggleBtn.addEventListener('click', function () {
+      if (el._collapseTimer) { clearTimeout(el._collapseTimer); el._collapseTimer = null; }
+      setCollapsed(!el.classList.contains('apt-act__feedback--collapsed'));
+    });
+    el._collapseTimer = setTimeout(function () { setCollapsed(true); }, FEEDBACK_COLLAPSE_MS);
+  }
 
   /* ------------------------------------------------------------
      Inyección de assets (una sola vez por página)
@@ -864,6 +904,7 @@
         '</div>' +
         '<div class="apt-act__card"><div class="apt-act__content" aria-live="polite"></div></div>' +
         phasesHTML +
+        '<button type="button" class="apt-act__skip-btn">' + (cfg.skipLabel || 'Prefiero otro caso →') + '</button>' +
         '<button type="button" class="apt-act__next-btn apt-act__next-btn--hidden">' + (cfg.nextLabel || 'Probar con otro caso →') + '</button>' +
         '<div class="apt-act__footer-slot"></div>' +
       '</div>';
@@ -887,6 +928,7 @@
     return {
       content: root.querySelector('.apt-act__content'),
       phaseRefs: phaseRefs,
+      skipBtn: root.querySelector('.apt-act__skip-btn'),
       nextBtn: root.querySelector('.apt-act__next-btn'),
       footerCtl: footerCtl
     };
@@ -906,9 +948,7 @@
 
     function showPhaseFeedback(idx, correct, bodyHTML) {
       var p = refs.phaseRefs[idx];
-      p.feedback.className = 'apt-act__feedback ' + (correct ? 'apt-act__feedback--correct' : 'apt-act__feedback--wrong');
-      p.feedback.innerHTML = (correct ? CHECK_SVG : CROSS_SVG) +
-        '<div class="apt-act__feedback-text"><strong>' + (correct ? '¡Correcto!' : 'No es correcto') + '</strong>' + bodyHTML + '</div>';
+      renderFeedback(p.feedback, correct, correct ? '¡Correcto!' : 'No es correcto', bodyHTML);
     }
 
     function resetPhaseUI(idx) {
@@ -1073,9 +1113,7 @@
       });
       if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
       p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
-      p.feedback.className = 'apt-act__feedback apt-act__feedback--correct';
-      p.feedback.innerHTML = CHECK_SVG +
-        '<div class="apt-act__feedback-text"><strong>' + (phaseCfg.answerTitle || 'La respuesta correcta') + '</strong>' + (phaseCfg.answerText || '') + '</div>';
+      renderFeedback(p.feedback, true, phaseCfg.answerTitle || 'La respuesta correcta', phaseCfg.answerText || '');
 
       var isLast = idx === cfg.phases.length - 1;
       if (isLast) { refs.nextBtn.classList.remove('apt-act__next-btn--hidden'); }
@@ -1156,9 +1194,7 @@
 
       if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
       p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
-      p.feedback.className = 'apt-act__feedback apt-act__feedback--correct';
-      p.feedback.innerHTML = CHECK_SVG +
-        '<div class="apt-act__feedback-text"><strong>' + (phaseCfg.answerTitle || 'Una respuesta posible') + '</strong>' + (phaseCfg.answerText || '') + '</div>';
+      renderFeedback(p.feedback, true, phaseCfg.answerTitle || 'Una respuesta posible', phaseCfg.answerText || '');
 
       var isLast = idx === cfg.phases.length - 1;
       if (isLast) { refs.nextBtn.classList.remove('apt-act__next-btn--hidden'); }
@@ -1183,6 +1219,7 @@
     }
 
     refs.nextBtn.addEventListener('click', newRound);
+    refs.skipBtn.addEventListener('click', newRound);
     newRound();
   }
 
@@ -1256,9 +1293,7 @@
       }
 
       function showFeedback(correct, bodyHTML) {
-        refs.feedback.className = 'apt-act__feedback ' + (correct ? 'apt-act__feedback--correct' : 'apt-act__feedback--wrong');
-        refs.feedback.innerHTML = (correct ? CHECK_SVG : CROSS_SVG) +
-          '<div class="apt-act__feedback-text"><strong>' + (correct ? '¡Correcto!' : 'No es correcto') + '</strong>' + bodyHTML + '</div>';
+        renderFeedback(refs.feedback, correct, correct ? '¡Correcto!' : 'No es correcto', bodyHTML);
       }
 
       function registerResult(correct) {
@@ -1342,9 +1377,7 @@
         });
         refs.retryBtn.classList.add('apt-act__retry-btn--hidden');
         refs.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
-        refs.feedback.className = 'apt-act__feedback apt-act__feedback--correct';
-        refs.feedback.innerHTML = CHECK_SVG +
-          '<div class="apt-act__feedback-text"><strong>' + (cfg.answerTitle || 'La respuesta correcta') + '</strong>' + (cfg.answerText || '') + '</div>';
+        renderFeedback(refs.feedback, true, cfg.answerTitle || 'La respuesta correcta', cfg.answerText || '');
       }
 
       if (cfg.mode === 'grid') {
