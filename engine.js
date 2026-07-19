@@ -239,6 +239,19 @@
   var CROSS_SVG = '<svg class="apt-act__mark" viewBox="0 0 34 34"><path d="M8 8 L26 26 M26 8 L8 26"/></svg>';
   var FEEDBACK_COLLAPSE_MS = 4000;
 
+  // cfg.choices (o phase.choices) puede ser un array fijo, o una función
+  // (current) => array, para preguntas de opción múltiple cuyo texto
+  // depende del caso generado (ej: "2×2" / "3×3" según el orden de la matriz).
+  function resolveChoices(choicesSpec, current) {
+    return typeof choicesSpec === 'function' ? choicesSpec(current) : choicesSpec;
+  }
+  // Igual que resolveChoices, pero para valores numéricos como
+  // grid.rows/grid.cols, que también pueden depender de current
+  // (ej: el orden de la matriz varía por ronda en factorización LU).
+  function resolveNum(spec, current) {
+    return typeof spec === 'function' ? spec(current) : spec;
+  }
+
   /* ------------------------------------------------------------
      Feedback compartido — ÚNICA implementación para las 4 fases,
      el modo genérico y "ver respuesta". El título (¡Correcto! /
@@ -609,14 +622,16 @@
 
   function buildGrid(gridEl, gridCfg, cfg, current) {
     gridEl.innerHTML = '';
-    var rows = gridCfg.rows, cols = gridCfg.cols;
-    var divAfter = gridCfg.dividerAfterCol != null ? gridCfg.dividerAfterCol : cols - 1;
-    gridEl.style.gridTemplateColumns =
-      'repeat(' + divAfter + ', minmax(62px,74px)) 10px repeat(' + (cols - divAfter) + ', minmax(62px,74px))';
+    var rows = resolveNum(gridCfg.rows, current), cols = resolveNum(gridCfg.cols, current);
+    var noDivider = !!gridCfg.noDivider;
+    var divAfter = noDivider ? cols : (gridCfg.dividerAfterCol != null ? gridCfg.dividerAfterCol : cols - 1);
+    gridEl.style.gridTemplateColumns = noDivider
+      ? 'repeat(' + cols + ', minmax(62px,74px))'
+      : 'repeat(' + divAfter + ', minmax(62px,74px)) 10px repeat(' + (cols - divAfter) + ', minmax(62px,74px))';
     for (var r = 0; r < rows; r++) {
       for (var c = 0; c < cols; c++) {
         var lockedVal = gridCfg.lockedValue ? gridCfg.lockedValue(current, r, c) : null;
-        var gridCol = c < divAfter ? c + 1 : c + 2;
+        var gridCol = (noDivider || c < divAfter) ? c + 1 : c + 2;
 
         if (lockedVal !== null && lockedVal !== undefined) {
           var lock = document.createElement('div');
@@ -651,15 +666,17 @@
         gridEl.appendChild(wrap);
       }
     }
-    var divider = document.createElement('div');
-    divider.className = 'apt-act__divider';
-    divider.style.gridColumn = String(divAfter + 1);
-    divider.style.gridRow = '1 / ' + (rows + 1);
-    gridEl.appendChild(divider);
+    if (!noDivider) {
+      var divider = document.createElement('div');
+      divider.className = 'apt-act__divider';
+      divider.style.gridColumn = String(divAfter + 1);
+      divider.style.gridRow = '1 / ' + (rows + 1);
+      gridEl.appendChild(divider);
+    }
   }
 
   function readStudentMatrix(gridEl, gridCfg, current) {
-    var rows = gridCfg.rows, cols = gridCfg.cols;
+    var rows = resolveNum(gridCfg.rows, current), cols = resolveNum(gridCfg.cols, current);
     var M = [];
     for (var r = 0; r < rows; r++) { M.push(new Array(cols).fill(null)); }
     var hasEmpty = false;
@@ -976,9 +993,10 @@
       p.el.classList.remove('apt-act__phase--hidden');
 
       if (phaseCfg.mode === 'choices') {
+        var choiceList = resolveChoices(phaseCfg.choices, current);
         p.choicesWrap.innerHTML = '';
-        p.choicesWrap.classList.toggle('apt-act__choices--stacked', phaseCfg.choices.length <= 2);
-        phaseCfg.choices.forEach(function (choice) {
+        p.choicesWrap.classList.toggle('apt-act__choices--stacked', choiceList.length <= 2);
+        choiceList.forEach(function (choice) {
           var btn = document.createElement('button');
           btn.type = 'button';
           btn.className = 'apt-act__choice-btn';
@@ -1249,20 +1267,6 @@
     function start() {
       var refs = buildSkeleton(root, cfg);
 
-      if (cfg.mode === 'choices') {
-        refs.choicesWrap.classList.toggle('apt-act__choices--stacked', cfg.choices.length <= 2);
-        cfg.choices.forEach(function (choice) {
-          var btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'apt-act__choice-btn';
-          btn.dataset.value = choice.value;
-          btn.innerHTML = '<span class="apt-act__choice-main">' + choice.label + '</span>' +
-            (choice.sub ? '<span class="apt-act__choice-sub">' + choice.sub + '</span>' : '');
-          btn.addEventListener('click', function () { answerChoice(choice.value, btn); });
-          refs.choicesWrap.appendChild(btn);
-        });
-      }
-
       var current = null;
       var answered = false;
       var streak = 0;
@@ -1284,9 +1288,18 @@
           refs.checkBtn.disabled = false;
         }
         if (cfg.mode === 'choices') {
-          refs.choicesWrap.querySelectorAll('.apt-act__choice-btn').forEach(function (b) {
-            b.disabled = false;
-            b.classList.remove('is-selected');
+          var choiceList = resolveChoices(cfg.choices, current);
+          refs.choicesWrap.innerHTML = '';
+          refs.choicesWrap.classList.toggle('apt-act__choices--stacked', choiceList.length <= 2);
+          choiceList.forEach(function (choice) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'apt-act__choice-btn';
+            btn.dataset.value = choice.value;
+            btn.innerHTML = '<span class="apt-act__choice-main">' + choice.label + '</span>' +
+              (choice.sub ? '<span class="apt-act__choice-sub">' + choice.sub + '</span>' : '');
+            btn.addEventListener('click', function () { answerChoice(choice.value, btn); });
+            refs.choicesWrap.appendChild(btn);
           });
         }
         resetCommonUI();
