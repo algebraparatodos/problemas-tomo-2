@@ -11,6 +11,12 @@
 
      mode: 'choices' — botones de elección (ej: SCD/SCI/SI).
        cfg.choices, cfg.check(current,value), cfg.explain(...)
+       cfg.choicesStacked (bool, opcional) — fuerza una sola
+         columna (una opción por fila) sin importar la cantidad.
+         Por defecto es automático: ≤2 opciones apila, >2 las pone
+         en fila — pero conviene forzar `true` cuando cada opción
+         es algo ancho (ej: una matriz renderizada con KaTeX en
+         vez de un texto corto).
 
      mode: 'grid' — grilla de celdas numéricas con signo −/+ y
        botón Comprobar/Reintentar/Ver respuesta (ej: matriz
@@ -94,7 +100,9 @@
         { title: 'Encontrá la forma escalonada reducida', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-6' },
         { title: 'Solución paramétrica', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-7' },
         { title: 'Rango por orlado', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-8' },
-        { title: 'Clasificá con Rouché-Frobenius', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-9' }
+        { title: 'Clasificá con Rouché-Frobenius', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-9' },
+        { title: 'Rouché-Frobenius con parámetros', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-10' },
+        { title: 'Tipos de matrices', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-11' }
       ]
     },
     { title: 'Unidad 2: Subespacios vectoriales', activities: [] },
@@ -1228,7 +1236,7 @@
       if (phaseCfg.mode === 'choices') {
         var choiceList = resolveChoices(phaseCfg.choices, current);
         p.choicesWrap.innerHTML = '';
-        p.choicesWrap.classList.toggle('apt-act__choices--stacked', choiceList.length <= 2);
+        p.choicesWrap.classList.toggle('apt-act__choices--stacked', phaseCfg.choicesStacked !== undefined ? phaseCfg.choicesStacked : choiceList.length <= 2);
         choiceList.forEach(function (choice) {
           var btn = document.createElement('button');
           btn.type = 'button';
@@ -1570,7 +1578,7 @@
         if (cfg.mode === 'choices') {
           var choiceList = resolveChoices(cfg.choices, current);
           refs.choicesWrap.innerHTML = '';
-          refs.choicesWrap.classList.toggle('apt-act__choices--stacked', choiceList.length <= 2);
+          refs.choicesWrap.classList.toggle('apt-act__choices--stacked', cfg.choicesStacked !== undefined ? cfg.choicesStacked : choiceList.length <= 2);
           choiceList.forEach(function (choice) {
             var btn = document.createElement('button');
             btn.type = 'button';
