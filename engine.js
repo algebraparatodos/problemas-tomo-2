@@ -83,6 +83,30 @@
   var REPORT_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLScr7mmwJ1QPpj8Bh4sYf0N3uNG77xbSVNc9AfZ64_erQM5NZg/formResponse';
   var REPORT_ENTRY_MESSAGE = 'entry.1465382734';
   var REPORT_ENTRY_URL = 'entry.833697682';
+
+  /* ------------------------------------------------------------
+     Bloqueo de scroll del body mientras hay un modal abierto —
+     sin esto, en mobile el gesto de scroll dentro del modal a
+     veces termina moviendo la página de atrás en vez del modal.
+     Contador por si en algún momento hay más de un modal (poco
+     probable, pero evita que uno se desbloquee de más si el otro
+     sigue abierto).
+     ------------------------------------------------------------ */
+  var bodyScrollLockCount = 0;
+  function lockBodyScroll() {
+    bodyScrollLockCount++;
+    if (bodyScrollLockCount === 1) {
+      document.body.setAttribute('data-apt-prev-overflow', document.body.style.overflow || '');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+  function unlockBodyScroll() {
+    bodyScrollLockCount = Math.max(0, bodyScrollLockCount - 1);
+    if (bodyScrollLockCount === 0) {
+      document.body.style.overflow = document.body.getAttribute('data-apt-prev-overflow') || '';
+      document.body.removeAttribute('data-apt-prev-overflow');
+    }
+  }
   var REPORT_MODAL_ID = 'apt-report-modal';
 
   var CATALOG_MODAL_ID = 'apt-catalog-modal';
@@ -323,7 +347,7 @@
     '.apt-catalog-modal__close-x{ width:28px; height:28px; flex:0 0 auto; border-radius:50%; border:1px solid rgba(151,161,216,0.3); background:transparent; color:#97A1D8; font-size:14px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; }',
     '.apt-catalog-modal__close-x:hover{ background:rgba(151,161,216,0.12); }',
     '.apt-catalog-modal__close-x:focus-visible{ outline:2px solid #97A1D8; outline-offset:2px; }',
-    '.apt-catalog-modal__list{ overflow-y:auto; min-height:0; flex:1 1 auto; display:flex; flex-direction:column; gap:8px; padding-right:2px; }',
+    '.apt-catalog-modal__list{ overflow-y:auto; overscroll-behavior:contain; max-height:min(55vh, 420px); display:flex; flex-direction:column; gap:8px; padding-right:2px; }',
     '.apt-catalog-modal__unit{ border:1px solid rgba(151,161,216,0.18); border-radius:10px; overflow:hidden; }',
     '.apt-catalog-modal__unit-btn{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:"Lora",Georgia,"Times New Roman",serif; font-weight:700; font-size:13.5px; color:#F5F5F7; background:rgba(151,161,216,0.06); border:none; padding:12px 14px; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; }',
     '.apt-catalog-modal__unit-btn:disabled{ cursor:default; opacity:.6; }',
@@ -611,7 +635,7 @@
     var successBlock = modal.querySelector('.apt-report-modal__success');
     var closeBtn = modal.querySelector('.apt-report-modal__close-btn');
 
-    function closeModal() { modal.classList.add('apt-report-modal--hidden'); }
+    function closeModal() { modal.classList.add('apt-report-modal--hidden'); unlockBodyScroll(); }
 
     function resetModal() {
       textarea.value = '';
@@ -660,6 +684,7 @@
     modal._openReport = function () {
       resetModal();
       modal.classList.remove('apt-report-modal--hidden');
+      lockBodyScroll();
       textarea.focus();
     };
     return modal;
@@ -709,7 +734,7 @@
     var card = modal.querySelector('.apt-catalog-modal__card');
     var closeBtn = modal.querySelector('.apt-catalog-modal__close-x');
 
-    function closeModal() { modal.classList.add('apt-catalog-modal--hidden'); }
+    function closeModal() { modal.classList.add('apt-catalog-modal--hidden'); unlockBodyScroll(); }
 
     modal.querySelectorAll('.apt-catalog-modal__unit-btn').forEach(function (btn) {
       if (btn.disabled) return;
@@ -725,7 +750,7 @@
       if (e.key === 'Escape' && !modal.classList.contains('apt-catalog-modal--hidden')) closeModal();
     });
 
-    modal._openCatalog = function () { modal.classList.remove('apt-catalog-modal--hidden'); };
+    modal._openCatalog = function () { modal.classList.remove('apt-catalog-modal--hidden'); lockBodyScroll(); };
     return modal;
   }
 
