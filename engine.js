@@ -178,11 +178,11 @@
        en grid 2x2, con checkbox. min-width:0 + overflow-x:auto evita
        que el contenido se desborde de la tarjeta. -- */
     '.apt-act__choices--grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }',
-    '.apt-act__choices--grid .apt-act__choice-btn{ flex-direction:row; align-items:flex-start; justify-content:flex-start; gap:8px; background:var(--bg-card); border:1px solid rgba(151,161,216,0.25); border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,.4); padding:16px 12px; min-height:90px; }',
-    '.apt-act__choices--grid .apt-act__choice-btn::before{ content:"☐"; flex:0 0 auto; font-size:15px; }',
+    '.apt-act__choices--grid .apt-act__choice-btn{ flex-direction:row; align-items:flex-start; justify-content:flex-start; gap:6px; background:var(--bg-card); border:1px solid rgba(151,161,216,0.25); border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,.4); padding:12px 8px; min-height:90px; }',
+    '.apt-act__choices--grid .apt-act__choice-btn::before{ content:"☐"; flex:0 0 auto; font-size:14px; }',
     '.apt-act__choices--grid .apt-act__choice-btn.is-selected::before{ content:"☑"; }',
     '.apt-act__choices--grid .apt-act__choice-btn.is-selected{ background:rgba(151,161,216,0.12); border-color:var(--chalk-light); color:var(--ink); }',
-    '.apt-act__choices--grid .apt-act__choice-main{ flex:1 1 auto; min-width:0; font-size:clamp(10px,3.2vw,13px); text-align:center; }',
+    '.apt-act__choices--grid .apt-act__choice-main{ flex:1 1 auto; min-width:0; font-size:clamp(9px,2.8vw,12px); text-align:center; }',
     '.apt-act__choice-btn:disabled{ opacity:.5; cursor:default; }',
     '.apt-act__choice-btn:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
     '.apt-act__matrixwrap{ display:flex; align-items:stretch; justify-content:center; gap:6px; }',
