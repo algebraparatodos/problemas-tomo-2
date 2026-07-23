@@ -7,7 +7,7 @@
 
    Cada landing de Kajabi solo carga este script y le pasa un
    objeto de configuración con SU lógica particular. El engine
-   soporta dos modos de interacción:
+   soporta tres modos de interacción:
 
      mode: 'choices' — botones de elección (ej: SCD/SCI/SI).
        cfg.choices, cfg.check(current,value), cfg.explain(...)
@@ -24,7 +24,22 @@
        cfg.answerTitle / cfg.answerText (opcionales, texto del
          botón "Ver respuesta")
 
-   En ambos modos: cfg.generate(), cfg.renderContent(container,
+     mode: 'multiselect' — igual layout que 'choices' pero con
+       botón Comprobar y Reintentar: se puede tildar 0, 1 o varias
+       opciones antes de responder (a diferencia de 'choices', que
+       responde apenas se toca un botón). Pensado para "marcá todas
+       las que correspondan" (ej: a cuáles de estos tipos pertenece
+       esta matriz — puede ser ninguna, una, o varias a la vez).
+       cfg.options(current) → array de { value, label, correct }.
+         El motor arma el multiple choice solo (no hace falta
+         cfg.check): compara qué tildó el alumno contra el flag
+         correct de cada opción. Después de comprobar, cada botón
+         queda en verde (coincidió con lo esperado, tildado o no)
+         o en rojo (no coincidió).
+       cfg.explain(current, correct) — sin "value", porque puede
+         haber más de una opción tildada.
+
+   En los tres modos: cfg.generate(), cfg.renderContent(container,
    current), cfg.needsKatex (bool, opcional).
 
    El engine se encarga de: inyectar fuentes + CSS + KaTeX (si
@@ -133,6 +148,9 @@
     '.apt-act__choice-sub{ font-family:var(--font-mono); font-weight:400; font-size:9.5px; opacity:.8; text-align:center; line-height:1.2; }',
     '.apt-act__choice-btn:active{ transform:scale(.97); }',
     '.apt-act__choice-btn.is-selected{ background:var(--chalk); border-color:var(--chalk); color:#fff; }',
+    '.apt-act__choice-btn.is-correct{ border-color:var(--correct); background:var(--correct-bg); color:var(--correct); }',
+    '.apt-act__choice-btn.is-wrong{ border-color:var(--wrong); background:var(--wrong-bg); color:var(--wrong); }',
+    '.apt-act__choice-btn.is-correct:disabled, .apt-act__choice-btn.is-wrong:disabled{ opacity:1; }',
     '.apt-act__choice-btn:disabled{ opacity:.5; cursor:default; }',
     '.apt-act__choice-btn:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
     '.apt-act__matrixwrap{ display:flex; align-items:stretch; justify-content:center; gap:6px; }',
@@ -962,10 +980,18 @@
         '</div>' +
         '<p class="apt-act__hint">Tocá − o + para cambiar el signo de cada número.</p>' +
         '<button type="button" class="apt-act__check-btn">Comprobar</button>';
+    } else if (cfg.mode === 'multiselect') {
+      // Varias opciones tildables a la vez (0, 1 o más pueden ser correctas)
+      // + un botón Comprobar, a diferencia de mode:'choices' que responde
+      // al toque. Reutiliza el mismo .apt-act__choice-btn/is-selected de
+      // siempre, solo que acá el click alterna en vez de responder.
+      interactionHTML =
+        '<div class="apt-act__choices"></div>' +
+        '<button type="button" class="apt-act__check-btn">Comprobar</button>';
     } else {
       interactionHTML = '<div class="apt-act__choices"></div>';
     }
-    var actionsHTML = cfg.mode === 'grid'
+    var actionsHTML = (cfg.mode === 'grid' || cfg.mode === 'multiselect')
       ? '<div class="apt-act__actions-row">' +
           '<button type="button" class="apt-act__retry-btn apt-act__retry-btn--hidden">Reintentar</button>' +
           (cfg.getAnswerGrid ? '<button type="button" class="apt-act__retry-btn apt-act__retry-btn--hidden apt-act__showanswer-btn">Ver respuesta</button>' : '') +
@@ -1515,6 +1541,7 @@
       var current = null;
       var answered = false;
       var streak = 0;
+      var currentOptionsByValue = {};
 
       function resetCommonUI() {
         root.classList.remove('is-answered');
@@ -1546,6 +1573,26 @@
             btn.addEventListener('click', function () { answerChoice(choice.value, btn); });
             refs.choicesWrap.appendChild(btn);
           });
+        }
+        if (cfg.mode === 'multiselect') {
+          var optionList = resolveChoices(cfg.options, current);
+          currentOptionsByValue = {};
+          refs.choicesWrap.innerHTML = '';
+          refs.choicesWrap.classList.add('apt-act__choices--stacked');
+          optionList.forEach(function (opt) {
+            currentOptionsByValue[opt.value] = opt;
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'apt-act__choice-btn';
+            btn.dataset.value = opt.value;
+            btn.innerHTML = '<span class="apt-act__choice-main">' + opt.label + '</span>';
+            btn.addEventListener('click', function () {
+              if (answered) return;
+              btn.classList.toggle('is-selected');
+            });
+            refs.choicesWrap.appendChild(btn);
+          });
+          refs.checkBtn.disabled = false;
         }
         resetCommonUI();
       }
@@ -1638,10 +1685,52 @@
         renderFeedback(refs.feedback, true, cfg.answerTitle || 'La respuesta correcta', cfg.answerText || '');
       }
 
+      function checkMultiselectAnswer() {
+        if (answered) return;
+        root.classList.add('is-answered');
+
+        var allMatch = true;
+        refs.choicesWrap.querySelectorAll('.apt-act__choice-btn').forEach(function (b) {
+          var opt = currentOptionsByValue[b.dataset.value];
+          var selected = b.classList.contains('is-selected');
+          var matches = selected === !!(opt && opt.correct);
+          if (!matches) allMatch = false;
+          b.classList.remove('is-correct', 'is-wrong');
+          b.classList.add(matches ? 'is-correct' : 'is-wrong');
+          b.disabled = true;
+        });
+
+        showFeedback(allMatch, cfg.explain(current, allMatch));
+        if (cfg.onAnswered) cfg.onAnswered(refs.content, current, allMatch);
+        registerResult(allMatch);
+
+        refs.checkBtn.disabled = true;
+        refs.nextBtn.classList.remove('apt-act__next-btn--hidden');
+        if (!allMatch && refs.retryBtn) refs.retryBtn.classList.remove('apt-act__retry-btn--hidden');
+        answered = true;
+      }
+
+      function retryMultiselect() {
+        root.classList.remove('is-answered');
+        refs.choicesWrap.querySelectorAll('.apt-act__choice-btn').forEach(function (b) {
+          b.classList.remove('is-correct', 'is-wrong');
+          b.disabled = false;
+        });
+        refs.feedback.className = 'apt-act__feedback apt-act__feedback--hidden';
+        refs.nextBtn.classList.add('apt-act__next-btn--hidden');
+        if (refs.retryBtn) refs.retryBtn.classList.add('apt-act__retry-btn--hidden');
+        refs.checkBtn.disabled = false;
+        answered = false;
+      }
+
       if (cfg.mode === 'grid') {
         refs.checkBtn.addEventListener('click', checkGridAnswer);
         if (refs.retryBtn) refs.retryBtn.addEventListener('click', retryGrid);
         if (refs.showAnswerBtn) refs.showAnswerBtn.addEventListener('click', showAnswerGrid);
+      }
+      if (cfg.mode === 'multiselect') {
+        refs.checkBtn.addEventListener('click', checkMultiselectAnswer);
+        if (refs.retryBtn) refs.retryBtn.addEventListener('click', retryMultiselect);
       }
 
       refs.nextBtn.addEventListener('click', newRound);
