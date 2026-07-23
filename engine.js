@@ -878,6 +878,28 @@
      cada una choices/grid/vectors). Reutiliza los mismos helpers
      que el modo genérico (buildGrid, buildVectorsUI, mountFooter,
      sonido) — cero lógica duplicada.
+
+     cfg.phases es siempre el array COMPLETO (el máximo de fases
+     que una ronda podría llegar a necesitar) — el DOM se arma una
+     sola vez al cargar la página con ese tamaño fijo.
+
+     Dos campos opcionales, para actividades donde la cantidad de
+     fases que realmente se usan varía según el caso generado
+     (ej: orlado, donde se pregunta hasta el orden que el rango
+     real de la matriz permita):
+
+       cfg.activePhaseCount(current) → cuántas de las fases del
+         array se usan en ESTA ronda. Si no se define, se sigue
+         usando cfg.phases.length (comportamiento de siempre, sin
+         cambios para actividades existentes).
+
+       phase.onAnswered(current, correct, value, contentEl) →
+         se llama después de cada respuesta (junto al feedback de
+         la fase), con el contenedor de cfg.renderContent. Sirve
+         para actualizar contenido compartido (ej: resaltar en la
+         matriz el menor que se acaba de encontrar) sin tocar el
+         ciclo de vida de la fase. Opcional, no rompe nada si no
+         se define.
      ------------------------------------------------------------ */
   function buildPhasesSkeleton(root, cfg) {
     root.classList.add('apt-act');
@@ -980,8 +1002,12 @@
       phaseAnswered[idx] = false;
     }
 
+    function activePhaseCount() {
+      return cfg.activePhaseCount ? cfg.activePhaseCount(current) : cfg.phases.length;
+    }
+
     function advanceOrFinish(idx) {
-      var isLast = idx === cfg.phases.length - 1;
+      var isLast = idx === activePhaseCount() - 1;
       if (isLast) {
         registerRoundResult(true);
         refs.nextBtn.classList.remove('apt-act__next-btn--hidden');
@@ -1038,8 +1064,9 @@
 
       var correct = phaseCfg.check(current, value);
       showPhaseFeedback(idx, correct, phaseCfg.explain(current, correct, value));
+      if (phaseCfg.onAnswered) phaseCfg.onAnswered(current, correct, value, refs.content);
 
-      var isLast = idx === cfg.phases.length - 1;
+      var isLast = idx === activePhaseCount() - 1;
       if (correct) {
         advanceOrFinish(idx);
       } else {
@@ -1087,8 +1114,9 @@
 
       showPhaseFeedback(idx, correct, result.feedbackText);
       p.checkBtn.disabled = true;
+      if (phaseCfg.onAnswered) phaseCfg.onAnswered(current, correct, read.matrix, refs.content);
 
-      var isLast = idx === cfg.phases.length - 1;
+      var isLast = idx === activePhaseCount() - 1;
       if (correct) {
         if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
         if (p.showAnswerBtn) p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
@@ -1137,7 +1165,7 @@
       p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
       renderFeedback(p.feedback, true, phaseCfg.answerTitle || 'La respuesta correcta', phaseCfg.answerText || '');
 
-      var isLast = idx === cfg.phases.length - 1;
+      var isLast = idx === activePhaseCount() - 1;
       if (isLast) { refs.nextBtn.classList.remove('apt-act__next-btn--hidden'); }
       else { revealPhase(idx + 1); root.classList.remove('is-answered'); }
     }
@@ -1180,8 +1208,9 @@
 
       showPhaseFeedback(idx, correct, result.feedbackText);
       p.checkBtn.disabled = true;
+      if (phaseCfg.onAnswered) phaseCfg.onAnswered(current, correct, vectorReads, refs.content);
 
-      var isLast = idx === cfg.phases.length - 1;
+      var isLast = idx === activePhaseCount() - 1;
       if (correct) {
         if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
         if (p.showAnswerBtn) p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
@@ -1218,7 +1247,7 @@
       p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
       renderFeedback(p.feedback, true, phaseCfg.answerTitle || 'Una respuesta posible', phaseCfg.answerText || '');
 
-      var isLast = idx === cfg.phases.length - 1;
+      var isLast = idx === activePhaseCount() - 1;
       if (isLast) { refs.nextBtn.classList.remove('apt-act__next-btn--hidden'); }
       else { revealPhase(idx + 1); root.classList.remove('is-answered'); }
     }
