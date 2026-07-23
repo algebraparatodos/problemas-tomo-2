@@ -17,6 +17,12 @@
          en fila — pero conviene forzar `true` cuando cada opción
          es algo ancho (ej: una matriz renderizada con KaTeX en
          vez de un texto corto).
+       cfg.choicesGrid (bool, opcional) — grid 2x2 con tarjetas
+         tipo .apt-act__content (fondo oscuro, checkbox ☐/☑) en
+         vez de botones. Pensado para opciones bien anchas, como
+         una matriz completa por opción — evita el desborde que
+         da el botón normal con contenido grande. Si se define,
+         choicesStacked se ignora.
 
      mode: 'grid' — grilla de celdas numéricas con signo −/+ y
        botón Comprobar/Reintentar/Ver respuesta (ej: matriz
@@ -167,6 +173,16 @@
     '.apt-act__choices--multiselect .apt-act__choice-btn::before{ content:"☐"; margin-right:7px; font-size:14px; flex:0 0 auto; }',
     '.apt-act__choices--multiselect .apt-act__choice-btn.is-selected::before{ content:"☑"; }',
     '.apt-act__choices--multiselect .apt-act__choice-main{ font-size:12.5px; text-align:left; }',
+    /* -- variante para opciones "anchas" (ej: una matriz renderizada
+       con KaTeX) — tarjetas tipo .apt-act__content en vez de botón,
+       en grid 2x2, con checkbox. min-width:0 + overflow-x:auto evita
+       que el contenido se desborde de la tarjeta. -- */
+    '.apt-act__choices--grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }',
+    '.apt-act__choices--grid .apt-act__choice-btn{ flex-direction:row; align-items:flex-start; justify-content:flex-start; gap:8px; background:var(--bg-card); border:1px solid rgba(151,161,216,0.25); border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,.4); padding:14px 10px; min-height:76px; }',
+    '.apt-act__choices--grid .apt-act__choice-btn::before{ content:"☐"; flex:0 0 auto; font-size:15px; }',
+    '.apt-act__choices--grid .apt-act__choice-btn.is-selected::before{ content:"☑"; }',
+    '.apt-act__choices--grid .apt-act__choice-btn.is-selected{ background:rgba(151,161,216,0.12); border-color:var(--chalk-light); color:var(--ink); }',
+    '.apt-act__choices--grid .apt-act__choice-main{ flex:1 1 auto; min-width:0; overflow-x:auto; font-size:clamp(11px,3.4vw,14px); text-align:center; }',
     '.apt-act__choice-btn:disabled{ opacity:.5; cursor:default; }',
     '.apt-act__choice-btn:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
     '.apt-act__matrixwrap{ display:flex; align-items:stretch; justify-content:center; gap:6px; }',
@@ -1236,7 +1252,11 @@
       if (phaseCfg.mode === 'choices') {
         var choiceList = resolveChoices(phaseCfg.choices, current);
         p.choicesWrap.innerHTML = '';
-        p.choicesWrap.classList.toggle('apt-act__choices--stacked', phaseCfg.choicesStacked !== undefined ? phaseCfg.choicesStacked : choiceList.length <= 2);
+        if (phaseCfg.choicesGrid) {
+          p.choicesWrap.classList.add('apt-act__choices--grid');
+        } else {
+          p.choicesWrap.classList.toggle('apt-act__choices--stacked', phaseCfg.choicesStacked !== undefined ? phaseCfg.choicesStacked : choiceList.length <= 2);
+        }
         choiceList.forEach(function (choice) {
           var btn = document.createElement('button');
           btn.type = 'button';
@@ -1578,7 +1598,11 @@
         if (cfg.mode === 'choices') {
           var choiceList = resolveChoices(cfg.choices, current);
           refs.choicesWrap.innerHTML = '';
-          refs.choicesWrap.classList.toggle('apt-act__choices--stacked', cfg.choicesStacked !== undefined ? cfg.choicesStacked : choiceList.length <= 2);
+          if (cfg.choicesGrid) {
+            refs.choicesWrap.classList.add('apt-act__choices--grid');
+          } else {
+            refs.choicesWrap.classList.toggle('apt-act__choices--stacked', cfg.choicesStacked !== undefined ? cfg.choicesStacked : choiceList.length <= 2);
+          }
           choiceList.forEach(function (choice) {
             var btn = document.createElement('button');
             btn.type = 'button';
