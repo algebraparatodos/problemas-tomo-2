@@ -82,6 +82,14 @@
      ------------------------------------------------------------ */
   var REPORT_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLScr7mmwJ1QPpj8Bh4sYf0N3uNG77xbSVNc9AfZ64_erQM5NZg/formResponse';
   var REPORT_ENTRY_MESSAGE = 'entry.1465382734';
+  /* Versión del engine — texto sutil al lado de "Álgebra Para Todos"
+     en el footer, para poder confirmar a simple vista si una landing
+     ya recibió la última versión (útil por los problemas de caché
+     del CDN de GitHub Pages). Notación tipo semver: número menor
+     (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
+     Actualizar en CADA edición de engine.js, por chica que sea. */
+  var ENGINE_VERSION = '1.1';
+
   var REPORT_ENTRY_URL = 'entry.833697682';
 
   /* ------------------------------------------------------------
@@ -298,7 +306,9 @@
     '.apt-act__nav-btn:hover{ background:rgba(151,161,216,0.1); }',
     '.apt-act__nav-btn:focus-visible{ outline:2px solid var(--chalk-light); outline-offset:2px; }',
     '.apt-act__footer-row{ display:flex; justify-content:space-between; align-items:center; }',
+    '.apt-act__brand-group{ display:flex; align-items:baseline; gap:6px; }',
     '.apt-act__brand-link{ color:var(--chalk-light); text-decoration:none; }',
+    '.apt-act__version{ font-family:var(--font-mono); font-weight:400; font-size:10px; color:var(--ink-soft); opacity:.6; }',
     '.apt-act__brand-link:hover{ text-decoration:underline; }',
     '.apt-act__brand-link:focus-visible{ outline:2px solid var(--chalk-light); outline-offset:3px; border-radius:2px; }',
     '.apt-act__footer-right{ display:flex; align-items:center; gap:10px; }',
@@ -314,7 +324,7 @@
        agrega directo a document.body), así que NO puede depender de
        las variables --chalk/--ink/etc. (no las hereda). Colores a
        mano, mismos valores exactos que la paleta pizarrón. -- */
-    '.apt-report-modal{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:16px; z-index:2147483000; font-family:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace; }',
+    '.apt-report-modal{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:16px; z-index:2147483000; font-family:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace; touch-action:none; overscroll-behavior:none; }',
     '.apt-report-modal--hidden{ display:none; }',
     '.apt-report-modal__card{ width:100%; max-width:360px; background:#16161C; border:1px solid rgba(151,161,216,0.18); border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,.5); padding:22px 20px; display:flex; flex-direction:column; gap:12px; box-sizing:border-box; }',
     '.apt-report-modal__title{ font-family:"Lora",Georgia,"Times New Roman",serif; font-weight:700; font-size:18px; color:#F5F5F7; margin:0; }',
@@ -339,7 +349,7 @@
     '.apt-report-modal__close-btn:hover{ background:#5A639A; }',
     /* -- Modal de "Todos los ejercicios" — mismo patrón que el de
        reporte (vive fuera de .apt-act, colores a mano). -- */
-    '.apt-catalog-modal{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:16px; z-index:2147483000; font-family:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace; }',
+    '.apt-catalog-modal{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:16px; z-index:2147483000; font-family:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace; touch-action:none; overscroll-behavior:none; }',
     '.apt-catalog-modal--hidden{ display:none; }',
     '.apt-catalog-modal__card{ width:100%; max-width:380px; max-height:80vh; background:#16161C; border:1px solid rgba(151,161,216,0.18); border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,.5); padding:20px 18px; display:flex; flex-direction:column; gap:12px; box-sizing:border-box; overflow:hidden; }',
     '.apt-catalog-modal__head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }',
@@ -347,7 +357,7 @@
     '.apt-catalog-modal__close-x{ width:28px; height:28px; flex:0 0 auto; border-radius:50%; border:1px solid rgba(151,161,216,0.3); background:transparent; color:#97A1D8; font-size:14px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; }',
     '.apt-catalog-modal__close-x:hover{ background:rgba(151,161,216,0.12); }',
     '.apt-catalog-modal__close-x:focus-visible{ outline:2px solid #97A1D8; outline-offset:2px; }',
-    '.apt-catalog-modal__list{ overflow-y:auto; overscroll-behavior:contain; max-height:min(55vh, 420px); display:flex; flex-direction:column; gap:8px; padding-right:2px; }',
+    '.apt-catalog-modal__list{ overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y; -webkit-overflow-scrolling:touch; max-height:min(55vh, 420px); display:flex; flex-direction:column; gap:8px; padding-right:2px; }',
     '.apt-catalog-modal__unit{ border:1px solid rgba(151,161,216,0.18); border-radius:10px; overflow:hidden; }',
     '.apt-catalog-modal__unit-btn{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:"Lora",Georgia,"Times New Roman",serif; font-weight:700; font-size:13.5px; color:#F5F5F7; background:rgba(151,161,216,0.06); border:none; padding:12px 14px; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; }',
     '.apt-catalog-modal__unit-btn:disabled{ cursor:default; opacity:.6; }',
@@ -795,7 +805,10 @@
         (nextEntry ? '<a class="apt-act__nav-btn apt-act__nav-btn--next" href="' + nextEntry.url + '">Siguiente →</a>' : '') +
       '</div>' +
       '<div class="apt-act__footer-row">' +
-        '<a class="apt-act__brand-link" href="https://www.instagram.com/soyjuanisilva/" target="_blank" rel="noopener">Álgebra Para Todos</a>' +
+        '<span class="apt-act__brand-group">' +
+          '<a class="apt-act__brand-link" href="https://www.instagram.com/soyjuanisilva/" target="_blank" rel="noopener">Álgebra Para Todos</a>' +
+          '<span class="apt-act__version">v' + ENGINE_VERSION + '</span>' +
+        '</span>' +
         '<span class="apt-act__footer-right">' +
           '<button type="button" class="apt-act__report-btn" aria-label="Reportar un problema">🚩</button>' +
           '<button type="button" class="apt-act__mute-btn" aria-pressed="false" aria-label="Silenciar sonidos">🔊</button>' +
