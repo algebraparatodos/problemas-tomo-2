@@ -210,6 +210,7 @@
     '.apt-act__next-btn{ font-family:var(--font-serif); font-weight:700; font-size:15px; color:#fff; background:var(--chalk); border:none; border-radius:12px; padding:15px; min-height:50px; cursor:pointer; transition:background .15s ease; }',
     '.apt-act__next-btn:hover{ background:var(--chalk-hover); }',
     '.apt-act__next-btn--hidden{ display:none; }',
+    '.apt-act__next-btn:not(.apt-act__next-btn--hidden) ~ .apt-act__skip-btn{ display:none; }',
     '.apt-act__next-btn:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
     '.apt-act__footer{ display:flex; flex-direction:column; gap:8px; padding-top:6px; font-family:var(--font-serif); font-weight:700; font-size:12px; color:var(--chalk-light); }',
     '.apt-act__catalog-btn{ align-self:center; display:flex; align-items:center; gap:6px; font-family:var(--font-serif); font-weight:700; font-size:11.5px; color:var(--chalk-light); background:transparent; border:1px solid rgba(151,161,216,0.3); border-radius:999px; padding:6px 14px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .15s ease, border-color .15s ease; }',
@@ -980,11 +981,11 @@
         '</div>' +
         '<div class="apt-act__card"><div class="apt-act__content" aria-live="polite"></div></div>' +
         interactionHTML +
-        '<button type="button" class="apt-act__skip-btn">Prefiero otro caso →</button>' +
         '<div class="apt-act__feedback apt-act__feedback--hidden"></div>' +
         '<div class="apt-act__actions">' +
           actionsHTML +
           '<button type="button" class="apt-act__next-btn apt-act__next-btn--hidden">' + (cfg.nextLabel || 'Probar con otro caso →') + '</button>' +
+          '<button type="button" class="apt-act__skip-btn">Prefiero otro caso →</button>' +
         '</div>' +
         '<div class="apt-act__footer-slot"></div>' +
       '</div>';
@@ -1114,8 +1115,8 @@
         '</div>' +
         '<div class="apt-act__card"><div class="apt-act__content" aria-live="polite"></div></div>' +
         phasesHTML +
-        '<button type="button" class="apt-act__skip-btn">' + (cfg.skipLabel || 'Prefiero otro caso →') + '</button>' +
         '<button type="button" class="apt-act__next-btn apt-act__next-btn--hidden">' + (cfg.nextLabel || 'Probar con otro caso →') + '</button>' +
+        '<button type="button" class="apt-act__skip-btn">' + (cfg.skipLabel || 'Prefiero otro caso →') + '</button>' +
         '<div class="apt-act__footer-slot"></div>' +
       '</div>';
 
