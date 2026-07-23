@@ -177,12 +177,12 @@
        con KaTeX) — tarjetas tipo .apt-act__content en vez de botón,
        en grid 2x2, con checkbox. min-width:0 + overflow-x:auto evita
        que el contenido se desborde de la tarjeta. -- */
-    '.apt-act__choices--grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }',
+    '.apt-act__choices--grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:10px; }',
     '.apt-act__choices--grid .apt-act__choice-btn{ flex-direction:row; align-items:flex-start; justify-content:flex-start; gap:6px; background:var(--bg-card); border:1px solid rgba(151,161,216,0.25); border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,.4); padding:12px 8px; min-height:90px; }',
     '.apt-act__choices--grid .apt-act__choice-btn::before{ content:"☐"; flex:0 0 auto; font-size:14px; }',
     '.apt-act__choices--grid .apt-act__choice-btn.is-selected::before{ content:"☑"; }',
     '.apt-act__choices--grid .apt-act__choice-btn.is-selected{ background:rgba(151,161,216,0.12); border-color:var(--chalk-light); color:var(--ink); }',
-    '.apt-act__choices--grid .apt-act__choice-main{ flex:1 1 auto; min-width:0; font-size:clamp(9px,2.8vw,12px); text-align:center; }',
+    '.apt-act__choices--grid .apt-act__choice-main{ flex:1 1 auto; min-width:0; font-size:clamp(10px,3vw,13px); text-align:center; }',
     '.apt-act__choice-btn:disabled{ opacity:.5; cursor:default; }',
     '.apt-act__choice-btn:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
     '.apt-act__matrixwrap{ display:flex; align-items:stretch; justify-content:center; gap:6px; }',
@@ -924,8 +924,8 @@
 
   function buildVectorsUI(container, vecCfg, current) {
     container.innerHTML = '';
-    var rows = vecCfg.rows(current);
-    var count = vecCfg.count(current);
+    var rows = resolveNum(vecCfg.rows, current);
+    var count = resolveNum(vecCfg.count, current);
     var hasParticular = vecCfg.hasParticular !== false;
 
     if (hasParticular) {
@@ -946,7 +946,7 @@
       container.appendChild(buildVecBlock('d' + i, rows));
       var label = document.createElement('span');
       label.className = 'apt-act__paramlabel';
-      label.textContent = '· ' + vecCfg.paramLabel(current, i);
+      label.textContent = '· ' + (vecCfg.paramLabel ? vecCfg.paramLabel(current, i) : ('t' + (i + 1)));
       container.appendChild(label);
     }
   }
@@ -1446,8 +1446,8 @@
       var p = refs.phaseRefs[idx];
       root.classList.add('is-answered');
 
-      var rows = phaseCfg.vectors.rows(current);
-      var count = phaseCfg.vectors.count(current);
+      var rows = resolveNum(phaseCfg.vectors.rows, current);
+      var count = resolveNum(phaseCfg.vectors.count, current);
       var hasParticular = phaseCfg.vectors.hasParticular !== false;
 
       var particularRead = hasParticular ? readVectorBlock(p.solution, 'p', rows) : null;
