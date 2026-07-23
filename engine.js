@@ -182,7 +182,7 @@
     '.apt-act__choices--grid .apt-act__choice-btn::before{ content:"☐"; flex:0 0 auto; font-size:15px; }',
     '.apt-act__choices--grid .apt-act__choice-btn.is-selected::before{ content:"☑"; }',
     '.apt-act__choices--grid .apt-act__choice-btn.is-selected{ background:rgba(151,161,216,0.12); border-color:var(--chalk-light); color:var(--ink); }',
-    '.apt-act__choices--grid .apt-act__choice-main{ flex:1 1 auto; min-width:0; overflow-x:auto; overflow-y:visible; font-size:clamp(11px,3.4vw,14px); text-align:center; }',
+    '.apt-act__choices--grid .apt-act__choice-main{ flex:1 1 auto; min-width:0; font-size:clamp(10px,3.2vw,13px); text-align:center; }',
     '.apt-act__choice-btn:disabled{ opacity:.5; cursor:default; }',
     '.apt-act__choice-btn:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
     '.apt-act__matrixwrap{ display:flex; align-items:stretch; justify-content:center; gap:6px; }',
