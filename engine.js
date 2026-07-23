@@ -323,7 +323,7 @@
     '.apt-catalog-modal__close-x{ width:28px; height:28px; flex:0 0 auto; border-radius:50%; border:1px solid rgba(151,161,216,0.3); background:transparent; color:#97A1D8; font-size:14px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; }',
     '.apt-catalog-modal__close-x:hover{ background:rgba(151,161,216,0.12); }',
     '.apt-catalog-modal__close-x:focus-visible{ outline:2px solid #97A1D8; outline-offset:2px; }',
-    '.apt-catalog-modal__list{ overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-right:2px; }',
+    '.apt-catalog-modal__list{ overflow-y:auto; min-height:0; flex:1 1 auto; display:flex; flex-direction:column; gap:8px; padding-right:2px; }',
     '.apt-catalog-modal__unit{ border:1px solid rgba(151,161,216,0.18); border-radius:10px; overflow:hidden; }',
     '.apt-catalog-modal__unit-btn{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:"Lora",Georgia,"Times New Roman",serif; font-weight:700; font-size:13.5px; color:#F5F5F7; background:rgba(151,161,216,0.06); border:none; padding:12px 14px; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; }',
     '.apt-catalog-modal__unit-btn:disabled{ cursor:default; opacity:.6; }',
