@@ -177,7 +177,8 @@
        con KaTeX) — tarjetas tipo .apt-act__content en vez de botón,
        en grid 2x2, con checkbox. min-width:0 + overflow-x:auto evita
        que el contenido se desborde de la tarjeta. -- */
-    '.apt-act__choices--grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:10px; }',
+    '.apt-act__choices--grid{ display:grid; grid-template-columns:1fr; gap:10px; }',
+    '@media (min-width:420px){ .apt-act__choices--grid{ grid-template-columns:1fr 1fr; } }',
     '.apt-act__choices--grid .apt-act__choice-btn{ flex-direction:row; align-items:flex-start; justify-content:flex-start; gap:6px; background:var(--bg-card); border:1px solid rgba(151,161,216,0.25); border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,.4); padding:12px 8px; min-height:90px; }',
     '.apt-act__choices--grid .apt-act__choice-btn::before{ content:"☐"; flex:0 0 auto; font-size:14px; }',
     '.apt-act__choices--grid .apt-act__choice-btn.is-selected::before{ content:"☑"; }',
@@ -267,6 +268,10 @@
     '.apt-act__catalog-btn:hover{ background:rgba(151,161,216,0.1); }',
     '.apt-act__catalog-btn:active{ transform:scale(.97); }',
     '.apt-act__catalog-btn:focus-visible{ outline:2px solid var(--chalk-light); outline-offset:2px; }',
+    '.apt-act__nav-row{ display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; }',
+    '.apt-act__nav-btn{ font-family:var(--font-serif); font-weight:700; font-size:11px; color:var(--chalk-light); text-decoration:none; background:transparent; border:1px solid rgba(151,161,216,0.3); border-radius:999px; padding:6px 12px; white-space:nowrap; -webkit-tap-highlight-color:transparent; transition:background .15s ease, border-color .15s ease; }',
+    '.apt-act__nav-btn:hover{ background:rgba(151,161,216,0.1); }',
+    '.apt-act__nav-btn:focus-visible{ outline:2px solid var(--chalk-light); outline-offset:2px; }',
     '.apt-act__footer-row{ display:flex; justify-content:space-between; align-items:center; }',
     '.apt-act__brand-link{ color:var(--chalk-light); text-decoration:none; }',
     '.apt-act__brand-link:hover{ text-decoration:underline; }',
@@ -322,7 +327,7 @@
     '.apt-catalog-modal__unit-btn{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:"Lora",Georgia,"Times New Roman",serif; font-weight:700; font-size:13.5px; color:#F5F5F7; background:rgba(151,161,216,0.06); border:none; padding:12px 14px; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; }',
     '.apt-catalog-modal__unit-btn:disabled{ cursor:default; opacity:.6; }',
     '.apt-catalog-modal__unit-btn:focus-visible{ outline:2px solid #97A1D8; outline-offset:-2px; }',
-    '.apt-catalog-modal__unit-chevron{ color:#97A1D8; font-size:11px; flex:0 0 auto; transition:transform .15s ease; }',
+    '.apt-catalog-modal__unit-chevron{ color:#F5F5F7; font-size:19px; flex:0 0 auto; transition:transform .15s ease; }',
     '.apt-catalog-modal__unit.is-open .apt-catalog-modal__unit-chevron{ transform:rotate(90deg); }',
     '.apt-catalog-modal__unit-empty{ font-family:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace; font-weight:400; font-size:11px; color:#A7ACC0; flex:0 0 auto; }',
     '.apt-catalog-modal__acts{ display:none; flex-direction:column; }',
@@ -674,8 +679,8 @@
     var unitsHTML = CATALOG.map(function (unit) {
       var hasActs = unit.activities && unit.activities.length > 0;
       var actsHTML = hasActs
-        ? unit.activities.map(function (act) {
-            return '<a class="apt-catalog-modal__act-link" href="' + act.url + '">' + act.title + '</a>';
+        ? unit.activities.map(function (act, i) {
+            return '<a class="apt-catalog-modal__act-link" href="' + act.url + '">' + (i + 1) + '. ' + act.title + '</a>';
           }).join('')
         : '';
       return '<div class="apt-catalog-modal__unit">' +
@@ -733,11 +738,36 @@
      abajo) como cualquier actividad custom vía AptActivity.mountFooter().
      Nunca duplicar este HTML/CSS en el archivo de una actividad.
      ------------------------------------------------------------ */
+  function flattenCatalogActivities() {
+    var list = [];
+    CATALOG.forEach(function (unit) {
+      (unit.activities || []).forEach(function (act) { list.push(act); });
+    });
+    return list;
+  }
+  function findCurrentCatalogIndex(list) {
+    var here = window.location.href.replace(/\/+$/, '').toLowerCase();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].url.replace(/\/+$/, '').toLowerCase() === here) return i;
+    }
+    return -1;
+  }
+
   function mountFooter(container) {
     ensureAssets();
     container.className = 'apt-act__footer';
+
+    var flatList = flattenCatalogActivities();
+    var curIdx = findCurrentCatalogIndex(flatList);
+    var prevEntry = curIdx > 0 ? flatList[curIdx - 1] : null;
+    var nextEntry = (curIdx !== -1 && curIdx < flatList.length - 1) ? flatList[curIdx + 1] : null;
+
     container.innerHTML =
-      '<button type="button" class="apt-act__catalog-btn">📚 Todos los ejercicios</button>' +
+      '<div class="apt-act__nav-row">' +
+        (prevEntry ? '<a class="apt-act__nav-btn apt-act__nav-btn--prev" href="' + prevEntry.url + '">← Anterior</a>' : '') +
+        '<button type="button" class="apt-act__catalog-btn">📚 Todos los ejercicios</button>' +
+        (nextEntry ? '<a class="apt-act__nav-btn apt-act__nav-btn--next" href="' + nextEntry.url + '">Siguiente →</a>' : '') +
+      '</div>' +
       '<div class="apt-act__footer-row">' +
         '<a class="apt-act__brand-link" href="https://www.instagram.com/soyjuanisilva/" target="_blank" rel="noopener">Álgebra Para Todos</a>' +
         '<span class="apt-act__footer-right">' +
