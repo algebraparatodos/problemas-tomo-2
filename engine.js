@@ -121,6 +121,12 @@
     '.apt-act__choices{ display:flex; gap:8px; }',
     '.apt-act__choices--stacked{ flex-direction:column; }',
     '.apt-act__phase--hidden{ display:none; }',
+    '.apt-act__setup-field{ display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }',
+    '.apt-act__setup-field-label{ font-family:var(--font-mono); font-size:13px; color:var(--ink-soft); margin:0; }',
+    '.apt-act__setup-btn{ width:100%; font-family:var(--font-serif); font-weight:700; font-size:15px; color:#fff; background:var(--chalk); border:none; border-radius:12px; padding:15px; min-height:50px; cursor:pointer; transition:background .15s ease, opacity .15s ease; -webkit-tap-highlight-color:transparent; }',
+    '.apt-act__setup-btn:hover{ background:var(--chalk-hover); }',
+    '.apt-act__setup-btn:disabled{ opacity:.5; cursor:default; }',
+    '.apt-act__setup-btn:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
     '.apt-act__choice-btn{ flex:1 1 0; font-family:var(--font-serif); font-weight:700; padding:12px 4px; border-radius:12px; border:2px solid var(--chalk-light); background:transparent; color:var(--chalk-light); cursor:pointer; min-height:52px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; transition:transform .08s ease, background .15s ease, color .15s ease; -webkit-tap-highlight-color:transparent; }',
     '.apt-act__choices--stacked .apt-act__choice-btn{ flex-direction:row; padding:16px 18px; font-size:16px; }',
     '.apt-act__choice-main{ font-size:16px; }',
@@ -1026,6 +1032,27 @@
          matriz el menor que se acaba de encontrar) sin tocar el
          ciclo de vida de la fase. Opcional, no rompe nada si no
          se define.
+
+     Un tercer caso especial: fases con mode:'setup'. Sirven para
+     actividades donde el ALUMNO elige algo (ej: cuántos parámetros,
+     dónde van) ANTES de que se genere el caso — a diferencia de
+     todo lo demás, donde cfg.generate() corre solo al arrancar la
+     ronda. Con mode:'setup', cfg.generate ya NO se llama
+     automáticamente: se llama recién cuando el alumno completa el
+     paso (cfg.generate(selections), recibiendo un objeto con la
+     elección de cada campo). Después de generar, el paso de setup
+     se vuelve a ocultar (a diferencia del resto de las fases, que
+     quedan visibles como historial) para liberar espacio.
+
+       phase.fields → array de { key, label, options:[{value,label,sub?}] }.
+         Cada campo se muestra como un grupo de botones (mismo estilo
+         que mode:'choices'); hace falta elegir uno de cada grupo
+         para habilitar el botón.
+       phase.buttonLabel → texto del botón que dispara cfg.generate(selections).
+
+     Solo tiene sentido como PRIMERA fase (idx 0) de un cfg.phases;
+     el resto de las fases (SCD/SCI/SI, grid, lo que sea) siguen
+     funcionando exactamente igual una vez que current existe.
      ------------------------------------------------------------ */
   function buildPhasesSkeleton(root, cfg) {
     root.classList.add('apt-act');
@@ -1046,6 +1073,20 @@
           '<div class="apt-act__solution"></div>' +
           '<p class="apt-act__hint">' + (phase.hint || 'Tocá − o + para cambiar el signo de cada número.') + '</p>' +
           '<button type="button" class="apt-act__check-btn">Comprobar</button>';
+      } else if (phase.mode === 'setup') {
+        // Paso de configuración PREVIO a generar el caso: uno o más
+        // grupos de botones (cfg.phases[0].fields) + un botón que
+        // recién ahí llama a cfg.generate(selections). Después de
+        // generar, este phase se vuelve a ocultar (a diferencia del
+        // resto, que quedan visibles como historial) para liberar
+        // espacio en pantalla.
+        interactionHTML = phase.fields.map(function (field, fIdx) {
+          return '<div class="apt-act__setup-field" data-field="' + fIdx + '">' +
+            '<p class="apt-act__setup-field-label">' + field.label + '</p>' +
+            '<div class="apt-act__choices apt-act__setup-field-choices"></div>' +
+          '</div>';
+        }).join('') +
+        '<button type="button" class="apt-act__setup-btn" disabled>' + (phase.buttonLabel || 'Generar') + '</button>';
       } else {
         interactionHTML = '<div class="apt-act__choices"></div>';
       }
@@ -1088,6 +1129,7 @@
         grid: el.querySelector('.apt-act__grid'),
         solution: el.querySelector('.apt-act__solution'),
         checkBtn: el.querySelector('.apt-act__check-btn'),
+        setupBtn: el.querySelector('.apt-act__setup-btn'),
         feedback: el.querySelector('.apt-act__feedback'),
         retryBtn: el.querySelector('.apt-act__retry-btn'),
         showAnswerBtn: el.querySelector('.apt-act__showanswer-btn')
@@ -1175,7 +1217,44 @@
         p.checkBtn.onclick = function () { checkVectorsPhase(idx); };
         if (p.retryBtn) p.retryBtn.onclick = function () { retryVectorsPhase(idx); };
         if (p.showAnswerBtn) p.showAnswerBtn.onclick = function () { showAnswerVectorsPhase(idx); };
+      } else if (phaseCfg.mode === 'setup') {
+        var selections = {};
+        var fieldEls = p.el.querySelectorAll('.apt-act__setup-field');
+        function updateSetupBtn() {
+          p.setupBtn.disabled = phaseCfg.fields.some(function (f) { return selections[f.key] === undefined; });
+        }
+        fieldEls.forEach(function (fieldEl, fIdx) {
+          var field = phaseCfg.fields[fIdx];
+          var choicesWrap = fieldEl.querySelector('.apt-act__setup-field-choices');
+          choicesWrap.innerHTML = '';
+          choicesWrap.classList.toggle('apt-act__choices--stacked', field.options.length <= 2);
+          field.options.forEach(function (opt) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'apt-act__choice-btn';
+            btn.dataset.value = opt.value;
+            btn.innerHTML = '<span class="apt-act__choice-main">' + opt.label + '</span>' +
+              (opt.sub ? '<span class="apt-act__choice-sub">' + opt.sub + '</span>' : '');
+            btn.addEventListener('click', function () {
+              choicesWrap.querySelectorAll('.apt-act__choice-btn').forEach(function (b) { b.classList.remove('is-selected'); });
+              btn.classList.add('is-selected');
+              selections[field.key] = opt.value;
+              updateSetupBtn();
+            });
+            choicesWrap.appendChild(btn);
+          });
+        });
+        p.setupBtn.disabled = true;
+        p.setupBtn.onclick = function () { completeSetup(idx, selections); };
       }
+    }
+
+    // ---------- setup (paso de configuración previo a generar) ----------
+    function completeSetup(idx, selections) {
+      current = cfg.generate(selections);
+      cfg.renderContent(refs.content, current);
+      refs.phaseRefs[idx].el.classList.add('apt-act__phase--hidden');
+      revealPhase(idx + 1);
     }
 
     // ---------- choices ----------
@@ -1380,8 +1459,6 @@
 
     // ---------- ronda nueva ----------
     function newRound() {
-      current = cfg.generate();
-      cfg.renderContent(refs.content, current);
       root.classList.remove('is-answered');
       refs.nextBtn.classList.add('apt-act__next-btn--hidden');
 
@@ -1392,7 +1469,15 @@
         resetPhaseUI(idx);
       });
 
-      revealPhase(0);
+      if (cfg.phases[0] && cfg.phases[0].mode === 'setup') {
+        current = null;
+        refs.content.innerHTML = '';
+        revealPhase(0);
+      } else {
+        current = cfg.generate();
+        cfg.renderContent(refs.content, current);
+        revealPhase(0);
+      }
     }
 
     refs.nextBtn.addEventListener('click', newRound);
