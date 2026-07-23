@@ -98,17 +98,18 @@
     {
       title: 'Unidad 1: Matrices y SEL',
       activities: [
-        { title: 'Clasificá el sistema', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-1' },
-        { title: 'Matriz ampliada', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-2' },
-        { title: '¿Es escalonada?', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-3' },
-        { title: 'Aplicá el método de eliminación de Gauss', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-4' },
-        { title: '¿Es escalonada reducida?', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-5' },
-        { title: 'Encontrá la forma escalonada reducida', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-6' },
-        { title: 'Solución paramétrica', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-7' },
-        { title: 'Rango por orlado', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-8' },
-        { title: 'Clasificá con Rouché-Frobenius', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-9' },
-        { title: 'Rouché-Frobenius con parámetros', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-10' },
-        { title: 'Tipos de matrices', url: 'https://www.algebraparatodos.com/QR-Tomo-II-Unidad-1-actividad-11' }
+        { title: 'Clasificá el sistema', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-1' },
+        { title: 'Matriz ampliada', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-2' },
+        { title: '¿Es escalonada?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-3' },
+        { title: 'Aplicá el método de eliminación de Gauss', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-4' },
+        { title: '¿Es escalonada reducida?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-5' },
+        { title: 'Encontrá la forma escalonada reducida', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-6' },
+        { title: 'Solución paramétrica', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-7' },
+        { title: 'Rango por orlado', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-8' },
+        { title: 'Clasificá con Rouché-Frobenius', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-9' },
+        { title: 'Rouché-Frobenius con parámetros', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-10' },
+        { title: 'Tipos de matrices', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-11' },
+        { title: 'Suma de matrices', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-12' }
       ]
     },
     { title: 'Unidad 2: Subespacios vectoriales', activities: [] },
