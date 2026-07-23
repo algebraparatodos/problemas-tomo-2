@@ -55,6 +55,35 @@
   var REPORT_ENTRY_URL = 'entry.833697682';
   var REPORT_MODAL_ID = 'apt-report-modal';
 
+  var CATALOG_MODAL_ID = 'apt-catalog-modal';
+
+  /* ------------------------------------------------------------
+     Catálogo de ejercicios — única fuente de verdad para el botón
+     "Todos los ejercicios" del footer. Cada vez que una actividad
+     nueva queda publicada en Kajabi, se agrega acá (título + URL
+     real) dentro de su unidad. Una unidad sin actividades todavía
+     se muestra como "(próximamente)", sin expandir.
+     ------------------------------------------------------------ */
+  var CATALOG = [
+    {
+      title: 'Unidad 1: Matrices y SEL',
+      activities: [
+        { title: 'Clasificá el sistema', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-1' },
+        { title: 'Matriz ampliada', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-2' },
+        { title: '¿Es escalonada?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-3' },
+        { title: 'Aplicá el método de eliminación de Gauss', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-4' },
+        { title: '¿Es escalonada reducida?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-5' },
+        { title: 'Encontrá la forma escalonada reducida', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-6' },
+        { title: 'Solución paramétrica', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-7' },
+        { title: 'Rango por orlado', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-8' },
+        { title: 'Clasificá con Rouché-Frobenius', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-9' }
+      ]
+    },
+    { title: 'Unidad 2: Subespacios vectoriales', activities: [] },
+    { title: 'Unidad 3: Transformaciones Lineales', activities: [] },
+    { title: 'Unidad 4: Diagonalización', activities: [] }
+  ];
+
   /* ------------------------------------------------------------
      CSS — escopado bajo .apt-act. Cada landing tiene UNA sola
      actividad en la página, así que una clase genérica alcanza.
@@ -176,7 +205,12 @@
     '.apt-act__next-btn:hover{ background:var(--chalk-hover); }',
     '.apt-act__next-btn--hidden{ display:none; }',
     '.apt-act__next-btn:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
-    '.apt-act__footer{ display:flex; justify-content:space-between; align-items:center; padding-top:6px; font-family:var(--font-serif); font-weight:700; font-size:12px; color:var(--chalk-light); }',
+    '.apt-act__footer{ display:flex; flex-direction:column; gap:8px; padding-top:6px; font-family:var(--font-serif); font-weight:700; font-size:12px; color:var(--chalk-light); }',
+    '.apt-act__catalog-btn{ align-self:center; display:flex; align-items:center; gap:6px; font-family:var(--font-serif); font-weight:700; font-size:11.5px; color:var(--chalk-light); background:transparent; border:1px solid rgba(151,161,216,0.3); border-radius:999px; padding:6px 14px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .15s ease, border-color .15s ease; }',
+    '.apt-act__catalog-btn:hover{ background:rgba(151,161,216,0.1); }',
+    '.apt-act__catalog-btn:active{ transform:scale(.97); }',
+    '.apt-act__catalog-btn:focus-visible{ outline:2px solid var(--chalk-light); outline-offset:2px; }',
+    '.apt-act__footer-row{ display:flex; justify-content:space-between; align-items:center; }',
     '.apt-act__brand-link{ color:var(--chalk-light); text-decoration:none; }',
     '.apt-act__brand-link:hover{ text-decoration:underline; }',
     '.apt-act__brand-link:focus-visible{ outline:2px solid var(--chalk-light); outline-offset:3px; border-radius:2px; }',
@@ -216,6 +250,29 @@
     '.apt-report-modal__success svg path{ fill:none; stroke:#5BCD9A; stroke-width:5; stroke-linecap:round; stroke-linejoin:round; }',
     '.apt-report-modal__close-btn{ font-family:"Lora",Georgia,"Times New Roman",serif; font-weight:700; font-size:14px; color:#fff; background:#48507D; border:none; border-radius:12px; padding:10px 20px; cursor:pointer; -webkit-tap-highlight-color:transparent; }',
     '.apt-report-modal__close-btn:hover{ background:#5A639A; }',
+    /* -- Modal de "Todos los ejercicios" — mismo patrón que el de
+       reporte (vive fuera de .apt-act, colores a mano). -- */
+    '.apt-catalog-modal{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:16px; z-index:2147483000; font-family:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace; }',
+    '.apt-catalog-modal--hidden{ display:none; }',
+    '.apt-catalog-modal__card{ width:100%; max-width:380px; max-height:80vh; background:#16161C; border:1px solid rgba(151,161,216,0.18); border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,.5); padding:20px 18px; display:flex; flex-direction:column; gap:12px; box-sizing:border-box; overflow:hidden; }',
+    '.apt-catalog-modal__head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }',
+    '.apt-catalog-modal__title{ font-family:"Lora",Georgia,"Times New Roman",serif; font-weight:700; font-size:18px; color:#F5F5F7; margin:0; }',
+    '.apt-catalog-modal__close-x{ width:28px; height:28px; flex:0 0 auto; border-radius:50%; border:1px solid rgba(151,161,216,0.3); background:transparent; color:#97A1D8; font-size:14px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; }',
+    '.apt-catalog-modal__close-x:hover{ background:rgba(151,161,216,0.12); }',
+    '.apt-catalog-modal__close-x:focus-visible{ outline:2px solid #97A1D8; outline-offset:2px; }',
+    '.apt-catalog-modal__list{ overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-right:2px; }',
+    '.apt-catalog-modal__unit{ border:1px solid rgba(151,161,216,0.18); border-radius:10px; overflow:hidden; }',
+    '.apt-catalog-modal__unit-btn{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:"Lora",Georgia,"Times New Roman",serif; font-weight:700; font-size:13.5px; color:#F5F5F7; background:rgba(151,161,216,0.06); border:none; padding:12px 14px; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; }',
+    '.apt-catalog-modal__unit-btn:disabled{ cursor:default; opacity:.6; }',
+    '.apt-catalog-modal__unit-btn:focus-visible{ outline:2px solid #97A1D8; outline-offset:-2px; }',
+    '.apt-catalog-modal__unit-chevron{ color:#97A1D8; font-size:11px; flex:0 0 auto; transition:transform .15s ease; }',
+    '.apt-catalog-modal__unit.is-open .apt-catalog-modal__unit-chevron{ transform:rotate(90deg); }',
+    '.apt-catalog-modal__unit-empty{ font-family:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace; font-weight:400; font-size:11px; color:#A7ACC0; flex:0 0 auto; }',
+    '.apt-catalog-modal__acts{ display:none; flex-direction:column; }',
+    '.apt-catalog-modal__unit.is-open .apt-catalog-modal__acts{ display:flex; }',
+    '.apt-catalog-modal__act-link{ display:block; font-family:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace; font-size:12.5px; color:#CFD3E8; text-decoration:none; padding:10px 14px 10px 26px; border-top:1px solid rgba(151,161,216,0.12); transition:background .15s ease, color .15s ease; }',
+    '.apt-catalog-modal__act-link:hover{ background:rgba(151,161,216,0.08); color:#F5F5F7; }',
+    '.apt-catalog-modal__act-link:focus-visible{ outline:2px solid #97A1D8; outline-offset:-2px; }',
     /* -- modo compacto: se activa al responder -- */
     '.apt-act.is-answered .apt-act__subtitle{ display:none; }',
     '.apt-act.is-answered .apt-act__topbar{ padding-top:0; }',
@@ -550,6 +607,70 @@
   }
 
   /* ------------------------------------------------------------
+     "Todos los ejercicios" — construcción y control del modal
+     de catálogo (acordeón por unidad, links directos a cada landing)
+     ------------------------------------------------------------ */
+  function ensureCatalogModal() {
+    var existing = document.getElementById(CATALOG_MODAL_ID);
+    if (existing) return existing;
+
+    var unitsHTML = CATALOG.map(function (unit) {
+      var hasActs = unit.activities && unit.activities.length > 0;
+      var actsHTML = hasActs
+        ? unit.activities.map(function (act) {
+            return '<a class="apt-catalog-modal__act-link" href="' + act.url + '">' + act.title + '</a>';
+          }).join('')
+        : '';
+      return '<div class="apt-catalog-modal__unit">' +
+        '<button type="button" class="apt-catalog-modal__unit-btn"' + (hasActs ? '' : ' disabled') + '>' +
+          '<span>' + unit.title + '</span>' +
+          (hasActs ? '<span class="apt-catalog-modal__unit-chevron">▸</span>' : '<span class="apt-catalog-modal__unit-empty">Próximamente</span>') +
+        '</button>' +
+        (hasActs ? '<div class="apt-catalog-modal__acts">' + actsHTML + '</div>' : '') +
+      '</div>';
+    }).join('');
+
+    var modal = document.createElement('div');
+    modal.id = CATALOG_MODAL_ID;
+    modal.className = 'apt-catalog-modal apt-catalog-modal--hidden';
+    modal.innerHTML =
+      '<div class="apt-catalog-modal__card" role="dialog" aria-modal="true" aria-label="Todos los ejercicios">' +
+        '<div class="apt-catalog-modal__head">' +
+          '<h2 class="apt-catalog-modal__title">Todos los ejercicios</h2>' +
+          '<button type="button" class="apt-catalog-modal__close-x" aria-label="Cerrar">✕</button>' +
+        '</div>' +
+        '<div class="apt-catalog-modal__list">' + unitsHTML + '</div>' +
+      '</div>';
+    document.body.appendChild(modal);
+
+    var card = modal.querySelector('.apt-catalog-modal__card');
+    var closeBtn = modal.querySelector('.apt-catalog-modal__close-x');
+
+    function closeModal() { modal.classList.add('apt-catalog-modal--hidden'); }
+
+    modal.querySelectorAll('.apt-catalog-modal__unit-btn').forEach(function (btn) {
+      if (btn.disabled) return;
+      btn.addEventListener('click', function () {
+        btn.closest('.apt-catalog-modal__unit').classList.toggle('is-open');
+      });
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+    card.addEventListener('click', function (e) { e.stopPropagation(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !modal.classList.contains('apt-catalog-modal--hidden')) closeModal();
+    });
+
+    modal._openCatalog = function () { modal.classList.remove('apt-catalog-modal--hidden'); };
+    return modal;
+  }
+
+  function openCatalogModal() {
+    ensureCatalogModal()._openCatalog();
+  }
+
+  /* ------------------------------------------------------------
      Footer compartido (marca + 🚩 reportar + 🔇/🔊 mute + racha).
      ÚNICA implementación: la usa tanto el modo genérico (buildSkeleton,
      abajo) como cualquier actividad custom vía AptActivity.mountFooter().
@@ -559,17 +680,22 @@
     ensureAssets();
     container.className = 'apt-act__footer';
     container.innerHTML =
-      '<a class="apt-act__brand-link" href="https://www.instagram.com/soyjuanisilva/" target="_blank" rel="noopener">Álgebra Para Todos</a>' +
-      '<span class="apt-act__footer-right">' +
-        '<button type="button" class="apt-act__report-btn" aria-label="Reportar un problema">🚩</button>' +
-        '<button type="button" class="apt-act__mute-btn" aria-pressed="false" aria-label="Silenciar sonidos">🔊</button>' +
-        '<span class="apt-act__streak">Racha: <b>0</b></span>' +
-      '</span>';
+      '<button type="button" class="apt-act__catalog-btn">📚 Todos los ejercicios</button>' +
+      '<div class="apt-act__footer-row">' +
+        '<a class="apt-act__brand-link" href="https://www.instagram.com/soyjuanisilva/" target="_blank" rel="noopener">Álgebra Para Todos</a>' +
+        '<span class="apt-act__footer-right">' +
+          '<button type="button" class="apt-act__report-btn" aria-label="Reportar un problema">🚩</button>' +
+          '<button type="button" class="apt-act__mute-btn" aria-pressed="false" aria-label="Silenciar sonidos">🔊</button>' +
+          '<span class="apt-act__streak">Racha: <b>0</b></span>' +
+        '</span>' +
+      '</div>';
 
+    var catalogBtn = container.querySelector('.apt-act__catalog-btn');
     var reportBtn = container.querySelector('.apt-act__report-btn');
     var muteBtn = container.querySelector('.apt-act__mute-btn');
     var streakB = container.querySelector('.apt-act__streak b');
 
+    catalogBtn.addEventListener('click', openCatalogModal);
     reportBtn.addEventListener('click', openReportModal);
 
     function updateMuteBtn() {
@@ -1453,6 +1579,7 @@
     mountFooter: mountFooter,
     ensureAssets: ensureAssets,
     openReportModal: openReportModal,
+    openCatalogModal: openCatalogModal,
     playCorrectSound: playCorrectSound,
     playWrongSound: playWrongSound,
     celebrate: celebrate,
