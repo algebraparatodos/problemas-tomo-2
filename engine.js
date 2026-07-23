@@ -33,9 +33,12 @@
        cfg.options(current) → array de { value, label, correct }.
          El motor arma el multiple choice solo (no hace falta
          cfg.check): compara qué tildó el alumno contra el flag
-         correct de cada opción. Después de comprobar, cada botón
-         queda en verde (coincidió con lo esperado, tildado o no)
-         o en rojo (no coincidió).
+         correct de cada opción. Después de comprobar, SOLO se
+         colorea lo que el alumno tildó (verde si correspondía,
+         rojo si no) — lo que dejó sin tildar queda neutro, para
+         no "pintar todo de verde" cuando responde bien. Layout
+         en grid de 2 columnas con checkbox ☐/☑, visualmente
+         distinto del botón "Comprobar".
        cfg.explain(current, correct) — sin "value", porque puede
          haber más de una opción tildada.
 
@@ -151,6 +154,11 @@
     '.apt-act__choice-btn.is-correct{ border-color:var(--correct); background:var(--correct-bg); color:var(--correct); }',
     '.apt-act__choice-btn.is-wrong{ border-color:var(--wrong); background:var(--wrong-bg); color:var(--wrong); }',
     '.apt-act__choice-btn.is-correct:disabled, .apt-act__choice-btn.is-wrong:disabled{ opacity:1; }',
+    '.apt-act__choices--multiselect{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }',
+    '.apt-act__choices--multiselect .apt-act__choice-btn{ flex-direction:row; justify-content:flex-start; padding:10px 12px; font-family:var(--font-mono); font-weight:500; font-size:12.5px; min-height:44px; border-width:1.5px; border-radius:9px; }',
+    '.apt-act__choices--multiselect .apt-act__choice-btn::before{ content:"☐"; margin-right:7px; font-size:14px; flex:0 0 auto; }',
+    '.apt-act__choices--multiselect .apt-act__choice-btn.is-selected::before{ content:"☑"; }',
+    '.apt-act__choices--multiselect .apt-act__choice-main{ font-size:12.5px; text-align:left; }',
     '.apt-act__choice-btn:disabled{ opacity:.5; cursor:default; }',
     '.apt-act__choice-btn:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
     '.apt-act__matrixwrap{ display:flex; align-items:stretch; justify-content:center; gap:6px; }',
@@ -1578,7 +1586,7 @@
           var optionList = resolveChoices(cfg.options, current);
           currentOptionsByValue = {};
           refs.choicesWrap.innerHTML = '';
-          refs.choicesWrap.classList.add('apt-act__choices--stacked');
+          refs.choicesWrap.classList.add('apt-act__choices--multiselect');
           optionList.forEach(function (opt) {
             currentOptionsByValue[opt.value] = opt;
             var btn = document.createElement('button');
@@ -1693,10 +1701,14 @@
         refs.choicesWrap.querySelectorAll('.apt-act__choice-btn').forEach(function (b) {
           var opt = currentOptionsByValue[b.dataset.value];
           var selected = b.classList.contains('is-selected');
-          var matches = selected === !!(opt && opt.correct);
+          var isCorrectOpt = !!(opt && opt.correct);
+          var matches = selected === isCorrectOpt;
           if (!matches) allMatch = false;
           b.classList.remove('is-correct', 'is-wrong');
-          b.classList.add(matches ? 'is-correct' : 'is-wrong');
+          // Solo se colorea lo que el alumno tildó: verde si correspondía,
+          // rojo si no. Lo que dejó sin tildar queda neutro (atenuado por
+          // el :disabled), tildó bien o mal, para no "pintar todo verde".
+          if (selected) b.classList.add(isCorrectOpt ? 'is-correct' : 'is-wrong');
           b.disabled = true;
         });
 
