@@ -113,9 +113,21 @@
     '.apt-exam__check-btn{ width:100%; font-family:var(--font-serif); font-weight:700; font-size:16px; padding:16px; border-radius:12px; border:2px solid var(--chalk-light); background:transparent; color:var(--chalk-light); cursor:pointer; min-height:52px; }',
     '.apt-exam__check-btn:hover{ background:rgba(151,161,216,0.1); }',
     '.apt-exam__hint{ text-align:center; font-family:var(--font-mono); font-size:12px; color:var(--ink-soft); opacity:.8; margin:0; }',
+    '.apt-exam__multiselect{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }',
+    '.apt-exam__ms-btn{ display:flex; align-items:center; gap:8px; text-align:left; font-family:var(--font-mono); font-size:12.5px; color:var(--ink-soft); background:var(--bg-card); border:1.5px solid rgba(151,161,216,0.25); border-radius:10px; padding:12px 10px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .15s ease, border-color .15s ease, color .15s ease; }',
+    '.apt-exam__ms-btn::before{ content:"☐"; flex:0 0 auto; }',
+    '.apt-exam__ms-btn.is-selected{ background:rgba(151,161,216,0.14); border-color:var(--chalk-light); color:var(--ink); }',
+    '.apt-exam__ms-btn.is-selected::before{ content:"☑"; }',
+    '.apt-exam__doc-header{ display:flex; justify-content:space-between; align-items:center; padding-bottom:10px; border-bottom:1px solid rgba(151,161,216,0.18); margin-bottom:4px; font-family:var(--font-serif); font-weight:700; font-size:12.5px; }',
+    '.apt-exam__doc-header a{ color:var(--chalk-light); text-decoration:none; }',
+    '.apt-exam__doc-header a:hover{ text-decoration:underline; }',
+    '.apt-exam__doc-footer{ display:flex; justify-content:space-between; align-items:center; padding-top:10px; margin-top:4px; border-top:1px solid rgba(151,161,216,0.18); font-family:var(--font-mono); font-size:11.5px; }',
+    '.apt-exam__doc-footer a{ color:var(--ink-soft); text-decoration:none; }',
+    '.apt-exam__doc-footer a:hover{ text-decoration:underline; }',
     '.apt-exam__results-summary{ text-align:center; }',
     '.apt-exam__score{ font-family:var(--font-serif); font-weight:700; font-size:32px; color:var(--ink); margin:0; }',
     '.apt-exam__score-sub{ font-family:var(--font-mono); font-size:13px; color:var(--ink-soft); margin:6px 0 0; }',
+    '.apt-exam__score-topics{ font-family:var(--font-mono); font-size:11.5px; color:var(--ink-soft); opacity:.8; margin:6px 0 0; line-height:1.5; }',
     '.apt-exam__result-item{ border:1px solid rgba(151,161,216,0.18); border-radius:12px; margin-bottom:8px; overflow:hidden; }',
     '.apt-exam__result-head{ width:100%; display:flex; align-items:center; gap:10px; padding:13px 14px; background:rgba(151,161,216,0.05); border:none; cursor:pointer; text-align:left; font-family:var(--font-mono); font-size:13.5px; color:var(--ink); -webkit-tap-highlight-color:transparent; }',
     '.apt-exam__result-icon{ flex:0 0 auto; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; }',
@@ -137,6 +149,9 @@
     '.apt-exam__restart-btn:hover{ background:var(--chalk-hover); }',
     '.apt-exam__screen--hidden{ display:none; }',
     '@media print{',
+    '  body *{ visibility:hidden !important; }',
+    '  .apt-exam, .apt-exam *{ visibility:visible !important; }',
+    '  .apt-exam{ position:absolute !important; left:0; top:0; width:100%; }',
     '  .apt-exam__screen--select, .apt-exam__screen--running{ display:none !important; }',
     '  .apt-exam__pdf-btn, .apt-exam__restart-btn{ display:none !important; }',
     '  .apt-exam__result-body{ display:block !important; }',
@@ -145,6 +160,9 @@
     '  .apt-exam__card, .apt-exam__result-item, .apt-exam__result-head{ background:#fff !important; border-color:#ccc !important; color:#111 !important; }',
     '  .apt-exam__result-item{ break-inside:avoid; }',
     '  .apt-exam .katex{ color:#111 !important; }',
+    '  .apt-exam__doc-header, .apt-exam__doc-footer{ border-color:#ccc !important; }',
+    '  .apt-exam__doc-header a, .apt-exam__doc-footer a{ color:#3949AB !important; }',
+    '  .apt-exam__score, .apt-exam__score-sub, .apt-exam__score-topics{ color:#111 !important; }',
     '}'
   ];
 
@@ -176,7 +194,7 @@
     var grid = document.createElement('div');
     grid.className = 'apt-exam__grid';
     var totalCols = dividerAfterCol ? cols + 1 : cols;
-    grid.style.gridTemplateColumns = 'repeat(' + totalCols + ', minmax(46px,60px))';
+    grid.style.gridTemplateColumns = 'repeat(' + totalCols + ', minmax(78px,92px))';
 
     for (var r = 0; r < rows; r++) {
       for (var c = 0; c < cols; c++) {
@@ -276,13 +294,22 @@
           '<div class="apt-exam__answer"></div>' +
         '</div>' +
         '<div class="apt-exam__screen apt-exam__screen--results apt-exam__screen--hidden">' +
+          '<div class="apt-exam__doc-header">' +
+            '<a href="https://www.algebraparatodos.com" target="_blank" rel="noopener">Álgebra Para Todos</a>' +
+            '<a href="https://www.algebraparatodos.com/mi-libro" target="_blank" rel="noopener">Mi libro</a>' +
+          '</div>' +
           '<div class="apt-exam__results-summary">' +
             '<p class="apt-exam__score"></p>' +
             '<p class="apt-exam__score-sub"></p>' +
+            '<p class="apt-exam__score-topics"></p>' +
           '</div>' +
           '<div class="apt-exam__results-list"></div>' +
           '<button type="button" class="apt-exam__pdf-btn">Descargar como PDF</button>' +
           '<button type="button" class="apt-exam__restart-btn">Armar un nuevo examen →</button>' +
+          '<div class="apt-exam__doc-footer">' +
+            '<a href="https://www.instagram.com/soyjuanisilva/" target="_blank" rel="noopener">Creado por Juani Silva</a>' +
+            '<a href="https://www.algebraparatodos.com/ejercicios-algebra-lineal" target="_blank" rel="noopener">Probá otro examen →</a>' +
+          '</div>' +
         '</div>' +
       '</div>';
 
@@ -301,6 +328,7 @@
       answer: root.querySelector('.apt-exam__answer'),
       scoreEl: root.querySelector('.apt-exam__score'),
       scoreSubEl: root.querySelector('.apt-exam__score-sub'),
+      scoreTopicsEl: root.querySelector('.apt-exam__score-topics'),
       resultsList: root.querySelector('.apt-exam__results-list'),
       pdfBtn: root.querySelector('.apt-exam__pdf-btn'),
       restartBtn: root.querySelector('.apt-exam__restart-btn')
@@ -405,6 +433,31 @@
           submitAnswer(read.matrix, read.hasEmpty);
         });
         refs.answer.appendChild(checkBtn);
+      } else if (q.exercise.type === 'multiselect') {
+        var msWrap = document.createElement('div');
+        msWrap.className = 'apt-exam__multiselect';
+        var selected = {};
+        q.exercise.options(q.current).forEach(function (opt) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'apt-exam__ms-btn';
+          btn.textContent = opt.label;
+          btn.addEventListener('click', function () {
+            selected[opt.value] = !selected[opt.value];
+            btn.classList.toggle('is-selected', !!selected[opt.value]);
+          });
+          msWrap.appendChild(btn);
+        });
+        refs.answer.appendChild(msWrap);
+        var msCheckBtn = document.createElement('button');
+        msCheckBtn.type = 'button';
+        msCheckBtn.className = 'apt-exam__check-btn';
+        msCheckBtn.textContent = 'Confirmar respuesta';
+        msCheckBtn.addEventListener('click', function () {
+          var chosen = Object.keys(selected).filter(function (k) { return selected[k]; });
+          submitAnswer(chosen);
+        });
+        refs.answer.appendChild(msCheckBtn);
       }
 
       examState.qStartTime = Date.now();
@@ -430,6 +483,14 @@
         var correctOpt = opts.filter(function (o) { return q.exercise.check(q.current, o.value); })[0];
         studentAnswerDisplay = { type: 'text', value: chosen ? chosen.label : value, rawValue: value };
         correctAnswerDisplay = { type: 'text', value: correctOpt ? correctOpt.label : '' };
+      } else if (q.exercise.type === 'multiselect') {
+        var msOpts = q.exercise.options(q.current);
+        var selectedSet = value || [];
+        correct = msOpts.every(function (o) { return (selectedSet.indexOf(o.value) !== -1) === !!o.correct; });
+        var studentLabels = msOpts.filter(function (o) { return selectedSet.indexOf(o.value) !== -1; }).map(function (o) { return o.label; });
+        var correctLabels = msOpts.filter(function (o) { return o.correct; }).map(function (o) { return o.label; });
+        studentAnswerDisplay = { type: 'list', value: studentLabels.length ? studentLabels : ['(ninguna)'], rawValue: selectedSet };
+        correctAnswerDisplay = { type: 'list', value: correctLabels.length ? correctLabels : ['(ninguna)'] };
       } else {
         var result = q.exercise.checkGrid(q.current, value, !!hasEmpty);
         correct = result.correct && !hasEmpty;
@@ -458,8 +519,13 @@
 
       var correctCount = examState.records.filter(function (r) { return r.correct; }).length;
       var totalTime = examState.records.reduce(function (s, r) { return s + r.timeMs; }, 0);
+      var pct = Math.round(100 * correctCount / examState.records.length);
       refs.scoreEl.textContent = correctCount + ' / ' + examState.records.length;
-      refs.scoreSubEl.textContent = 'Correctas · tiempo total ' + formatTime(totalTime);
+      refs.scoreSubEl.innerHTML = '<strong>' + pct + '% correctas</strong> · tiempo total ' + formatTime(totalTime);
+
+      var topicsEvaluated = [];
+      examState.records.forEach(function (r) { if (topicsEvaluated.indexOf(r.topic) === -1) topicsEvaluated.push(r.topic); });
+      refs.scoreTopicsEl.textContent = 'Temas evaluados: ' + topicsEvaluated.join(' · ');
 
       refs.resultsList.innerHTML = '';
       examState.records.forEach(function (rec, idx) {
@@ -510,16 +576,23 @@
       }
 
       var explainEl = item.querySelector('.apt-exam__result-explain');
-      var explainText = rec.exercise.type === 'choices'
-        ? rec.exercise.explain(rec.current, rec.correct, rec.studentAnswerDisplay && rec.studentAnswerDisplay.rawValue)
-        : (rec.exercise.checkGrid ? rec.exercise.checkGrid(rec.current, (rec.studentAnswerDisplay.value), false).feedbackText : '');
+      var explainText;
+      if (rec.exercise.type === 'choices') {
+        explainText = rec.exercise.explain(rec.current, rec.correct, rec.studentAnswerDisplay && rec.studentAnswerDisplay.rawValue);
+      } else if (rec.exercise.type === 'multiselect') {
+        explainText = rec.exercise.explain(rec.current, rec.correct);
+      } else {
+        explainText = rec.exercise.checkGrid ? rec.exercise.checkGrid(rec.current, rec.studentAnswerDisplay.value, false).feedbackText : '';
+      }
       explainEl.textContent = explainText || '';
     }
 
     function renderAnswerDisplay(container, display) {
       if (!display) { container.textContent = '—'; return; }
       if (display.type === 'text') {
-        container.textContent = display.value;
+        container.innerHTML = display.value;
+      } else if (display.type === 'list') {
+        container.textContent = display.value.join(', ');
       } else if (display.type === 'matrix') {
         if (global.katex) global.katex.render(matrixToLatex(display.value), container, { throwOnError: false });
         else container.textContent = JSON.stringify(display.value);
@@ -532,7 +605,10 @@
         item.classList.add('is-open');
         renderResultBody(item, examState.records[idx]);
       });
+      var previousTitle = document.title;
+      document.title = 'Simulacro de examen de álgebra lineal APT';
       window.print();
+      document.title = previousTitle;
     });
 
     refs.restartBtn.addEventListener('click', function () {
