@@ -168,6 +168,7 @@
       topic: 'Clasificación de sistemas',
       needsKatex: false,
       type: 'choices',
+      prompt: '¿Cómo se clasifica este sistema de rectas?',
 
       generate: function () {
         var numLines = Math.random() < 0.5 ? 2 : 3;
@@ -275,6 +276,7 @@
       topic: 'Escalonamiento / Método de Gauss',
       needsKatex: true,
       type: 'choices',
+      prompt: '¿Está la matriz en forma escalonada por filas?',
 
       generate: function () {
         var rows = Math.random() < 0.45 ? buildValidEchelon() : breakEchelon(buildValidEchelon());
@@ -344,6 +346,7 @@
       topic: 'Matrices y sistemas',
       needsKatex: true,
       type: 'grid',
+      prompt: 'Completá la matriz ampliada de este sistema.',
       grid: { rows: 3, cols: 4, dividerAfterCol: 3 },
 
       generate: function () { return generateSystem(); },
