@@ -84,7 +84,11 @@
     '.apt-exam__start-btn:hover{ background:var(--chalk-hover); }',
     '.apt-exam__start-btn:disabled{ opacity:.4; cursor:default; }',
     '.apt-exam__progress-row{ display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:12.5px; color:var(--ink-soft); }',
+    '.apt-exam__timers{ display:flex; align-items:baseline; gap:10px; }',
+    '.apt-exam__timer-total{ font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); opacity:.75; font-variant-numeric:tabular-nums; }',
+    '.apt-exam__timer-total::before{ content:"total "; }',
     '.apt-exam__timer{ font-family:var(--font-mono); font-weight:700; color:var(--chalk-light); font-variant-numeric:tabular-nums; }',
+    '.apt-exam__prompt{ font-family:var(--font-mono); font-size:13.5px; color:var(--ink-soft); text-align:center; margin:0; line-height:1.5; }',
     '.apt-exam__progress-bar{ height:4px; border-radius:2px; background:rgba(151,161,216,0.15); overflow:hidden; }',
     '.apt-exam__progress-fill{ height:100%; background:var(--chalk-light); transition:width .25s ease; }',
     '.apt-exam__content{ width:100%; display:flex; justify-content:center; font-size:clamp(16px,4.6vw,21px); min-height:60px; align-items:center; }',
@@ -127,9 +131,21 @@
     '.apt-exam__result-value{ font-family:var(--font-mono); font-size:13px; color:var(--ink); margin:0 0 12px; line-height:1.5; }',
     '.apt-exam__result-value.is-correct-text{ color:var(--correct); }',
     '.apt-exam__result-value.is-wrong-text{ color:var(--wrong); }',
+    '.apt-exam__pdf-btn{ width:100%; font-family:var(--font-serif); font-weight:700; font-size:14.5px; color:var(--chalk-light); background:transparent; border:2px solid var(--chalk-light); border-radius:12px; padding:14px; min-height:50px; cursor:pointer; margin-top:8px; transition:background .15s ease; }',
+    '.apt-exam__pdf-btn:hover{ background:rgba(151,161,216,0.1); }',
     '.apt-exam__restart-btn{ width:100%; font-family:var(--font-serif); font-weight:700; font-size:15px; color:#fff; background:var(--chalk); border:none; border-radius:12px; padding:15px; min-height:50px; cursor:pointer; margin-top:8px; }',
     '.apt-exam__restart-btn:hover{ background:var(--chalk-hover); }',
-    '.apt-exam__screen--hidden{ display:none; }'
+    '.apt-exam__screen--hidden{ display:none; }',
+    '@media print{',
+    '  .apt-exam__screen--select, .apt-exam__screen--running{ display:none !important; }',
+    '  .apt-exam__pdf-btn, .apt-exam__restart-btn{ display:none !important; }',
+    '  .apt-exam__result-body{ display:block !important; }',
+    '  .apt-exam__result-chevron{ display:none !important; }',
+    '  .apt-exam{ background:#fff !important; color:#111 !important; min-height:0; }',
+    '  .apt-exam__card, .apt-exam__result-item, .apt-exam__result-head{ background:#fff !important; border-color:#ccc !important; color:#111 !important; }',
+    '  .apt-exam__result-item{ break-inside:avoid; }',
+    '  .apt-exam .katex{ color:#111 !important; }',
+    '}'
   ];
 
   /* ---------- utilidades ---------- */
@@ -170,7 +186,7 @@
         cellwrap.style.gridRow = String(r + 1);
         cellwrap.style.gridColumn = String(dividerAfterCol && c >= dividerAfterCol ? c + 2 : c + 1);
 
-        var signSeg = document.createElement('div');
+        let signSeg = document.createElement('div');
         signSeg.className = 'apt-exam__signseg';
         signSeg.dataset.sign = '+';
         ['-', '+'].forEach(function (s) {
@@ -253,8 +269,9 @@
           '<button type="button" class="apt-exam__start-btn" disabled>Empezar examen</button>' +
         '</div>' +
         '<div class="apt-exam__screen apt-exam__screen--running apt-exam__screen--hidden">' +
-          '<div class="apt-exam__progress-row"><span class="apt-exam__progress-label"></span><span class="apt-exam__timer">0:00</span></div>' +
+          '<div class="apt-exam__progress-row"><span class="apt-exam__progress-label"></span><span class="apt-exam__timers"><span class="apt-exam__timer-total"></span><span class="apt-exam__timer">0:00</span></span></div>' +
           '<div class="apt-exam__progress-bar"><div class="apt-exam__progress-fill"></div></div>' +
+          '<p class="apt-exam__prompt"></p>' +
           '<div class="apt-exam__card"><div class="apt-exam__content"></div></div>' +
           '<div class="apt-exam__answer"></div>' +
         '</div>' +
@@ -264,7 +281,8 @@
             '<p class="apt-exam__score-sub"></p>' +
           '</div>' +
           '<div class="apt-exam__results-list"></div>' +
-          '<button type="button" class="apt-exam__restart-btn">Practicar otra vez →</button>' +
+          '<button type="button" class="apt-exam__pdf-btn">Descargar como PDF</button>' +
+          '<button type="button" class="apt-exam__restart-btn">Armar un nuevo examen →</button>' +
         '</div>' +
       '</div>';
 
@@ -276,12 +294,15 @@
       startBtn: root.querySelector('.apt-exam__start-btn'),
       progressLabel: root.querySelector('.apt-exam__progress-label'),
       timerEl: root.querySelector('.apt-exam__timer'),
+      timerTotalEl: root.querySelector('.apt-exam__timer-total'),
+      promptEl: root.querySelector('.apt-exam__prompt'),
       progressFill: root.querySelector('.apt-exam__progress-fill'),
       content: root.querySelector('.apt-exam__content'),
       answer: root.querySelector('.apt-exam__answer'),
       scoreEl: root.querySelector('.apt-exam__score'),
       scoreSubEl: root.querySelector('.apt-exam__score-sub'),
       resultsList: root.querySelector('.apt-exam__results-list'),
+      pdfBtn: root.querySelector('.apt-exam__pdf-btn'),
       restartBtn: root.querySelector('.apt-exam__restart-btn')
     };
 
@@ -333,7 +354,7 @@
       });
       questions = shuffle(questions);
 
-      examState = { questions: questions, index: 0, records: [], qStartTime: null, timerInterval: null };
+      examState = { questions: questions, index: 0, records: [], qStartTime: null, timerInterval: null, examStartTime: Date.now() };
 
       function boot() {
         refs.selectScreen.classList.add('apt-exam__screen--hidden');
@@ -350,6 +371,7 @@
       refs.progressFill.style.width = (100 * examState.index / examState.questions.length) + '%';
 
       q.exercise.renderContent(refs.content, q.current);
+      refs.promptEl.textContent = q.exercise.prompt || '';
 
       refs.answer.innerHTML = '';
       var readMatrix = null;
@@ -377,7 +399,7 @@
         var checkBtn = document.createElement('button');
         checkBtn.type = 'button';
         checkBtn.className = 'apt-exam__check-btn';
-        checkBtn.textContent = 'Comprobar';
+        checkBtn.textContent = 'Confirmar respuesta';
         checkBtn.addEventListener('click', function () {
           var read = readMatrix();
           submitAnswer(read.matrix, read.hasEmpty);
@@ -388,8 +410,10 @@
       examState.qStartTime = Date.now();
       if (examState.timerInterval) clearInterval(examState.timerInterval);
       refs.timerEl.textContent = '0:00';
+      refs.timerTotalEl.textContent = formatTime(Date.now() - examState.examStartTime);
       examState.timerInterval = setInterval(function () {
         refs.timerEl.textContent = formatTime(Date.now() - examState.qStartTime);
+        refs.timerTotalEl.textContent = formatTime(Date.now() - examState.examStartTime);
       }, 250);
     }
 
@@ -466,27 +490,30 @@
         head.addEventListener('click', function () {
           opened = !opened;
           item.classList.toggle('is-open', opened);
-          if (opened && !item.dataset.rendered) {
-            item.dataset.rendered = '1';
-            var contentEl = item.querySelector('.apt-exam__result-content');
-            rec.exercise.renderContent(contentEl, rec.current);
-
-            var studentEl = item.querySelector('.apt-exam__result-student');
-            renderAnswerDisplay(studentEl, rec.studentAnswerDisplay);
-
-            if (!rec.correct) {
-              var correctEl = item.querySelector('.apt-exam__result-correctval');
-              renderAnswerDisplay(correctEl, rec.correctAnswerDisplay);
-            }
-
-            var explainEl = item.querySelector('.apt-exam__result-explain');
-            var explainText = rec.exercise.type === 'choices'
-              ? rec.exercise.explain(rec.current, rec.correct, rec.studentAnswerDisplay && rec.studentAnswerDisplay.rawValue)
-              : (rec.exercise.checkGrid ? rec.exercise.checkGrid(rec.current, (rec.studentAnswerDisplay.value), false).feedbackText : '');
-            explainEl.textContent = explainText || '';
-          }
+          renderResultBody(item, rec);
         });
       });
+    }
+
+    function renderResultBody(item, rec) {
+      if (item.dataset.rendered) return;
+      item.dataset.rendered = '1';
+      var contentEl = item.querySelector('.apt-exam__result-content');
+      rec.exercise.renderContent(contentEl, rec.current);
+
+      var studentEl = item.querySelector('.apt-exam__result-student');
+      renderAnswerDisplay(studentEl, rec.studentAnswerDisplay);
+
+      if (!rec.correct) {
+        var correctEl = item.querySelector('.apt-exam__result-correctval');
+        renderAnswerDisplay(correctEl, rec.correctAnswerDisplay);
+      }
+
+      var explainEl = item.querySelector('.apt-exam__result-explain');
+      var explainText = rec.exercise.type === 'choices'
+        ? rec.exercise.explain(rec.current, rec.correct, rec.studentAnswerDisplay && rec.studentAnswerDisplay.rawValue)
+        : (rec.exercise.checkGrid ? rec.exercise.checkGrid(rec.current, (rec.studentAnswerDisplay.value), false).feedbackText : '');
+      explainEl.textContent = explainText || '';
     }
 
     function renderAnswerDisplay(container, display) {
@@ -498,6 +525,15 @@
         else container.textContent = JSON.stringify(display.value);
       }
     }
+
+    refs.pdfBtn.addEventListener('click', function () {
+      var items = root.querySelectorAll('.apt-exam__result-item');
+      items.forEach(function (item, idx) {
+        item.classList.add('is-open');
+        renderResultBody(item, examState.records[idx]);
+      });
+      window.print();
+    });
 
     refs.restartBtn.addEventListener('click', function () {
       Object.keys(selectedTopics).forEach(function (k) { selectedTopics[k] = false; });
