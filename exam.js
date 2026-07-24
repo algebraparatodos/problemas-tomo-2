@@ -184,9 +184,14 @@
   }
 
   /* ---------- grilla de entrada (self-contained, no depende de engine.js) ---------- */
-  function buildGridInput(container, gridCfg) {
+  function resolveNum(spec, current) {
+    return typeof spec === 'function' ? spec(current) : spec;
+  }
+
+  function buildGridInput(container, gridCfg, current) {
     container.innerHTML = '';
-    var rows = gridCfg.rows, cols = gridCfg.cols, dividerAfterCol = gridCfg.dividerAfterCol;
+    var rows = resolveNum(gridCfg.rows, current), cols = resolveNum(gridCfg.cols, current), dividerAfterCol = gridCfg.dividerAfterCol;
+    var hideBrackets = !!gridCfg.hideBrackets;
     var wrap = document.createElement('div');
     wrap.className = 'apt-exam__matrixwrap';
     var bracketL = document.createElement('span'); bracketL.className = 'apt-exam__bracket apt-exam__bracket--left';
@@ -236,7 +241,9 @@
       divider.style.gridRow = '1 / ' + (rows + 1);
       grid.appendChild(divider);
     }
-    wrap.appendChild(bracketL); wrap.appendChild(grid); wrap.appendChild(bracketR);
+    wrap.appendChild(hideBrackets ? document.createDocumentFragment() : bracketL);
+    wrap.appendChild(grid);
+    wrap.appendChild(hideBrackets ? document.createDocumentFragment() : bracketR);
     container.appendChild(wrap);
 
     return function readMatrix() {
@@ -419,7 +426,7 @@
       } else if (q.exercise.type === 'grid') {
         var gridContainer = document.createElement('div');
         refs.answer.appendChild(gridContainer);
-        readMatrix = buildGridInput(gridContainer, q.exercise.grid);
+        readMatrix = buildGridInput(gridContainer, q.exercise.grid, q.current);
         var hint = document.createElement('p');
         hint.className = 'apt-exam__hint';
         hint.textContent = 'Tocá − o + para cambiar el signo de cada número.';
