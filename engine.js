@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v1.8)
+   ÁLGEBRA PARA TODOS · engine.js (v1.9)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -88,7 +88,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '1.8';
+  var ENGINE_VERSION = '1.9';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -240,6 +240,7 @@
     '.apt-act__grid{ display:grid; gap:8px 6px; padding:4px 4px; }',
     '.apt-act__divider{ width:2px; background:var(--chalk-light); opacity:.45; justify-self:center; }',
     '.apt-act__solution{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 8px; margin-bottom:4px; }',
+    '.apt-act__space-answer{ display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:center; gap:14px 18px; margin-bottom:4px; }',
     '.apt-act__eq{ font-family:var(--font-serif); font-weight:700; font-size:18px; color:var(--ink); }',
     '.apt-act__op{ font-family:var(--font-serif); font-weight:700; font-size:18px; color:var(--ink-soft); }',
     '.apt-act__paramlabel{ font-family:var(--font-serif); font-weight:700; font-size:17px; color:var(--ink); }',
@@ -1256,6 +1257,16 @@
           '<div class="apt-act__solution"></div>' +
           '<p class="apt-act__hint">' + (phase.hint || 'Tocá − o + para cambiar el signo de cada número.') + '</p>' +
           '<button type="button" class="apt-act__check-btn">Comprobar</button>';
+      } else if (phase.mode === 'space-basis') {
+        // Sub-modo genérico: k copias del widget de espacio (Rn/matriz/
+        // polinomio, ver módulo de espacios v1.8), corregido con
+        // checkSpanEquivalence. k y el espacio se conocen recién en
+        // tiempo de ronda (dependen de current), así que acá solo se
+        // arma el contenedor vacío — el contenido real lo arma revealPhase.
+        interactionHTML =
+          '<div class="apt-act__space-answer"></div>' +
+          '<p class="apt-act__hint">' + (phase.hint || 'Tocá − o + para cambiar el signo de cada número.') + '</p>' +
+          '<button type="button" class="apt-act__check-btn">Comprobar</button>';
       } else if (phase.mode === 'setup') {
         // Paso de configuración PREVIO a generar el caso: uno o más
         // grupos de botones (cfg.phases[0].fields) + un botón que
@@ -1311,6 +1322,7 @@
         choicesWrap: el.querySelector('.apt-act__choices'),
         grid: el.querySelector('.apt-act__grid'),
         solution: el.querySelector('.apt-act__solution'),
+        spaceAnswer: el.querySelector('.apt-act__space-answer'),
         checkBtn: el.querySelector('.apt-act__check-btn'),
         setupBtn: el.querySelector('.apt-act__setup-btn'),
         feedback: el.querySelector('.apt-act__feedback'),
@@ -1404,6 +1416,17 @@
         p.checkBtn.onclick = function () { checkVectorsPhase(idx); };
         if (p.retryBtn) p.retryBtn.onclick = function () { retryVectorsPhase(idx); };
         if (p.showAnswerBtn) p.showAnswerBtn.onclick = function () { showAnswerVectorsPhase(idx); };
+      } else if (phaseCfg.mode === 'space-basis') {
+        var sbCount = resolveNum(phaseCfg.count, current);
+        var sbSpace = typeof phaseCfg.space === 'function' ? phaseCfg.space(current) : (phaseCfg.space || current.space);
+        p.spaceAnswer.innerHTML = '';
+        p.spaceAnswer.dataset.count = sbCount;
+        for (var sbi = 0; sbi < sbCount; sbi++) {
+          buildSpaceInputWidget(p.spaceAnswer, sbSpace, 'v' + sbi);
+        }
+        p.checkBtn.disabled = false;
+        p.checkBtn.onclick = function () { checkSpaceBasisPhase(idx); };
+        if (p.retryBtn) p.retryBtn.onclick = function () { retrySpaceBasisPhase(idx); };
       } else if (phaseCfg.mode === 'setup') {
         var selections = {};
         var fieldEls = p.el.querySelectorAll('.apt-act__setup-field');
@@ -1623,6 +1646,95 @@
       p.feedback.className = 'apt-act__feedback apt-act__feedback--hidden';
       if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
       if (p.showAnswerBtn) p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
+      refs.nextBtn.classList.add('apt-act__next-btn--hidden');
+      p.checkBtn.disabled = false;
+      phaseAnswered[idx] = false;
+    }
+
+    // ---------- space-basis ----------
+    // Sub-modo genérico (v1.9): responde con k vectores en cualquier
+    // espacio del catálogo (Rn/matriz/polinomio), corregido con
+    // checkSpanEquivalence — a diferencia de 'vectors', NO exige que
+    // la respuesta coincida con una base particular, solo que genere
+    // el mismo subespacio.
+    function checkSpaceBasisPhase(idx) {
+      if (phaseAnswered[idx]) return;
+      phaseAnswered[idx] = true;
+      var phaseCfg = cfg.phases[idx];
+      var p = refs.phaseRefs[idx];
+      root.classList.add('is-answered');
+
+      var sbCount = +p.spaceAnswer.dataset.count;
+      var sbSpace = typeof phaseCfg.space === 'function' ? phaseCfg.space(current) : (phaseCfg.space || current.space);
+
+      var reads = [];
+      var hasEmpty = false;
+      for (var i = 0; i < sbCount; i++) {
+        var r = readSpaceInputWidget(p.spaceAnswer, sbSpace, 'v' + i);
+        reads.push(r.coords);
+        if (r.hasEmpty) hasEmpty = true;
+      }
+
+      var expectedVectors = phaseCfg.getExpectedBasis(current); // array de "value" nativos del espacio
+      var expectedCoords = expectedVectors.map(function (v) { return sbSpace.toCoords(v); });
+
+      var spanResult = hasEmpty ? null : checkSpanEquivalence(reads, expectedCoords);
+      var correct = !hasEmpty && spanResult.ok;
+
+      var feedbackText;
+      if (hasEmpty) {
+        feedbackText = 'Dejaste alguna celda vacía (se tomó como 0 al revisar) — completá todas antes de comprobar la próxima vez.';
+      } else if (phaseCfg.explain) {
+        feedbackText = phaseCfg.explain(current, correct, spanResult);
+      } else if (correct) {
+        feedbackText = '¡Correcto! Es una base válida de ese subespacio (no hacía falta que coincidiera con una única respuesta).';
+      } else if (spanResult.reason === 'not-independent') {
+        feedbackText = 'Los vectores que pusiste no son linealmente independientes entre sí, así que no forman una base.';
+      } else if (spanResult.reason === 'not-in-span') {
+        feedbackText = 'Alguno de los vectores que pusiste no pertenece al subespacio pedido.';
+      } else {
+        feedbackText = 'La cantidad de vectores no corresponde a la dimensión del subespacio.';
+      }
+
+      // Colorear cada bloque: verde si ese vector individual pertenece al
+      // espacio esperado, rojo si no (cuando aplica: not-in-span). Si el
+      // problema es independencia o dimensión, no hay un vector puntual
+      // al que culpar, así que no coloreamos ninguno en rojo/verde.
+      for (var ci = 0; ci < sbCount; ci++) {
+        var cls = null;
+        if (correct) cls = 'is-correct';
+        else if (!hasEmpty && spanResult.reason === 'not-in-span') {
+          cls = spanResult.perVectorInSpan[ci] ? 'is-correct' : 'is-wrong';
+        }
+        colorSpaceInputWidget(p.spaceAnswer, 'v' + ci, sbSpace.dim, cls);
+      }
+
+      showPhaseFeedback(idx, correct, feedbackText);
+      p.checkBtn.disabled = true;
+      if (phaseCfg.onAnswered) phaseCfg.onAnswered(current, correct, reads, refs.content);
+
+      var isLast = idx === activePhaseCount() - 1;
+      if (correct) {
+        if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
+        advanceOrFinish(idx);
+      } else {
+        if (p.retryBtn) p.retryBtn.classList.remove('apt-act__retry-btn--hidden');
+        refs.nextBtn.classList.remove('apt-act__next-btn--hidden');
+        if (isLast) registerRoundResult(false);
+      }
+    }
+
+    function retrySpaceBasisPhase(idx) {
+      if (!phaseAnswered[idx]) return;
+      var p = refs.phaseRefs[idx];
+      root.classList.remove('is-answered');
+      p.spaceAnswer.querySelectorAll('.apt-act__cellwrap').forEach(function (wrap) {
+        wrap.classList.remove('is-correct', 'is-wrong');
+        wrap.querySelector('.apt-act__cell').disabled = false;
+        setSignDisabled(wrap, false);
+      });
+      p.feedback.className = 'apt-act__feedback apt-act__feedback--hidden';
+      if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
       refs.nextBtn.classList.add('apt-act__next-btn--hidden');
       p.checkBtn.disabled = false;
       phaseAnswered[idx] = false;
