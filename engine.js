@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v1.3)
+   ÁLGEBRA PARA TODOS · engine.js (v1.4)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -88,7 +88,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '1.3';
+  var ENGINE_VERSION = '1.4';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -147,7 +147,9 @@
         { title: 'Producto de matrices', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-15' }
       ]
     },
-    { title: 'Unidad 2: Subespacios vectoriales', activities: [] },
+    { title: 'Unidad 2: Subespacios vectoriales', activities: [
+        { title: 'Operaciones con conjuntos', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-1' }
+      ] },
     { title: 'Unidad 3: Transformaciones Lineales', activities: [] },
     { title: 'Unidad 4: Diagonalización', activities: [] }
   ];
