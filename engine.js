@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v1.2)
+   ÁLGEBRA PARA TODOS · engine.js (v1.3)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -88,7 +88,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '1.2';
+  var ENGINE_VERSION = '1.3';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -219,6 +219,8 @@
     '.apt-act__choices--grid .apt-act__choice-btn::before{ content:"☐"; flex:0 0 auto; font-size:14px; }',
     '.apt-act__choices--grid .apt-act__choice-btn.is-selected::before{ content:"☑"; }',
     '.apt-act__choices--grid .apt-act__choice-btn.is-selected{ background:rgba(151,161,216,0.12); border-color:var(--chalk-light); color:var(--ink); }',
+    '.apt-act__choices--grid .apt-act__choice-btn.is-correct{ border-color:var(--correct); background:var(--correct-bg); color:var(--correct); }',
+    '.apt-act__choices--grid .apt-act__choice-btn.is-wrong{ border-color:var(--wrong); background:var(--wrong-bg); color:var(--wrong); }',
     '.apt-act__choices--grid .apt-act__choice-main{ flex:1 1 auto; min-width:0; font-size:clamp(10px,3vw,13px); text-align:center; }',
     '.apt-act__choice-btn:disabled{ opacity:.5; cursor:default; }',
     '.apt-act__choice-btn:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
@@ -1729,7 +1731,14 @@
         if (cfg.onAnswered) cfg.onAnswered(refs.content, current, correct, value);
         registerResult(correct);
 
-        refs.choicesWrap.querySelectorAll('.apt-act__choice-btn').forEach(function (b) { b.disabled = true; });
+        var allBtns = refs.choicesWrap.querySelectorAll('.apt-act__choice-btn');
+        allBtns.forEach(function (b) { b.disabled = true; });
+        if (btnEl) btnEl.classList.add(correct ? 'is-correct' : 'is-wrong');
+        if (!correct) {
+          allBtns.forEach(function (b) {
+            if (b !== btnEl && cfg.check(current, b.dataset.value)) b.classList.add('is-correct');
+          });
+        }
         refs.nextBtn.classList.remove('apt-act__next-btn--hidden');
         answered = true;
       }
