@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v1.7)
+   ÁLGEBRA PARA TODOS · engine.js (v1.8)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -88,7 +88,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '1.7';
+  var ENGINE_VERSION = '1.8';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -251,6 +251,19 @@
     '.apt-act__vec .apt-act__cellwrap{ gap:2px; }',
     '.apt-act__vec .apt-act__signseg{ flex-basis:26px; width:26px; }',
     '.apt-act__vec .apt-act__cell{ width:40px; flex:0 0 auto; }',
+
+    /* ---- Widget de espacio (Unidad 2: Rn / matrices / polinomios) ----
+       Solo layout del contenedor + etiquetas de potencia de x. Los
+       inputs, signos y colores correcto/incorrecto ya vienen gratis
+       de .apt-act__cellwrap/.apt-act__cell/.apt-act__signseg de arriba. */
+    '.apt-act__space{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px; }',
+    '.apt-act__space--column{ flex-direction:column; gap:5px; padding:4px 2px; }',
+    '.apt-act__space .apt-act__cellwrap{ gap:2px; }',
+    '.apt-act__space .apt-act__signseg{ flex-basis:26px; width:26px; }',
+    '.apt-act__space .apt-act__cell{ width:42px; flex:0 0 auto; }',
+    '.apt-act__space--matrix{ gap:8px 6px; }',
+    '.apt-act__space__polyterm{ display:flex; align-items:center; gap:4px; }',
+    '.apt-act__space__polylabel{ font-family:var(--font-serif); font-weight:700; font-size:15px; color:var(--ink-soft); white-space:nowrap; }',
     '.apt-act__cellwrap{ display:flex; align-items:stretch; gap:3px; }',
     '.apt-act__lockcell{ display:flex; align-items:center; justify-content:center; min-height:40px; font-family:var(--font-mono); font-weight:500; font-size:clamp(15px,4.2vw,18px); color:var(--ink-soft); background:rgba(151,161,216,0.04); border:2px dashed rgba(151,161,216,0.28); border-radius:8px; }',
     '.apt-act__question{ text-align:center; font-family:var(--font-mono); font-size:14.5px; color:var(--ink-soft); margin:0 0 12px; }',
@@ -1904,6 +1917,285 @@
     if (cfg.needsKatex) { ensureKatex(start); } else { start(); }
   }
 
+
+  /* ============================================================
+     MÓDULO DE ESPACIOS (Unidad 2) — v1.8
+     ------------------------------------------------------------
+     Agregado para las actividades de subespacios vectoriales que
+     necesitan trabajar en Rn, matrices o polinomios de forma
+     genérica: fracciones exactas, checkSpanEquivalence (bases
+     equivalentes), catálogo de espacios, widget de input genérico,
+     y renderizado de un SEV dado (como base o como ecuaciones).
+     ============================================================ */
+
+  /* ---------- Fracciones exactas + RREF/rango genérico ---------- */
+  function _gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = b; b = a % b; a = t; } return a || 1; }
+  function _lcm(a, b) { return Math.abs(a * b) / _gcd(a, b); }
+  function Frac(n, d) {
+    if (d === undefined) d = 1;
+    if (d < 0) { n = -n; d = -d; }
+    var g = _gcd(n, d);
+    return { n: g ? n / g : 0, d: g ? d / g : 1 };
+  }
+  function fAdd(a, b) { return Frac(a.n * b.d + b.n * a.d, a.d * b.d); }
+  function fSub(a, b) { return Frac(a.n * b.d - b.n * a.d, a.d * b.d); }
+  function fMul(a, b) { return Frac(a.n * b.n, a.d * b.d); }
+  function fDiv(a, b) { return Frac(a.n * b.d, a.d * b.n); }
+  function fIsZero(a) { return a.n === 0; }
+  function fEquals(a, b) { return a.n === b.n && a.d === b.d; }
+  function fromInt(x) { return Frac(x, 1); }
+  function intMatrixToFrac(M) { return M.map(function (row) { return row.map(fromInt); }); }
+
+  function rref(matrixOfFrac) {
+    var M = matrixOfFrac.map(function (r) { return r.slice(); });
+    var rows = M.length, cols = M[0].length;
+    var lead = 0;
+    for (var r = 0; r < rows; r++) {
+      if (lead >= cols) break;
+      var i = r;
+      while (fIsZero(M[i][lead])) {
+        i++;
+        if (i === rows) { i = r; lead++; if (lead === cols) return M; }
+      }
+      var tmp = M[i]; M[i] = M[r]; M[r] = tmp;
+      var pivot = M[r][lead];
+      M[r] = M[r].map(function (v) { return fDiv(v, pivot); });
+      for (var i2 = 0; i2 < rows; i2++) {
+        if (i2 !== r) {
+          var factor = M[i2][lead];
+          if (!fIsZero(factor)) {
+            M[i2] = M[i2].map(function (v, c) { return fSub(v, fMul(factor, M[r][c])); });
+          }
+        }
+      }
+      lead++;
+    }
+    return M;
+  }
+  function rankOf(fracMatrix) {
+    if (fracMatrix.length === 0) return 0;
+    var R = rref(fracMatrix);
+    return R.filter(function (row) { return row.some(function (v) { return !fIsZero(v); }); }).length;
+  }
+  function rrefEqual(A, B) {
+    if (A.length !== B.length) return false;
+    if (A.length === 0) return true;
+    if (A[0].length !== B[0].length) return false;
+    for (var r = 0; r < A.length; r++) for (var c = 0; c < A[0].length; c++) if (!fEquals(A[r][c], B[r][c])) return false;
+    return true;
+  }
+  function fracRowToIntRow(row) {
+    var denomLcm = 1;
+    row.forEach(function (v) { denomLcm = _lcm(denomLcm, v.d); });
+    var intRow = row.map(function (v) { return Math.round(v.n * (denomLcm / v.d)); });
+    var nz = intRow.filter(function (x) { return x !== 0; }).map(Math.abs);
+    if (nz.length) { var g = nz[0]; nz.forEach(function (x) { g = _gcd(g, x); }); intRow = intRow.map(function (x) { return x / g; }); }
+    return intRow;
+  }
+
+  /* ---------- checkSpanEquivalence (Decisión #1) ---------- */
+  function checkSpanEquivalence(studentVectors, expectedVectors) {
+    if (studentVectors.length === 0 || expectedVectors.length === 0) {
+      return { ok: false, reason: 'wrong-dimension', perVectorInSpan: [] };
+    }
+    var dim = expectedVectors[0].length;
+    if (studentVectors.some(function (v) { return v.length !== dim; })) {
+      return { ok: false, reason: 'wrong-dimension', perVectorInSpan: [] };
+    }
+    var expectedRank = rankOf(intMatrixToFrac(expectedVectors));
+    if (studentVectors.length !== expectedVectors.length) {
+      return { ok: false, reason: 'wrong-dimension', perVectorInSpan: [] };
+    }
+    var studentRank = rankOf(intMatrixToFrac(studentVectors));
+    if (studentRank !== studentVectors.length) {
+      return { ok: false, reason: 'not-independent', perVectorInSpan: [] };
+    }
+    var perVectorInSpan = studentVectors.map(function (v) {
+      var augmented = expectedVectors.concat([v]);
+      return rankOf(intMatrixToFrac(augmented)) === expectedRank;
+    });
+    if (!perVectorInSpan.every(Boolean)) {
+      return { ok: false, reason: 'not-in-span', perVectorInSpan: perVectorInSpan };
+    }
+    return { ok: true, reason: 'ok', perVectorInSpan: perVectorInSpan };
+  }
+
+  /* ---------- Catálogo de espacios (Decisión C) ---------- */
+  function _makeRn(n) {
+    return {
+      id: 'R' + n, family: 'rn', label: 'R' + n, dim: n,
+      shape: { kind: 'column', rows: n },
+      toCoords: function (v) { return v.slice(); },
+      fromCoords: function (c) { return c.slice(); },
+      toKatex: function (v) { return '\\begin{bmatrix} ' + v.join(' \\\\ ') + ' \\end{bmatrix}'; }
+    };
+  }
+  function _makeMatrix(rows, cols) {
+    var dim = rows * cols;
+    return {
+      id: 'M' + rows + 'x' + cols, family: 'matrix', label: 'M_{' + rows + '\\times ' + cols + '}(\\mathbb{R})', dim: dim,
+      shape: { kind: 'matrix', rows: rows, cols: cols },
+      toCoords: function (v) {
+        var out = [];
+        for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) out.push(v[r][c]);
+        return out;
+      },
+      fromCoords: function (coords) {
+        var out = [];
+        for (var r = 0; r < rows; r++) { var row = []; for (var c = 0; c < cols; c++) row.push(coords[r * cols + c]); out.push(row); }
+        return out;
+      },
+      toKatex: function (v) {
+        var body = v.map(function (row) { return row.join(' & '); }).join(' \\\\ ');
+        return '\\begin{bmatrix} ' + body + ' \\end{bmatrix}';
+      }
+    };
+  }
+  function _makePoly(degree) {
+    var dim = degree + 1;
+    return {
+      id: 'P' + degree, family: 'poly', label: 'P_' + degree + '(\\mathbb{R})', dim: dim,
+      shape: { kind: 'poly', degree: degree },
+      toCoords: function (v) { return v.slice(); },
+      fromCoords: function (c) { return c.slice(); },
+      toKatex: function (v) {
+        var parts = [];
+        for (var k = degree; k >= 0; k--) {
+          var c = v[k];
+          if (c === 0) continue;
+          var abs = Math.abs(c);
+          var term;
+          if (k === 0) term = String(abs);
+          else if (k === 1) term = (abs === 1 ? '' : String(abs)) + 'x';
+          else term = (abs === 1 ? '' : String(abs)) + 'x^{' + k + '}';
+          if (parts.length === 0) parts.push((c < 0 ? '-' : '') + term);
+          else parts.push((c < 0 ? ' - ' : ' + ') + term);
+        }
+        return parts.length ? parts.join('') : '0';
+      }
+    };
+  }
+  var SPACES = {
+    R3: _makeRn(3), R4: _makeRn(4),
+    M2x2: _makeMatrix(2, 2), M2x3: _makeMatrix(2, 3), M3x2: _makeMatrix(3, 2),
+    P2: _makePoly(2), P3: _makePoly(3)
+  };
+  function _pickOne(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  function randomSpace() {
+    var family = _pickOne(['rn', 'matrix', 'poly']);
+    if (family === 'rn') return _pickOne([SPACES.R3, SPACES.R4]);
+    if (family === 'matrix') return _pickOne([SPACES.M2x2, SPACES.M2x3, SPACES.M3x2]);
+    return _pickOne([SPACES.P2, SPACES.P3]);
+  }
+
+  /* ---------- Widget de input genérico según space.shape.kind ----------
+     Reusa buildSignSeg/getSign/setSign/setSignDisabled ya definidos arriba
+     en este mismo archivo — NO se duplican. */
+  function _buildSpaceCellWrap(key, index) {
+    // Reusa las clases COMPARTIDAS apt-act__cellwrap/apt-act__cell (mismas
+    // que usa buildVecBlock para 'vectors') en vez de inventar clases
+    // nuevas — así hereda todo el CSS de inputs/signos sin duplicar nada.
+    var wrap = document.createElement('div');
+    wrap.className = 'apt-act__cellwrap';
+    wrap.dataset.key = key;
+    wrap.dataset.index = index;
+    var signSeg = buildSignSeg();
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.inputMode = 'numeric';
+    input.autocomplete = 'off';
+    input.className = 'apt-act__cell';
+    input.addEventListener('input', function () { this.value = this.value.replace(/[^0-9]/g, '').slice(0, 2); });
+    wrap.appendChild(signSeg);
+    wrap.appendChild(input);
+    return wrap;
+  }
+  function buildSpaceInputWidget(container, space, key) {
+    var wrap = document.createElement('div');
+    wrap.className = 'apt-act__space apt-act__space--' + space.shape.kind;
+    wrap.dataset.spaceKey = key;
+
+    if (space.shape.kind === 'column') {
+      for (var r = 0; r < space.shape.rows; r++) wrap.appendChild(_buildSpaceCellWrap(key, r));
+    } else if (space.shape.kind === 'matrix') {
+      wrap.style.display = 'grid';
+      wrap.style.gridTemplateColumns = 'repeat(' + space.shape.cols + ', auto)';
+      for (var rr = 0; rr < space.shape.rows; rr++) {
+        for (var cc = 0; cc < space.shape.cols; cc++) {
+          var idx = rr * space.shape.cols + cc;
+          var cellWrap = _buildSpaceCellWrap(key, idx);
+          cellWrap.style.gridRow = String(rr + 1);
+          cellWrap.style.gridColumn = String(cc + 1);
+          wrap.appendChild(cellWrap);
+        }
+      }
+    } else if (space.shape.kind === 'poly') {
+      for (var k = 0; k <= space.shape.degree; k++) {
+        var group = document.createElement('div');
+        group.className = 'apt-act__space__polyterm';
+        var cw = _buildSpaceCellWrap(key, k);
+        var label = document.createElement('span');
+        label.className = 'apt-act__space__polylabel';
+        label.textContent = k === 0 ? '' : (k === 1 ? '\u00b7 x' : '\u00b7 x^' + k);
+        group.appendChild(cw);
+        group.appendChild(label);
+        wrap.appendChild(group);
+      }
+    }
+    container.appendChild(wrap);
+    return wrap;
+  }
+  function readSpaceInputWidget(container, space, key) {
+    var coords = [];
+    var hasEmpty = false;
+    for (var i = 0; i < space.dim; i++) {
+      var wrap = container.querySelector('.apt-act__cellwrap[data-key="' + key + '"][data-index="' + i + '"]');
+      var input = wrap.querySelector('.apt-act__cell');
+      var raw = input.value.trim();
+      var v;
+      if (raw === '') { hasEmpty = true; v = 0; } else v = parseInt(raw, 10);
+      var sign = getSign(wrap);
+      coords.push(sign === '-' ? -v : v);
+    }
+    return { coords: coords, hasEmpty: hasEmpty };
+  }
+  function colorSpaceInputWidget(container, key, dim, cls) {
+    for (var i = 0; i < dim; i++) {
+      var wrap = container.querySelector('.apt-act__cellwrap[data-key="' + key + '"][data-index="' + i + '"]');
+      wrap.classList.remove('is-correct', 'is-wrong');
+      if (cls) wrap.classList.add(cls);
+      wrap.querySelector('.apt-act__cell').disabled = true;
+      setSignDisabled(wrap, true);
+    }
+  }
+
+  /* ---------- renderSevAsBasis / renderSevAsEquations (Decisión 5b) ---------- */
+  function renderSevAsBasis(space, vectors, sevName) {
+    var name = sevName || 'S';
+    var parts = vectors.map(function (v) { return space.toKatex(v); });
+    return name + ' = \\left\\langle ' + parts.join(',\\ ') + ' \\right\\rangle';
+  }
+  function renderSevAsEquations(space, equations, sevName, varNames) {
+    var name = sevName || 'S';
+    var n = space.dim;
+    var names = varNames || Array.from({ length: n }, function (_, i) { return 'x_{' + (i + 1) + '}'; });
+    function rowToLatex(row) {
+      var parts = [];
+      row.forEach(function (c, i) {
+        if (c === 0) return;
+        var abs = Math.abs(c);
+        var coefStr = abs === 1 ? '' : String(abs);
+        var term = coefStr + names[i];
+        if (parts.length === 0) parts.push((c < 0 ? '-' : '') + term);
+        else parts.push((c < 0 ? ' - ' : ' + ') + term);
+      });
+      return (parts.length ? parts.join('') : '0') + ' = 0';
+    }
+    var rows = equations.map(rowToLatex);
+    var body = rows.length > 1 ? '\\begin{cases} ' + rows.join(' \\\\ ') + ' \\end{cases}' : rows[0];
+    return name + ' = \\left\\{ (' + names.join(',') + ') : ' + body + ' \\right\\}';
+  }
+
   function isMuted() { return muted; }
   function toggleMute() {
     muted = !muted;
@@ -1921,6 +2213,16 @@
     playWrongSound: playWrongSound,
     celebrate: celebrate,
     isMuted: isMuted,
-    toggleMute: toggleMute
+    toggleMute: toggleMute,
+    // -- Módulo de espacios (Unidad 2), agregado en v1.8 --
+    Frac: { Frac: Frac, fAdd: fAdd, fSub: fSub, fMul: fMul, fDiv: fDiv, fIsZero: fIsZero, fEquals: fEquals, fromInt: fromInt, intMatrixToFrac: intMatrixToFrac, rref: rref, rankOf: rankOf, rrefEqual: rrefEqual, fracRowToIntRow: fracRowToIntRow },
+    checkSpanEquivalence: checkSpanEquivalence,
+    SPACES: SPACES,
+    randomSpace: randomSpace,
+    buildSpaceInputWidget: buildSpaceInputWidget,
+    readSpaceInputWidget: readSpaceInputWidget,
+    colorSpaceInputWidget: colorSpaceInputWidget,
+    renderSevAsBasis: renderSevAsBasis,
+    renderSevAsEquations: renderSevAsEquations
   };
 })(window);
