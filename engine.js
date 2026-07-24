@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v1.10)
+   ÁLGEBRA PARA TODOS · engine.js (v1.12)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -88,7 +88,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '1.10';
+  var ENGINE_VERSION = '1.12';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -198,6 +198,7 @@
     '.apt-act__card{ background:var(--bg-card); border:1px solid rgba(151,161,216,0.18); border-radius:var(--radius); box-shadow:0 1px 3px rgba(0,0,0,.4), 0 10px 24px rgba(0,0,0,.35); padding:14px; display:flex; justify-content:center; overflow-x:auto; overflow-y:hidden; }',
     '.apt-act__content{ width:100%; display:flex; flex-direction:column; align-items:center; gap:6px; font-size:clamp(15px,4.4vw,19px); }',
     '.apt-act__content--sev{ font-size:clamp(12px,3.4vw,16px); }',
+    '.apt-act__sev-basis{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 10px; }',
     '.apt-act__content-ambient{ font-size:clamp(11px,3vw,13px); color:var(--ink-soft); }',
     '.apt-act__content svg{ width:100%; max-width:300px; aspect-ratio:1/1; display:block; }',
     '.apt-act__content .katex{ color:var(--ink); }',
@@ -270,7 +271,7 @@
     '.apt-act__space .apt-act__cell{ width:42px; flex:0 0 auto; }',
     '.apt-act__space--matrix{ gap:8px 6px; }',
     '.apt-act__space__polyterm{ display:flex; align-items:center; gap:4px; }',
-    '.apt-act__space__polylabel{ font-family:var(--font-serif); font-weight:700; font-size:15px; color:var(--ink-soft); white-space:nowrap; }',
+    '.apt-act__space__polylabel{ font-family:var(--font-serif); font-weight:700; font-size:15px; color:var(--ink); white-space:nowrap; }',
     '.apt-act__cellwrap{ display:flex; align-items:stretch; gap:3px; }',
     '.apt-act__lockcell{ display:flex; align-items:center; justify-content:center; min-height:40px; font-family:var(--font-mono); font-weight:500; font-size:clamp(15px,4.2vw,18px); color:var(--ink-soft); background:rgba(151,161,216,0.04); border:2px dashed rgba(151,161,216,0.28); border-radius:8px; }',
     '.apt-act__question{ text-align:center; font-family:var(--font-mono); font-size:14.5px; color:var(--ink-soft); margin:0 0 12px; }',
@@ -1422,9 +1423,26 @@
         var sbSpace = typeof phaseCfg.space === 'function' ? phaseCfg.space(current) : (phaseCfg.space || current.space);
         p.spaceAnswer.innerHTML = '';
         p.spaceAnswer.dataset.count = sbCount;
+
+        var sbLabel = (phaseCfg.answerLabel || 'B');
+        var sbEqOpen = document.createElement('span');
+        sbEqOpen.className = 'apt-act__eq';
+        sbEqOpen.textContent = sbLabel + ' = (';
+        p.spaceAnswer.appendChild(sbEqOpen);
         for (var sbi = 0; sbi < sbCount; sbi++) {
+          if (sbi > 0) {
+            var sbComma = document.createElement('span');
+            sbComma.className = 'apt-act__op';
+            sbComma.textContent = ',';
+            p.spaceAnswer.appendChild(sbComma);
+          }
           buildSpaceInputWidget(p.spaceAnswer, sbSpace, 'v' + sbi);
         }
+        var sbEqClose = document.createElement('span');
+        sbEqClose.className = 'apt-act__eq';
+        sbEqClose.textContent = ')';
+        p.spaceAnswer.appendChild(sbEqClose);
+
         p.checkBtn.disabled = false;
         p.checkBtn.onclick = function () { checkSpaceBasisPhase(idx); };
         if (p.retryBtn) p.retryBtn.onclick = function () { retrySpaceBasisPhase(idx); };
@@ -2352,6 +2370,39 @@
     var parts = vectors.map(function (v) { return space.toKatex(v); });
     return name + ' = \\left\\langle ' + parts.join(',\\ ') + ' \\right\\rangle';
   }
+  // Versión que arma el DOM directamente (en vez de devolver un string
+  // para un único katex.render): cada vector se renderiza en su propio
+  // <span>, separados por comas, dentro de un contenedor flex-wrap.
+  // Así el navegador puede partir la lista en varias líneas cuando no
+  // entra en el ancho disponible — nunca hace falta scroll horizontal,
+  // a diferencia de renderSevAsBasis (un solo bloque indivisible de KaTeX).
+  function renderSevAsBasisWrapped(container, space, vectors, sevName) {
+    var name = sevName || 'S';
+    container.innerHTML = '';
+    container.classList.add('apt-act__sev-basis');
+
+    var eq = document.createElement('span');
+    eq.className = 'apt-act__eq';
+    eq.textContent = name + ' = \u27e8';
+    container.appendChild(eq);
+
+    vectors.forEach(function (v, i) {
+      if (i > 0) {
+        var comma = document.createElement('span');
+        comma.className = 'apt-act__op';
+        comma.textContent = ',';
+        container.appendChild(comma);
+      }
+      var span = document.createElement('span');
+      container.appendChild(span);
+      window.katex.render(space.toKatex(v), span, { throwOnError: false });
+    });
+
+    var close = document.createElement('span');
+    close.className = 'apt-act__eq';
+    close.textContent = '\u27e9';
+    container.appendChild(close);
+  }
   function renderSevAsEquations(space, equations, sevName, varNames) {
     var name = sevName || 'S';
     var n = space.dim;
@@ -2401,6 +2452,7 @@
     colorSpaceInputWidget: colorSpaceInputWidget,
     renderSevAmbient: renderSevAmbient,
     renderSevAsBasis: renderSevAsBasis,
+    renderSevAsBasisWrapped: renderSevAsBasisWrapped,
     renderSevAsEquations: renderSevAsEquations
   };
 })(window);
