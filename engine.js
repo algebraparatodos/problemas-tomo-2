@@ -157,7 +157,11 @@
         { title: '¿Genera V? ¿Es base?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-7' },
         { title: 'Coordenadas de un vector en una base', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-8' }
       ] },
-    { title: 'Unidad 3: Transformaciones Lineales', activities: [] },
+    { title: 'Unidad 3: Transformaciones Lineales', activities: [
+        { title: '¿Es lineal?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-3-actividad-1' },
+        { title: '¿Existe? ¿Es única?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-3-actividad-2' },
+        { title: 'Armá la matriz asociada', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-3-actividad-3' }
+      ] },
     { title: 'Unidad 4: Diagonalización', activities: [] }
   ];
 
@@ -240,7 +244,6 @@
     '.apt-act__grid{ display:grid; gap:8px 6px; padding:4px 4px; }',
     '.apt-act__divider{ width:2px; background:var(--chalk-light); opacity:.45; justify-self:center; }',
     '.apt-act__solution{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 8px; margin-bottom:4px; }',
-    '.apt-act__space-answer{ display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:center; gap:14px 18px; margin-bottom:4px; }',
     '.apt-act__eq{ font-family:var(--font-serif); font-weight:700; font-size:18px; color:var(--ink); }',
     '.apt-act__op{ font-family:var(--font-serif); font-weight:700; font-size:18px; color:var(--ink-soft); }',
     '.apt-act__paramlabel{ font-family:var(--font-serif); font-weight:700; font-size:17px; color:var(--ink); }',
@@ -1257,16 +1260,6 @@
           '<div class="apt-act__solution"></div>' +
           '<p class="apt-act__hint">' + (phase.hint || 'Tocá − o + para cambiar el signo de cada número.') + '</p>' +
           '<button type="button" class="apt-act__check-btn">Comprobar</button>';
-      } else if (phase.mode === 'space-basis') {
-        // Sub-modo genérico: k copias del widget de espacio (Rn/matriz/
-        // polinomio, ver módulo de espacios v1.8), corregido con
-        // checkSpanEquivalence. k y el espacio se conocen recién en
-        // tiempo de ronda (dependen de current), así que acá solo se
-        // arma el contenedor vacío — el contenido real lo arma revealPhase.
-        interactionHTML =
-          '<div class="apt-act__space-answer"></div>' +
-          '<p class="apt-act__hint">' + (phase.hint || 'Tocá − o + para cambiar el signo de cada número.') + '</p>' +
-          '<button type="button" class="apt-act__check-btn">Comprobar</button>';
       } else if (phase.mode === 'setup') {
         // Paso de configuración PREVIO a generar el caso: uno o más
         // grupos de botones (cfg.phases[0].fields) + un botón que
@@ -1322,7 +1315,6 @@
         choicesWrap: el.querySelector('.apt-act__choices'),
         grid: el.querySelector('.apt-act__grid'),
         solution: el.querySelector('.apt-act__solution'),
-        spaceAnswer: el.querySelector('.apt-act__space-answer'),
         checkBtn: el.querySelector('.apt-act__check-btn'),
         setupBtn: el.querySelector('.apt-act__setup-btn'),
         feedback: el.querySelector('.apt-act__feedback'),
@@ -1416,17 +1408,6 @@
         p.checkBtn.onclick = function () { checkVectorsPhase(idx); };
         if (p.retryBtn) p.retryBtn.onclick = function () { retryVectorsPhase(idx); };
         if (p.showAnswerBtn) p.showAnswerBtn.onclick = function () { showAnswerVectorsPhase(idx); };
-      } else if (phaseCfg.mode === 'space-basis') {
-        var sbCount = resolveNum(phaseCfg.count, current);
-        var sbSpace = typeof phaseCfg.space === 'function' ? phaseCfg.space(current) : (phaseCfg.space || current.space);
-        p.spaceAnswer.innerHTML = '';
-        p.spaceAnswer.dataset.count = sbCount;
-        for (var sbi = 0; sbi < sbCount; sbi++) {
-          buildSpaceInputWidget(p.spaceAnswer, sbSpace, 'v' + sbi);
-        }
-        p.checkBtn.disabled = false;
-        p.checkBtn.onclick = function () { checkSpaceBasisPhase(idx); };
-        if (p.retryBtn) p.retryBtn.onclick = function () { retrySpaceBasisPhase(idx); };
       } else if (phaseCfg.mode === 'setup') {
         var selections = {};
         var fieldEls = p.el.querySelectorAll('.apt-act__setup-field');
@@ -1646,95 +1627,6 @@
       p.feedback.className = 'apt-act__feedback apt-act__feedback--hidden';
       if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
       if (p.showAnswerBtn) p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
-      refs.nextBtn.classList.add('apt-act__next-btn--hidden');
-      p.checkBtn.disabled = false;
-      phaseAnswered[idx] = false;
-    }
-
-    // ---------- space-basis ----------
-    // Sub-modo genérico (v1.9): responde con k vectores en cualquier
-    // espacio del catálogo (Rn/matriz/polinomio), corregido con
-    // checkSpanEquivalence — a diferencia de 'vectors', NO exige que
-    // la respuesta coincida con una base particular, solo que genere
-    // el mismo subespacio.
-    function checkSpaceBasisPhase(idx) {
-      if (phaseAnswered[idx]) return;
-      phaseAnswered[idx] = true;
-      var phaseCfg = cfg.phases[idx];
-      var p = refs.phaseRefs[idx];
-      root.classList.add('is-answered');
-
-      var sbCount = +p.spaceAnswer.dataset.count;
-      var sbSpace = typeof phaseCfg.space === 'function' ? phaseCfg.space(current) : (phaseCfg.space || current.space);
-
-      var reads = [];
-      var hasEmpty = false;
-      for (var i = 0; i < sbCount; i++) {
-        var r = readSpaceInputWidget(p.spaceAnswer, sbSpace, 'v' + i);
-        reads.push(r.coords);
-        if (r.hasEmpty) hasEmpty = true;
-      }
-
-      var expectedVectors = phaseCfg.getExpectedBasis(current); // array de "value" nativos del espacio
-      var expectedCoords = expectedVectors.map(function (v) { return sbSpace.toCoords(v); });
-
-      var spanResult = hasEmpty ? null : checkSpanEquivalence(reads, expectedCoords);
-      var correct = !hasEmpty && spanResult.ok;
-
-      var feedbackText;
-      if (hasEmpty) {
-        feedbackText = 'Dejaste alguna celda vacía (se tomó como 0 al revisar) — completá todas antes de comprobar la próxima vez.';
-      } else if (phaseCfg.explain) {
-        feedbackText = phaseCfg.explain(current, correct, spanResult);
-      } else if (correct) {
-        feedbackText = '¡Correcto! Es una base válida de ese subespacio (no hacía falta que coincidiera con una única respuesta).';
-      } else if (spanResult.reason === 'not-independent') {
-        feedbackText = 'Los vectores que pusiste no son linealmente independientes entre sí, así que no forman una base.';
-      } else if (spanResult.reason === 'not-in-span') {
-        feedbackText = 'Alguno de los vectores que pusiste no pertenece al subespacio pedido.';
-      } else {
-        feedbackText = 'La cantidad de vectores no corresponde a la dimensión del subespacio.';
-      }
-
-      // Colorear cada bloque: verde si ese vector individual pertenece al
-      // espacio esperado, rojo si no (cuando aplica: not-in-span). Si el
-      // problema es independencia o dimensión, no hay un vector puntual
-      // al que culpar, así que no coloreamos ninguno en rojo/verde.
-      for (var ci = 0; ci < sbCount; ci++) {
-        var cls = null;
-        if (correct) cls = 'is-correct';
-        else if (!hasEmpty && spanResult.reason === 'not-in-span') {
-          cls = spanResult.perVectorInSpan[ci] ? 'is-correct' : 'is-wrong';
-        }
-        colorSpaceInputWidget(p.spaceAnswer, 'v' + ci, sbSpace.dim, cls);
-      }
-
-      showPhaseFeedback(idx, correct, feedbackText);
-      p.checkBtn.disabled = true;
-      if (phaseCfg.onAnswered) phaseCfg.onAnswered(current, correct, reads, refs.content);
-
-      var isLast = idx === activePhaseCount() - 1;
-      if (correct) {
-        if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
-        advanceOrFinish(idx);
-      } else {
-        if (p.retryBtn) p.retryBtn.classList.remove('apt-act__retry-btn--hidden');
-        refs.nextBtn.classList.remove('apt-act__next-btn--hidden');
-        if (isLast) registerRoundResult(false);
-      }
-    }
-
-    function retrySpaceBasisPhase(idx) {
-      if (!phaseAnswered[idx]) return;
-      var p = refs.phaseRefs[idx];
-      root.classList.remove('is-answered');
-      p.spaceAnswer.querySelectorAll('.apt-act__cellwrap').forEach(function (wrap) {
-        wrap.classList.remove('is-correct', 'is-wrong');
-        wrap.querySelector('.apt-act__cell').disabled = false;
-        setSignDisabled(wrap, false);
-      });
-      p.feedback.className = 'apt-act__feedback apt-act__feedback--hidden';
-      if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
       refs.nextBtn.classList.add('apt-act__next-btn--hidden');
       p.checkBtn.disabled = false;
       phaseAnswered[idx] = false;
@@ -2133,20 +2025,68 @@
   }
 
   /* ---------- Catálogo de espacios (Decisión C) ---------- */
+  /* Nombres de variable para enunciados SIMBÓLICOS (Unidad 3 en
+     adelante): el libro escribe un polinomio genérico como
+     a_0 + a_1x + a_2x^2 y una matriz 2x2 genérica como [a b; c d].
+     Agregado en v1.9 — campos nuevos, no reemplazan nada. */
+  var _ABC = 'abcdefghijklmnop'.split('');
+  function _matrixVarNames(rows, cols, plain) {
+    var out = [], total = rows * cols;
+    if (total <= _ABC.length) {
+      for (var i = 0; i < total; i++) out.push(_ABC[i]);
+      return out;
+    }
+    for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) {
+      out.push(plain ? ('a' + (r + 1) + (c + 1)) : ('a_{' + (r + 1) + (c + 1) + '}'));
+    }
+    return out;
+  }
+  var _SUBS = ['₀', '₁', '₂', '₃', '₄', '₅', '₆'];
+  function _polyVarNames(degree, plain) {
+    var out = [];
+    for (var k = 0; k <= degree; k++) out.push(plain ? ('a' + _SUBS[k]) : ('a_' + k));
+    return out;
+  }
+
   function _makeRn(n) {
+    var vt = ['x', 'y', 'z', 'w', 'v'].slice(0, n);
+    if (n > 5) { vt = []; for (var q = 1; q <= n; q++) vt.push('x_{' + q + '}'); }
     return {
       id: 'R' + n, family: 'rn', label: 'R' + n, dim: n,
+      // labelTex: el label listo para KaTeX. `label` se deja intacto
+      // porque las actividades de Unidad 2 ya dependen de su valor.
+      labelTex: '\\mathbb{R}^' + n,
       shape: { kind: 'column', rows: n },
+      varsTex: vt.slice(),
+      varsPlain: ['x', 'y', 'z', 'w', 'v'].slice(0, n),
       toCoords: function (v) { return v.slice(); },
       fromCoords: function (c) { return c.slice(); },
-      toKatex: function (v) { return '\\begin{bmatrix} ' + v.join(' \\\\ ') + ' \\end{bmatrix}'; }
+      toKatex: function (v) { return '\\begin{bmatrix} ' + v.join(' \\\\ ') + ' \\end{bmatrix}'; },
+      // Tupla en fila: (x, y, z). Es la notación que usa el libro para
+      // Rⁿ en Unidad 3 (T(1,0,1) = (2,1)). NO reemplaza a toKatex.
+      toKatexRow: function (v) { return '\\left(' + v.join(',\\ ') + '\\right)'; },
+      // Igual que toKatex/toKatexRow pero recibiendo EXPRESIONES (strings)
+      // en vez de números — para enunciados simbólicos tipo T(x,y)=(2x-y, x).
+      symbolicKatex: function (parts, opts) {
+        return (opts && opts.column)
+          ? '\\begin{bmatrix} ' + parts.join(' \\\\ ') + ' \\end{bmatrix}'
+          : '\\left(' + parts.join(',\\ ') + '\\right)';
+      }
     };
   }
   function _makeMatrix(rows, cols) {
     var dim = rows * cols;
     return {
       id: 'M' + rows + 'x' + cols, family: 'matrix', label: 'M_{' + rows + '\\times ' + cols + '}(\\mathbb{R})', dim: dim,
+      labelTex: 'M_{' + rows + '\\times ' + cols + '}(\\mathbb{R})',
       shape: { kind: 'matrix', rows: rows, cols: cols },
+      varsTex: _matrixVarNames(rows, cols, false),
+      varsPlain: _matrixVarNames(rows, cols, true),
+      symbolicKatex: function (parts) {
+        var body = [];
+        for (var r2 = 0; r2 < rows; r2++) body.push(parts.slice(r2 * cols, (r2 + 1) * cols).join(' & '));
+        return '\\begin{bmatrix} ' + body.join(' \\\\ ') + ' \\end{bmatrix}';
+      },
       toCoords: function (v) {
         var out = [];
         for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) out.push(v[r][c]);
@@ -2167,7 +2107,21 @@
     var dim = degree + 1;
     return {
       id: 'P' + degree, family: 'poly', label: 'P_' + degree + '(\\mathbb{R})', dim: dim,
+      labelTex: 'P_' + degree + '(\\mathbb{R})',
       shape: { kind: 'poly', degree: degree },
+      varsTex: _polyVarNames(degree, false),
+      varsPlain: _polyVarNames(degree, true),
+      symbolicKatex: function (parts) {
+        // Los coeficientes compuestos van entre paréntesis para que
+        // "a_0 - a_1" multiplicado por x no se lea mal.
+        var out = [];
+        for (var k2 = 0; k2 <= degree; k2++) {
+          var piece = parts[k2];
+          if (/[+\-]\s/.test(piece)) piece = '\\left(' + piece + '\\right)';
+          out.push(piece + (k2 === 0 ? '' : (k2 === 1 ? 'x' : 'x^{' + k2 + '}')));
+        }
+        return out.join(' + ');
+      },
       toCoords: function (v) { return v.slice(); },
       fromCoords: function (c) { return c.slice(); },
       toKatex: function (v) {
@@ -2188,6 +2142,10 @@
     };
   }
   var SPACES = {
+    // R2 agregado en v1.9 para Unidad 3 (TL geométricas en el plano).
+    // OJO: randomSpace() NO lo incluye a propósito, para no cambiar el
+    // sorteo de las actividades de Unidad 2 que ya están publicadas.
+    R2: _makeRn(2),
     R3: _makeRn(3), R4: _makeRn(4),
     M2x2: _makeMatrix(2, 2), M2x3: _makeMatrix(2, 3), M3x2: _makeMatrix(3, 2),
     P2: _makePoly(2), P3: _makePoly(3)
