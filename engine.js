@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v1.4)
+   ÁLGEBRA PARA TODOS · engine.js (v1.6)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -88,7 +88,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '1.4';
+  var ENGINE_VERSION = '1.6';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -148,7 +148,10 @@
       ]
     },
     { title: 'Unidad 2: Subespacios vectoriales', activities: [
-        { title: 'Operaciones con conjuntos', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-1' }
+        { title: 'Operaciones con conjuntos', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-1' },
+        { title: '¿Es una LCI?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-2' },
+        { title: '¿Es una LCE?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-3' },
+        { title: 'Neutro y simétrico de una operación "rara"', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-4' }
       ] },
     { title: 'Unidad 3: Transformaciones Lineales', activities: [] },
     { title: 'Unidad 4: Diagonalización', activities: [] }
@@ -305,6 +308,9 @@
     '.apt-act__next-btn:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
     '.apt-act__footer{ display:flex; flex-direction:column; gap:8px; padding-top:6px; font-family:var(--font-serif); font-weight:700; font-size:12px; color:var(--chalk-light); }',
     '.apt-act__catalog-btn{ align-self:center; display:flex; align-items:center; gap:6px; font-family:var(--font-serif); font-weight:700; font-size:11.5px; color:var(--chalk-light); background:transparent; border:1px solid rgba(151,161,216,0.3); border-radius:999px; padding:6px 14px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .15s ease, border-color .15s ease; }',
+    '.apt-act__exam-btn{ align-self:center; display:flex; align-items:center; gap:6px; font-family:var(--font-serif); font-weight:700; font-size:11.5px; color:var(--chalk-light); text-decoration:none; background:transparent; border:1px solid rgba(151,161,216,0.3); border-radius:999px; padding:6px 14px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .15s ease, border-color .15s ease; }',
+    '.apt-act__exam-btn:hover{ background:rgba(151,161,216,0.1); }',
+    '.apt-act__exam-btn:focus-visible{ outline:2px solid var(--chalk-light); outline-offset:2px; }',
     '.apt-act__catalog-btn:hover{ background:rgba(151,161,216,0.1); }',
     '.apt-act__catalog-btn:active{ transform:scale(.97); }',
     '.apt-act__catalog-btn:focus-visible{ outline:2px solid var(--chalk-light); outline-offset:2px; }',
@@ -811,6 +817,7 @@
         '<button type="button" class="apt-act__catalog-btn">📚 Todos los ejercicios</button>' +
         (nextEntry ? '<a class="apt-act__nav-btn apt-act__nav-btn--next" href="' + nextEntry.url + '">Siguiente →</a>' : '') +
       '</div>' +
+      '<a class="apt-act__exam-btn" href="https://www.algebraparatodos.com/ejercicios-algebra-lineal">📝 Modo examen</a>' +
       '<div class="apt-act__footer-row">' +
         '<span class="apt-act__brand-group">' +
           '<a class="apt-act__brand-link" href="https://www.instagram.com/soyjuanisilva/" target="_blank" rel="noopener">Álgebra Para Todos</a>' +
@@ -888,9 +895,16 @@
     var rows = resolveNum(gridCfg.rows, current), cols = resolveNum(gridCfg.cols, current);
     var noDivider = !!gridCfg.noDivider;
     var divAfter = noDivider ? cols : (gridCfg.dividerAfterCol != null ? gridCfg.dividerAfterCol : cols - 1);
-    gridEl.style.gridTemplateColumns = noDivider
-      ? 'repeat(' + cols + ', minmax(62px,74px))'
-      : 'repeat(' + divAfter + ', minmax(62px,74px)) 10px repeat(' + (cols - divAfter) + ', minmax(62px,74px))';
+    // repeat(0, ...) es CSS inválido y tira abajo TODO el valor de
+    // grid-template-columns (la celda queda sin límite de ancho) —
+    // por eso cada segmento se arma solo si su conteo es > 0.
+    var beforeCount = noDivider ? cols : divAfter;
+    var afterCount = noDivider ? 0 : (cols - divAfter);
+    var segments = [];
+    if (beforeCount > 0) segments.push('repeat(' + beforeCount + ', minmax(62px,74px))');
+    if (!noDivider) segments.push('10px');
+    if (afterCount > 0) segments.push('repeat(' + afterCount + ', minmax(62px,74px))');
+    gridEl.style.gridTemplateColumns = segments.join(' ');
     for (var r = 0; r < rows; r++) {
       for (var c = 0; c < cols; c++) {
         var lockedVal = gridCfg.lockedValue ? gridCfg.lockedValue(current, r, c) : null;
@@ -1080,13 +1094,14 @@
     root.classList.add('apt-act');
     var interactionHTML = '';
     if (cfg.mode === 'grid') {
+      var hideBrackets = !!(cfg.grid && cfg.grid.hideBrackets);
       interactionHTML =
         '<div class="apt-act__matrixwrap">' +
-          '<span class="apt-act__bracket apt-act__bracket--left"></span>' +
+          (hideBrackets ? '' : '<span class="apt-act__bracket apt-act__bracket--left"></span>') +
           '<div class="apt-act__grid"></div>' +
-          '<span class="apt-act__bracket apt-act__bracket--right"></span>' +
+          (hideBrackets ? '' : '<span class="apt-act__bracket apt-act__bracket--right"></span>') +
         '</div>' +
-        '<p class="apt-act__hint">Tocá − o + para cambiar el signo de cada número.</p>' +
+        '<p class="apt-act__hint">Tocá − o + para cambiar el signo' + (hideBrackets ? '' : ' de cada número') + '.</p>' +
         '<button type="button" class="apt-act__check-btn">Comprobar</button>';
     } else if (cfg.mode === 'multiselect') {
       // Varias opciones tildables a la vez (0, 1 o más pueden ser correctas)
@@ -1195,11 +1210,12 @@
     var phasesHTML = cfg.phases.map(function (phase, idx) {
       var interactionHTML;
       if (phase.mode === 'grid') {
+        var phaseHideBrackets = !!(phase.grid && phase.grid.hideBrackets);
         interactionHTML =
           '<div class="apt-act__matrixwrap">' +
-            '<span class="apt-act__bracket apt-act__bracket--left"></span>' +
+            (phaseHideBrackets ? '' : '<span class="apt-act__bracket apt-act__bracket--left"></span>') +
             '<div class="apt-act__grid"></div>' +
-            '<span class="apt-act__bracket apt-act__bracket--right"></span>' +
+            (phaseHideBrackets ? '' : '<span class="apt-act__bracket apt-act__bracket--right"></span>') +
           '</div>' +
           '<p class="apt-act__hint">' + (phase.hint || 'Tocá − o + para cambiar el signo de cada número.') + '</p>' +
           '<button type="button" class="apt-act__check-btn">Comprobar</button>';
