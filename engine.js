@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v1.6)
+   ÁLGEBRA PARA TODOS · engine.js (v1.7)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -88,7 +88,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '1.6';
+  var ENGINE_VERSION = '1.7';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -151,7 +151,11 @@
         { title: 'Operaciones con conjuntos', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-1' },
         { title: '¿Es una LCI?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-2' },
         { title: '¿Es una LCE?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-3' },
-        { title: 'Neutro y simétrico de una operación "rara"', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-4' }
+        { title: 'Neutro y simétrico de una operación "rara"', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-4' },
+        { title: '¿Es un subespacio vectorial?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-5' },
+        { title: '¿Es LI o LD?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-6' },
+        { title: '¿Genera V? ¿Es base?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-7' },
+        { title: 'Coordenadas de un vector en una base', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-8' }
       ] },
     { title: 'Unidad 3: Transformaciones Lineales', activities: [] },
     { title: 'Unidad 4: Diagonalización', activities: [] }
@@ -421,6 +425,21 @@
   // (ej: el orden de la matriz varía por ronda en factorización LU).
   function resolveNum(spec, current) {
     return typeof spec === 'function' ? spec(current) : spec;
+  }
+
+  // Soporta LaTeX inline en textos como el subtítulo (ej. "encontrá $[v]_B$")
+  // usando $...$ como delimitador. El resto del texto queda tal cual.
+  // Si KaTeX todavía no está disponible, devuelve el texto sin tocar.
+  function renderTextWithMath(text) {
+    if (!text) return '';
+    if (!window.katex) return text;
+    return text.split(/(\$[^$]+\$)/g).map(function (part) {
+      if (part.length > 1 && part.charAt(0) === '$' && part.charAt(part.length - 1) === '$') {
+        try { return window.katex.renderToString(part.slice(1, -1), { throwOnError: false }); }
+        catch (e) { return part; }
+      }
+      return part;
+    }).join('');
   }
 
   /* ------------------------------------------------------------
@@ -1126,7 +1145,7 @@
         '<div class="apt-act__topbar">' +
           '<p class="apt-act__eyebrow">' + (cfg.eyebrow || '') + '</p>' +
           '<h1 class="apt-act__title">' + (cfg.title || '') + '</h1>' +
-          '<p class="apt-act__subtitle">' + (cfg.subtitle || '') + '</p>' +
+          '<p class="apt-act__subtitle">' + renderTextWithMath(cfg.subtitle || '') + '</p>' +
         '</div>' +
         '<div class="apt-act__card"><div class="apt-act__content" aria-live="polite"></div></div>' +
         interactionHTML +
@@ -1261,7 +1280,7 @@
         '<div class="apt-act__topbar">' +
           '<p class="apt-act__eyebrow">' + (cfg.eyebrow || '') + '</p>' +
           '<h1 class="apt-act__title">' + (cfg.title || '') + '</h1>' +
-          '<p class="apt-act__subtitle">' + (cfg.subtitle || '') + '</p>' +
+          '<p class="apt-act__subtitle">' + renderTextWithMath(cfg.subtitle || '') + '</p>' +
         '</div>' +
         '<div class="apt-act__card"><div class="apt-act__content" aria-live="polite"></div></div>' +
         phasesHTML +
