@@ -98,6 +98,18 @@
     '.apt-exam__choice-btn:active{ transform:scale(.98); }',
     '.apt-exam__choice-sub{ font-family:var(--font-mono); font-weight:400; font-size:11px; opacity:.75; }',
     '.apt-exam__matrixwrap{ display:flex; align-items:stretch; justify-content:center; gap:6px; }',
+    '.apt-exam__solution{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 8px; margin-bottom:4px; }',
+    '.apt-exam__eq{ font-family:var(--font-serif); font-weight:700; font-size:18px; color:var(--ink); }',
+    '.apt-exam__op{ font-family:var(--font-serif); font-weight:700; font-size:18px; color:var(--ink-soft); }',
+    '.apt-exam__paramlabel{ font-family:var(--font-serif); font-weight:700; font-size:17px; color:var(--ink); }',
+    '.apt-exam__vec{ display:flex; align-items:stretch; gap:3px; }',
+    '.apt-exam__vec-bracket{ width:6px; border-top:2.5px solid var(--ink-soft); border-bottom:2.5px solid var(--ink-soft); flex:0 0 auto; }',
+    '.apt-exam__vec-bracket--left{ border-left:2.5px solid var(--ink-soft); border-radius:4px 0 0 4px; }',
+    '.apt-exam__vec-bracket--right{ border-right:2.5px solid var(--ink-soft); border-radius:0 4px 4px 0; }',
+    '.apt-exam__vec-col{ display:flex; flex-direction:column; gap:5px; padding:4px 2px; }',
+    '.apt-exam__vec .apt-exam__cellwrap{ gap:2px; }',
+    '.apt-exam__vec .apt-exam__signseg{ flex-basis:26px; width:26px; }',
+    '.apt-exam__vec .apt-exam__cell{ width:40px; flex:0 0 auto; }',
     '.apt-exam__bracket{ width:9px; border-top:3px solid var(--ink-soft); border-bottom:3px solid var(--ink-soft); }',
     '.apt-exam__bracket--left{ border-left:3px solid var(--ink-soft); border-radius:5px 0 0 5px; }',
     '.apt-exam__bracket--right{ border-right:3px solid var(--ink-soft); border-radius:0 5px 5px 0; }',
@@ -198,8 +210,19 @@
     var bracketR = document.createElement('span'); bracketR.className = 'apt-exam__bracket apt-exam__bracket--right';
     var grid = document.createElement('div');
     grid.className = 'apt-exam__grid';
-    var totalCols = dividerAfterCol ? cols + 1 : cols;
-    grid.style.gridTemplateColumns = 'repeat(' + totalCols + ', minmax(78px,92px))';
+    // El divisor es una columna angosta (10px) separada de las columnas de
+    // datos — NUNCA otra columna de minmax(62px,74px) completa (eso fue lo
+    // que causaba desborde real en mobile con matrices de 4+ columnas).
+    // Mismo enfoque que engine.js, con la misma protección: repeat(0,...)
+    // es CSS inválido y tira abajo TODO el valor de grid-template-columns.
+    var divAfter = dividerAfterCol != null ? dividerAfterCol : cols;
+    var beforeCount = divAfter;
+    var afterCount = cols - divAfter;
+    var segments = [];
+    if (beforeCount > 0) segments.push('repeat(' + beforeCount + ', minmax(62px,74px))');
+    if (dividerAfterCol != null) segments.push('10px');
+    if (afterCount > 0) segments.push('repeat(' + afterCount + ', minmax(62px,74px))');
+    grid.style.gridTemplateColumns = segments.join(' ');
 
     for (var r = 0; r < rows; r++) {
       for (var c = 0; c < cols; c++) {
@@ -261,6 +284,110 @@
       }
       return { matrix: M, hasEmpty: hasEmpty };
     };
+  }
+
+  // ---------- mode:'vectors' — "S = particular + v1·t1 + v2·t2 + ..." ----------
+  function buildSignedCellVec(key, row) {
+    var wrap = document.createElement('div');
+    wrap.className = 'apt-exam__cellwrap';
+    wrap.dataset.key = key; wrap.dataset.row = row;
+    var signSeg = document.createElement('div');
+    signSeg.className = 'apt-exam__signseg';
+    signSeg.dataset.sign = '+';
+    ['-', '+'].forEach(function (s) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'apt-exam__signseg-btn' + (s === '+' ? ' is-active' : '');
+      btn.textContent = s; btn.dataset.sign = s;
+      btn.addEventListener('click', function () {
+        signSeg.dataset.sign = s;
+        signSeg.querySelectorAll('.apt-exam__signseg-btn').forEach(function (b) { b.classList.toggle('is-active', b.dataset.sign === s); });
+      });
+      signSeg.appendChild(btn);
+    });
+    var input = document.createElement('input');
+    input.type = 'text'; input.inputMode = 'numeric'; input.autocomplete = 'off';
+    input.className = 'apt-exam__cell';
+    input.addEventListener('input', function () { this.value = this.value.replace(/[^0-9]/g, '').slice(0, 2); });
+    wrap.appendChild(signSeg); wrap.appendChild(input);
+    return wrap;
+  }
+
+  function buildVecBlockExam(key, rows) {
+    var vec = document.createElement('div');
+    vec.className = 'apt-exam__vec';
+    var left = document.createElement('span'); left.className = 'apt-exam__vec-bracket apt-exam__vec-bracket--left';
+    var right = document.createElement('span'); right.className = 'apt-exam__vec-bracket apt-exam__vec-bracket--right';
+    var col = document.createElement('div');
+    col.className = 'apt-exam__vec-col';
+    for (var r = 0; r < rows; r++) col.appendChild(buildSignedCellVec(key, r));
+    vec.appendChild(left); vec.appendChild(col); vec.appendChild(right);
+    return vec;
+  }
+
+  function readVectorBlockExam(container, key, rows) {
+    var vals = []; var hasEmpty = false;
+    for (var r = 0; r < rows; r++) {
+      var wrap = container.querySelector('.apt-exam__cellwrap[data-key="' + key + '"][data-row="' + r + '"]');
+      var input = wrap.querySelector('.apt-exam__cell');
+      var raw = input.value.trim();
+      var v;
+      if (raw === '') { hasEmpty = true; v = 0; } else v = parseInt(raw, 10);
+      var sign = wrap.querySelector('.apt-exam__signseg').dataset.sign;
+      vals.push(sign === '-' ? -v : v);
+    }
+    return { vals: vals, hasEmpty: hasEmpty };
+  }
+
+  function buildVectorsInput(container, vecCfg, current) {
+    container.innerHTML = '';
+    container.className = 'apt-exam__solution';
+    var rows = resolveNum(vecCfg.rows, current);
+    var count = resolveNum(vecCfg.count, current);
+    var hasParticular = vecCfg.hasParticular !== false;
+
+    if (hasParticular) {
+      var eq = document.createElement('span');
+      eq.className = 'apt-exam__eq';
+      eq.textContent = 'S =';
+      container.appendChild(eq);
+      container.appendChild(buildVecBlockExam('p', rows));
+    }
+    for (var i = 0; i < count; i++) {
+      if (hasParticular || i > 0) {
+        var plus = document.createElement('span');
+        plus.className = 'apt-exam__op';
+        plus.textContent = '+';
+        container.appendChild(plus);
+      }
+      container.appendChild(buildVecBlockExam('d' + i, rows));
+      var label = document.createElement('span');
+      label.className = 'apt-exam__paramlabel';
+      label.textContent = '· ' + (vecCfg.paramLabel ? vecCfg.paramLabel(current, i) : ('t' + (i + 1)));
+      container.appendChild(label);
+    }
+
+    return function readVectors() {
+      var particularRead = hasParticular ? readVectorBlockExam(container, 'p', rows) : null;
+      var vectorReads = [];
+      for (var i2 = 0; i2 < count; i2++) vectorReads.push(readVectorBlockExam(container, 'd' + i2, rows));
+      var hasEmpty = (particularRead && particularRead.hasEmpty) || vectorReads.some(function (v) { return v.hasEmpty; });
+      return {
+        particularVals: particularRead ? particularRead.vals : null,
+        vectorVals: vectorReads.map(function (v) { return v.vals; }),
+        hasEmpty: hasEmpty
+      };
+    };
+  }
+
+  function vectorsToText(particular, vectors, paramLabels) {
+    var parts = [];
+    if (particular) parts.push('(' + particular.join(', ') + ')');
+    vectors.forEach(function (v, i) {
+      var lbl = (paramLabels && paramLabels[i]) || ('t' + (i + 1));
+      parts.push('+ (' + v.join(', ') + ')·' + lbl);
+    });
+    return parts.join(' ');
   }
 
   function matrixToLatex(M) {
@@ -406,7 +533,7 @@
       refs.progressFill.style.width = (100 * examState.index / examState.questions.length) + '%';
 
       q.exercise.renderContent(refs.content, q.current);
-      refs.promptEl.textContent = q.exercise.prompt || '';
+      refs.promptEl.textContent = (typeof q.exercise.prompt === 'function' ? q.exercise.prompt(q.current) : q.exercise.prompt) || '';
 
       refs.answer.innerHTML = '';
       var readMatrix = null;
@@ -440,6 +567,22 @@
           submitAnswer(read.matrix, read.hasEmpty);
         });
         refs.answer.appendChild(checkBtn);
+      } else if (q.exercise.type === 'vectors') {
+        var vecContainer = document.createElement('div');
+        refs.answer.appendChild(vecContainer);
+        var readVectors = buildVectorsInput(vecContainer, q.exercise.vectors, q.current);
+        var vhint = document.createElement('p');
+        vhint.className = 'apt-exam__hint';
+        vhint.textContent = 'Tocá − o + para cambiar el signo de cada número.';
+        refs.answer.appendChild(vhint);
+        var vCheckBtn = document.createElement('button');
+        vCheckBtn.type = 'button';
+        vCheckBtn.className = 'apt-exam__check-btn';
+        vCheckBtn.textContent = 'Confirmar respuesta';
+        vCheckBtn.addEventListener('click', function () {
+          submitAnswer(readVectors());
+        });
+        refs.answer.appendChild(vCheckBtn);
       } else if (q.exercise.type === 'multiselect') {
         var msWrap = document.createElement('div');
         msWrap.className = 'apt-exam__multiselect';
@@ -498,7 +641,21 @@
         var correctLabels = msOpts.filter(function (o) { return o.correct; }).map(function (o) { return o.label; });
         studentAnswerDisplay = { type: 'list', value: studentLabels.length ? studentLabels : ['(ninguna)'], rawValue: selectedSet };
         correctAnswerDisplay = { type: 'list', value: correctLabels.length ? correctLabels : ['(ninguna)'] };
-      } else {
+      } else if (q.exercise.type === 'vectors') {
+        var vResult = q.exercise.checkVectors(q.current, value.particularVals, value.vectorVals, value.hasEmpty);
+        correct = !!vResult.correct && !value.hasEmpty;
+        var paramLabels = [];
+        for (var pi = 0; pi < value.vectorVals.length; pi++) {
+          paramLabels.push(q.exercise.vectors.paramLabel ? q.exercise.vectors.paramLabel(q.current, pi) : ('t' + (pi + 1)));
+        }
+        studentAnswerDisplay = { type: 'text', value: vectorsToText(value.particularVals, value.vectorVals, paramLabels), rawValue: value };
+        if (q.exercise.getAnswerVectors) {
+          var ans = q.exercise.getAnswerVectors(q.current);
+          correctAnswerDisplay = { type: 'text', value: vectorsToText(ans.particular, ans.vectors, paramLabels) + ' (una posibilidad — no es la única solución válida)' };
+        } else {
+          correctAnswerDisplay = { type: 'text', value: '(hay más de una respuesta válida — ver la explicación)' };
+        }
+      } else if (q.exercise.type === 'grid') {
         var result = q.exercise.checkGrid(q.current, value, !!hasEmpty);
         correct = result.correct && !hasEmpty;
         studentAnswerDisplay = { type: 'matrix', value: value };
@@ -588,6 +745,9 @@
         explainText = rec.exercise.explain(rec.current, rec.correct, rec.studentAnswerDisplay && rec.studentAnswerDisplay.rawValue);
       } else if (rec.exercise.type === 'multiselect') {
         explainText = rec.exercise.explain(rec.current, rec.correct);
+      } else if (rec.exercise.type === 'vectors') {
+        var rv = rec.studentAnswerDisplay.rawValue;
+        explainText = rec.exercise.checkVectors(rec.current, rv.particularVals, rv.vectorVals, rv.hasEmpty).feedbackText;
       } else {
         explainText = rec.exercise.checkGrid ? rec.exercise.checkGrid(rec.current, rec.studentAnswerDisplay.value, false).feedbackText : '';
       }
