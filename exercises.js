@@ -2364,5 +2364,1192 @@ var CASES = [
     });
   })();
 
+
+  (function () {
+
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function randNonZero(min,max){ var v; do{ v=randInt(min,max); }while(v===0); return v; }
+  function randChoice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function shuffleArr(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+    return a;
+  }
+  function buildMatrix(rows,cols){
+    var M=[];
+    for(var r=0;r<rows;r++){ var row=[]; for(var c=0;c<cols;c++) row.push(randNonZero(-9,9)); M.push(row); }
+    return M;
+  }
+  function matricesEqual(A,B){
+    if(A.length!==B.length) return false;
+    for(var r=0;r<A.length;r++){
+      if(A[r].length!==B[r].length) return false;
+      for(var c=0;c<A[r].length;c++) if(A[r][c]!==B[r][c]) return false;
+    }
+    return true;
+  }
+
+  function generateCase(){
+    var rows, cols;
+    do{ rows=randInt(1,3); cols=randInt(1,3); }while(rows===1 && cols===1); // 1x1: dos distractores colapsarían en lo mismo
+    var A = buildMatrix(rows,cols);
+    var k = randChoice([-6,-5,-4,-3,-2,-1,2,3,4,5,6]); // sin 0 ni 1 (triviales)
+    var correct = A.map(function(row){ return row.map(function(v){ return k*v; }); });
+
+    var allCells = [];
+    for(var r=0;r<rows;r++) for(var c=0;c<cols;c++) allCells.push([r,c]);
+    var pool = shuffleArr(allCells);
+    while(pool.length < 3) pool.push(pool[pool.length % allCells.length]);
+
+    var d1 = correct.map(function(row){ return row.slice(); });
+    d1[pool[0][0]][pool[0][1]] = A[pool[0][0]][pool[0][1]]; // "me olvidé de multiplicar esta celda"
+
+    var d2 = correct.map(function(row){ return row.slice(); });
+    d2[pool[1][0]][pool[1][1]] = -k * A[pool[1][0]][pool[1][1]]; // "invertí el signo en esta celda"
+
+    var d3, delta, tries=0;
+    do{
+      d3 = correct.map(function(row){ return row.slice(); });
+      delta = randNonZero(-4,4);
+      d3[pool[2][0]][pool[2][1]] = correct[pool[2][0]][pool[2][1]] + delta;
+      tries++;
+    } while((matricesEqual(d3,correct) || matricesEqual(d3,d1) || matricesEqual(d3,d2)) && tries<30);
+
+    var allOpts = [
+      { kind:'sum', matrix:correct, correct:true },
+      { kind:'forgot-cell', matrix:d1, correct:false },
+      { kind:'sign-cell', matrix:d2, correct:false },
+      { kind:'tweak-cell', matrix:d3, correct:false }
+    ];
+    var wrongIdx = 0;
+    var choicesData = allOpts.map(function(o){
+      var value = o.correct ? 'correct' : ('w'+(wrongIdx++));
+      return { value:value, kind:o.kind, matrix:o.matrix, correct:o.correct };
+    });
+    choicesData = shuffleArr(choicesData);
+
+    return { rows:rows, cols:cols, A:A, k:k, choicesData:choicesData };
+  }
+
+  function matrixLatex(M){
+    return '\\begin{bmatrix} ' + M.map(function(row){ return row.join(' & '); }).join(' \\\\ ') + ' \\end{bmatrix}';
+  }
+  function renderContent(container, current){
+    container.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;"><div class="apt-row apt-row-k"></div><div class="apt-row apt-row-a"></div></div>';
+    var rowK = container.querySelector('.apt-row-k');
+    var rowA = container.querySelector('.apt-row-a');
+    window.katex.render('k = ' + current.k, rowK, { throwOnError:false });
+    window.katex.render('A = ' + matrixLatex(current.A), rowA, { throwOnError:false });
+  }
+
+  
+    EXERCISES.push({
+      id: 'producto-escalar',
+      title: 'Producto de una matriz por un escalar',
+      unit: 'Unidad 1: Matrices y SEL',
+      topic: 'Tipos y operaciones con matrices',
+      needsKatex: true,
+      type: 'choices',
+      prompt: 'Elegí cuál es el resultado de multiplicar k · A.',
+      generate: generateCase,
+      renderContent: renderContent,
+      choices: function (current) {
+        return current.choicesData.map(function (o) {
+          return { value: o.value, label: window.katex.renderToString(matrixLatex(o.matrix), { throwOnError: false }) };
+        });
+      },
+      check: function (current, value) { return value === 'correct'; },
+      explain: function (current, correct, value) {
+        var clicked = current.choicesData.filter(function (o) { return o.value === value; })[0];
+        if (correct) return 'Correcto: cada entrada de A se multiplica por k.';
+        var msg = 'Cada entrada de A se multiplica por k.';
+        if (clicked.kind === 'forgot-cell') msg = 'Esa opción se olvidó de multiplicar una de las celdas.';
+        if (clicked.kind === 'sign-cell') msg = 'Esa opción invirtió el signo en una de las celdas.';
+        if (clicked.kind === 'tweak-cell') msg = 'Esa opción tiene un error de cálculo en una celda.';
+        return 'No es correcto. ' + msg;
+      }
+    });
+  })();
+
+  (function () {
+
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function randNonZero(min,max){ var v; do{ v=randInt(min,max); }while(v===0); return v; }
+  function shuffleArr(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+    return a;
+  }
+  function buildMatrix(rows,cols){
+    var M=[];
+    for(var r=0;r<rows;r++){ var row=[]; for(var c=0;c<cols;c++) row.push(randNonZero(-9,9)); M.push(row); }
+    return M;
+  }
+  function transpose(M){
+    var rows=M.length, cols=M[0].length, T=[];
+    for(var c=0;c<cols;c++){ var row=[]; for(var r=0;r<rows;r++) row.push(M[r][c]); T.push(row); }
+    return T;
+  }
+  function matricesEqual(A,B){
+    if(A.length!==B.length) return false;
+    for(var r=0;r<A.length;r++){
+      if(A[r].length!==B[r].length) return false;
+      for(var c=0;c<A[r].length;c++) if(A[r][c]!==B[r][c]) return false;
+    }
+    return true;
+  }
+  function buildDistinctVariant(correctMatrix, existing, generatorFn){
+    var candidate, tries=0;
+    do{ candidate = generatorFn(); tries++; }
+    while((matricesEqual(candidate,correctMatrix) || existing.some(function(m){ return matricesEqual(candidate,m); })) && tries<40);
+    return candidate;
+  }
+
+  function generateCase(){
+    var rows, cols;
+    do{ rows=randInt(1,3); cols=randInt(1,3); }while(rows===1 && cols===1); // 1x1: A=A^T siempre
+    var A = buildMatrix(rows,cols);
+    var correct = transpose(A);
+
+    // "no la transpuse" — salvo que A sea simétrica por azar (A=A^T)
+    var d1 = !matricesEqual(A,correct) ? A : (function(){
+      var m = A.map(function(row){ return row.slice(); });
+      var r = randInt(0,rows-1), c = randInt(0,cols-1);
+      m[r][c] = m[r][c] + randNonZero(-3,3);
+      return m;
+    })();
+
+    var d2 = buildDistinctVariant(correct, [d1], function(){
+      var m = correct.map(function(row){ return row.slice(); });
+      var r = randInt(0,cols-1), c = randInt(0,rows-1);
+      m[r][c] = correct[r][c] + randNonZero(-3,3);
+      return m;
+    });
+
+    // filas de la transpuesta invertidas — salvo que tenga 1 sola fila
+    // (A tenía 1 sola columna), donde invierto DENTRO de esa fila; y si
+    // encima esa fila es un palíndromo por azar, un respaldo con reintento.
+    var reversedCandidate = correct.length>1 ? correct.slice().reverse() : [correct[0].slice().reverse()];
+    var d3 = (!matricesEqual(reversedCandidate,correct) && !matricesEqual(reversedCandidate,d1) && !matricesEqual(reversedCandidate,d2))
+      ? reversedCandidate
+      : buildDistinctVariant(correct, [d1,d2], function(){
+          var m = correct.map(function(row){ return row.slice(); });
+          var r = randInt(0,cols-1), c = randInt(0,rows-1);
+          m[r][c] = m[r][c] + randNonZero(-3,3);
+          return m;
+        });
+
+    var allOpts = [
+      { kind:'transpose', matrix:correct, correct:true },
+      { kind:'not-transposed', matrix:d1, correct:false },
+      { kind:'tweak-cell', matrix:d2, correct:false },
+      { kind:'reversed', matrix:d3, correct:false }
+    ];
+    var wrongIdx = 0;
+    var choicesData = allOpts.map(function(o){
+      var value = o.correct ? 'correct' : ('w'+(wrongIdx++));
+      return { value:value, kind:o.kind, matrix:o.matrix, correct:o.correct };
+    });
+    choicesData = shuffleArr(choicesData);
+
+    return { rows:rows, cols:cols, A:A, choicesData:choicesData };
+  }
+
+  function matrixLatex(M){
+    return '\\begin{bmatrix} ' + M.map(function(row){ return row.join(' & '); }).join(' \\\\ ') + ' \\end{bmatrix}';
+  }
+  function renderContent(container, current){
+    window.katex.render('A = ' + matrixLatex(current.A), container, { throwOnError:false });
+  }
+
+  
+    EXERCISES.push({
+      id: 'transpuesta',
+      title: 'Trasposición de matrices',
+      unit: 'Unidad 1: Matrices y SEL',
+      topic: 'Tipos y operaciones con matrices',
+      needsKatex: true,
+      type: 'choices',
+      prompt: 'Elegí cuál es la matriz traspuesta de A.',
+      generate: generateCase,
+      renderContent: renderContent,
+      choices: function (current) {
+        return current.choicesData.map(function (o) {
+          return { value: o.value, label: window.katex.renderToString(matrixLatex(o.matrix), { throwOnError: false }) };
+        });
+      },
+      check: function (current, value) { return value === 'correct'; },
+      explain: function (current, correct, value) {
+        var clicked = current.choicesData.filter(function (o) { return o.value === value; })[0];
+        if (correct) return 'Correcto: A^T se arma poniendo como filas las columnas de A (cambia de tamaño ' + current.rows + '×' + current.cols + ' a ' + current.cols + '×' + current.rows + ').';
+        var msg = 'Revisá cómo se arma la traspuesta.';
+        if (clicked.kind === 'not-transposed') msg = 'Esa opción es A tal cual, sin transponer.';
+        if (clicked.kind === 'tweak-cell') msg = 'Esa opción tiene un error de cálculo en una celda.';
+        if (clicked.kind === 'reversed') msg = 'Esa opción transpuso, pero además invirtió el orden.';
+        return 'No es correcto. ' + msg;
+      }
+    });
+  })();
+
+  (function () {
+
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function randNonZero(min,max){ var v; do{ v=randInt(min,max); }while(v===0); return v; }
+  function shuffleArr(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+    return a;
+  }
+  function buildMatrix(rows,cols){
+    var M=[];
+    for(var r=0;r<rows;r++){ var row=[]; for(var c=0;c<cols;c++) row.push(randNonZero(-9,9)); M.push(row); }
+    return M;
+  }
+  function matricesEqual(A,B){
+    if(A.length!==B.length) return false;
+    for(var r=0;r<A.length;r++){
+      if(A[r].length!==B[r].length) return false;
+      for(var c=0;c<A[r].length;c++) if(A[r][c]!==B[r][c]) return false;
+    }
+    return true;
+  }
+  function buildDistinctVariant(correctMatrix, existing, generatorFn){
+    var candidate, tries=0;
+    do{ candidate = generatorFn(); tries++; }
+    while((matricesEqual(candidate,correctMatrix) || existing.some(function(m){ return matricesEqual(candidate,m); })) && tries<40);
+    return candidate;
+  }
+  function matMul(A,B){
+    var m=A.length, n=A[0].length, q=B[0].length, C=[];
+    for(var i=0;i<m;i++){
+      var row=[];
+      for(var j=0;j<q;j++){
+        var sum=0;
+        for(var k=0;k<n;k++) sum += A[i][k]*B[k][j];
+        row.push(sum);
+      }
+      C.push(row);
+    }
+    return C;
+  }
+
+  var TARGET_WEIGHTS = { compatible:3, incompatible:1 };
+  var caseCount = { compatible:0, incompatible:0 };
+  function pickCaseType(){
+    var rc = caseCount.compatible / TARGET_WEIGHTS.compatible;
+    var ri = caseCount.incompatible / TARGET_WEIGHTS.incompatible;
+    var type = rc <= ri ? 'compatible' : 'incompatible';
+    caseCount[type]++;
+    return type;
+  }
+
+  function generateCase(){
+    var type = pickCaseType();
+    var m = randInt(1,3), n = randInt(1,3), q = randInt(1,3);
+    var p;
+    if(type==='compatible') p = n;
+    else { do{ p = randInt(1,3); }while(p===n); }
+
+    var A = buildMatrix(m,n);
+    var B = buildMatrix(p,q);
+    var choicesData;
+
+    if(type==='compatible'){
+      var correct = matMul(A,B);
+      var outRows = m, outCols = q;
+
+      var d1 = buildDistinctVariant(correct, [], function(){
+        var c = correct.map(function(r){ return r.slice(); });
+        var r = randInt(0,outRows-1), col = randInt(0,outCols-1);
+        c[r][col] = c[r][col] + randNonZero(-4,4);
+        return c;
+      });
+      var d2 = buildDistinctVariant(correct, [d1], function(){
+        var c = correct.map(function(r){ return r.slice(); });
+        var r = randInt(0,outRows-1), col = randInt(0,outCols-1);
+        var flipTerm = randInt(0,n-1);
+        var sum=0;
+        for(var k=0;k<n;k++){ var term=A[r][k]*B[k][col]; sum += (k===flipTerm) ? -term : term; }
+        c[r][col] = sum;
+        return c;
+      });
+      var d3 = buildDistinctVariant(correct, [d1,d2], function(){
+        var c = correct.map(function(r){ return r.slice(); });
+        var r = randInt(0,outRows-1), col = randInt(0,outCols-1);
+        if(n>=2){
+          var skipTerm = randInt(0,n-1);
+          var sum=0;
+          for(var k=0;k<n;k++){ if(k!==skipTerm) sum += A[r][k]*B[k][col]; }
+          c[r][col] = sum;
+        } else {
+          c[r][col] = c[r][col] + randNonZero(-4,4);
+        }
+        return c;
+      });
+
+      var allOpts = [
+        { kind:'product', matrix:correct, correct:true },
+        { kind:'tweak-cell', matrix:d1, correct:false },
+        { kind:'sign-term', matrix:d2, correct:false },
+        { kind:'missing-term', matrix:d3, correct:false }
+      ];
+      var wrongIdx = 0;
+      choicesData = allOpts.map(function(o){
+        var value = o.correct ? 'correct' : ('w'+(wrongIdx++));
+        return { value:value, kind:o.kind, matrix:o.matrix, correct:o.correct };
+      });
+    } else {
+      // sin producto real posible: 3 matrices-señuelo con formas plausibles
+      var shapes = shuffleArr([[m,q],[p,n],[m,n]]);
+      var decoys = [];
+      shapes.forEach(function(shape){
+        var cand = buildDistinctVariant([], decoys, function(){ return buildMatrix(shape[0], shape[1]); });
+        decoys.push(cand);
+      });
+      var allOptsInc = [
+        { kind:'none', correct:true },
+        { kind:'decoy', matrix:decoys[0], correct:false },
+        { kind:'decoy', matrix:decoys[1], correct:false },
+        { kind:'decoy', matrix:decoys[2], correct:false }
+      ];
+      var wrongIdx2 = 0;
+      choicesData = allOptsInc.map(function(o){
+        var value = o.correct ? 'correct' : ('w'+(wrongIdx2++));
+        return { value:value, kind:o.kind, matrix:o.matrix, correct:o.correct };
+      });
+    }
+
+    choicesData = shuffleArr(choicesData);
+    return { type:type, m:m, n:n, p:p, q:q, A:A, B:B, choicesData:choicesData };
+  }
+
+  function matrixLatex(M){
+    return '\\begin{bmatrix} ' + M.map(function(row){ return row.join(' & '); }).join(' \\\\ ') + ' \\end{bmatrix}';
+  }
+  function shapeTxt(rows, cols){ return rows + '×' + cols; }
+  function renderContent(container, current){
+    container.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;"><div class="apt-row apt-row-a"></div><div class="apt-row apt-row-b"></div></div>';
+    var rows = container.querySelectorAll('.apt-row');
+    window.katex.render('A = ' + matrixLatex(current.A), rows[0], { throwOnError:false });
+    window.katex.render('B = ' + matrixLatex(current.B), rows[1], { throwOnError:false });
+  }
+
+  
+    EXERCISES.push({
+      id: 'producto-matrices',
+      title: 'Producto de matrices',
+      unit: 'Unidad 1: Matrices y SEL',
+      topic: 'Tipos y operaciones con matrices',
+      needsKatex: true,
+      type: 'choices',
+      prompt: 'Elegí cuál es el resultado de A · B. Si no se pueden multiplicar, elegí esa opción.',
+      generate: generateCase,
+      renderContent: renderContent,
+      choices: function (current) {
+        return current.choicesData.map(function (o) {
+          return {
+            value: o.value,
+            label: o.kind === 'none' ? 'No es posible multiplicar' : window.katex.renderToString(matrixLatex(o.matrix), { throwOnError: false })
+          };
+        });
+      },
+      check: function (current, value) { return value === 'correct'; },
+      explain: function (current, correct, value) {
+        var clicked = current.choicesData.filter(function (o) { return o.value === value; })[0];
+        if (current.type === 'compatible') {
+          if (clicked.kind === 'none') return (correct ? '' : 'No es correcto. ') + 'Sí se puede multiplicar: las columnas de A (' + current.n + ') coinciden con las filas de B (' + current.p + ').';
+          var msg = 'El producto se calcula fila de A por columna de B, sumando los productos.';
+          if (clicked.kind === 'tweak-cell') msg = 'Esa opción tiene un error de cálculo en una celda.';
+          if (clicked.kind === 'sign-term') msg = 'Esa opción invirtió el signo de uno de los términos de la suma en una celda.';
+          if (clicked.kind === 'missing-term') msg = 'Esa opción se olvidó de sumar uno de los términos en una celda.';
+          return (correct ? '' : 'No es correcto. ') + msg;
+        }
+        if (clicked.kind === 'none') return 'Correcto: A es ' + shapeTxt(current.m,current.n) + ' y B es ' + shapeTxt(current.p,current.q) + ' — las columnas de A (' + current.n + ') no coinciden con las filas de B (' + current.p + '), así que A · B no está definido.';
+        return 'No es correcto. Las columnas de A (' + current.n + ') no coinciden con las filas de B (' + current.p + '): no se pueden multiplicar.';
+      }
+    });
+  })();
+  (function () {
+    var SHAPES = [{rows:3,cols:3},{rows:3,cols:4},{rows:4,cols:3}];
+
+    function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+    function randNonZero(min,max){ var v; do{ v=randInt(min,max); }while(v===0); return v; }
+    function randChoice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+    function pickDistinctSorted(n,k){
+      var idx = new Set();
+      while(idx.size < k) idx.add(Math.floor(Math.random()*n));
+      return Array.from(idx).sort(function(a,b){ return a-b; });
+    }
+
+    function buildSeedRows(rows, cols, r){
+      var pivots = pickDistinctSorted(cols, r);
+      var seed = [];
+      for(var i=0;i<r;i++){
+        var row = new Array(cols).fill(0);
+        var p = pivots[i];
+        row[p] = randNonZero(-6,6);
+        for(var c=p+1;c<cols;c++) row[c] = randInt(-6,6);
+        seed.push(row);
+      }
+      for(var j=r;j<rows;j++) seed.push(new Array(cols).fill(0));
+      return seed;
+    }
+    function swapRows(M,i,j){ var M2=M.map(function(r){return r.slice();}); var t=M2[i]; M2[i]=M2[j]; M2[j]=t; return M2; }
+    function addMultiple(M,i,j,k){ var M2=M.map(function(r){return r.slice();}); M2[j]=M2[j].map(function(v,c){return v+k*M2[i][c];}); return M2; }
+    function scaleRow(M,i,k){ var M2=M.map(function(r){return r.slice();}); M2[i]=M2[i].map(function(v){return v*k;}); return M2; }
+    function maxAbs(M){ return Math.max.apply(null, M.flat().map(Math.abs)); }
+
+    function scramble(M, rows, numOps){
+      var out = M;
+      for(var op=0; op<numOps; op++){
+        var kind = randChoice(['swap','add','add','scale']);
+        if(kind==='swap'){
+          var i=randInt(0,rows-1), j=randInt(0,rows-1);
+          while(j===i) j=randInt(0,rows-1);
+          out = swapRows(out,i,j);
+        } else if(kind==='add'){
+          var i2=randInt(0,rows-1), j2=randInt(0,rows-1);
+          while(j2===i2) j2=randInt(0,rows-1);
+          out = addMultiple(out,i2,j2,randChoice([-2,-1,1,2]));
+        } else {
+          out = scaleRow(out, randInt(0,rows-1), randChoice([-1,1,-1,1,2]));
+        }
+      }
+      return out;
+    }
+
+    // ---------- Rango independiente (RREF con fracciones exactas) ----------
+    function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ var t=b; b=a%b; a=t; } return a||1; }
+    function Frac(n,d){ if(d===undefined) d=1; if(d<0){n=-n;d=-d;} var g=gcd(n,d); return {n:g?n/g:0,d:g?d/g:1}; }
+    var fSub=function(a,b){ return Frac(a.n*b.d-b.n*a.d,a.d*b.d); };
+    var fMul=function(a,b){ return Frac(a.n*b.n,a.d*b.d); };
+    var fDiv=function(a,b){ return Frac(a.n*b.d,a.d*b.n); };
+    var fIsZero=function(a){ return a.n===0; };
+    function rref(M){
+      M = M.map(function(r){ return r.map(function(x){ return Frac(x,1); }); });
+      var rows=M.length, cols=M[0].length, lead=0;
+      for(var r=0;r<rows;r++){
+        if(lead>=cols) break;
+        var i=r;
+        while(fIsZero(M[i][lead])){ i++; if(i===rows){ i=r; lead++; if(lead===cols) return M; } }
+        var tmp=M[i]; M[i]=M[r]; M[r]=tmp;
+        var pivot=M[r][lead];
+        M[r]=M[r].map(function(v){ return fDiv(v,pivot); });
+        for(var i2=0;i2<rows;i2++){
+          if(i2!==r){
+            var factor=M[i2][lead];
+            if(!fIsZero(factor)) M[i2]=M[i2].map(function(v,c){ return fSub(v, fMul(factor, M[r][c])); });
+          }
+        }
+        lead++;
+      }
+      return M;
+    }
+    function rankOf(M){
+      var R = rref(M);
+      return R.filter(function(row){ return row.some(function(v){ return !fIsZero(v); }); }).length;
+    }
+
+    function generateMatrix(){
+      var shape = randChoice(SHAPES);
+      var r = randInt(1,3);
+      var M, tries=0;
+      do{
+        var seed = buildSeedRows(shape.rows, shape.cols, r);
+        M = scramble(seed, shape.rows, randInt(3,5));
+        tries++;
+      } while(maxAbs(M) > 20 && tries < 50);
+      return { rows: shape.rows, cols: shape.cols, matrix: M, rank: rankOf(M) };
+    }
+
+    function renderContent(container, current){
+      var rows = current.rows, cols = current.cols, M = current.matrix;
+      var cellsHTML = '';
+      for(var r=0;r<rows;r++){
+        for(var c=0;c<cols;c++){
+          cellsHTML += '<div class="apt-orl__cell" data-row="'+r+'" data-col="'+c+'">' + M[r][c] + '</div>';
+        }
+      }
+      container.innerHTML =
+        '<div class="apt-orl__wrap">' +
+          '<div class="apt-orl__matrixwrap">' +
+            '<span class="apt-orl__label">A =</span>' +
+            '<span class="apt-orl__bracket apt-orl__bracket--left"></span>' +
+            '<div class="apt-orl__grid" style="grid-template-columns:repeat(' + cols + ', minmax(40px,52px));">' + cellsHTML + '</div>' +
+            '<span class="apt-orl__bracket apt-orl__bracket--right"></span>' +
+          '</div>' +
+        '</div>';
+    }
+
+    EXERCISES.push({
+      id: 'rango-orlado',
+      title: 'Rango por orlado',
+      unit: 'Unidad 1: Matrices y SEL',
+      topic: 'Rango de matrices',
+      needsKatex: false,
+      type: 'choices',
+      prompt: 'Usando el método de orlado, ¿cuál es el rango de la matriz A?',
+      generate: generateMatrix,
+      renderContent: renderContent,
+      choices: function (current) {
+        var maxRank = Math.min(current.rows, current.cols);
+        var opts = [];
+        for (var r = 1; r <= maxRank; r++) opts.push({ value: r, label: 'Rg(A) = ' + r });
+        return opts;
+      },
+      check: function (current, value) { return value === current.rank; },
+      explain: function (current, correct) {
+        return (correct ? '' : 'No es correcto. ') + 'El rango de A es ' + current.rank + ': orlando desde cualquier entrada no nula, se puede llegar hasta un menor de orden ' + current.rank + ' no nulo, pero ningún menor de orden mayor deja de anularse.';
+      }
+    });
+  })();
+  (function () {
+    var SHAPES = [
+      { m:2, n:2 }, { m:2, n:3 }, { m:2, n:4 },
+      { m:3, n:2 }, { m:3, n:3 }, { m:3, n:4 }
+    ];
+
+    function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+    function randNonZero(min,max){ var v; do{ v=randInt(min,max); }while(v===0); return v; }
+    function randChoice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+    function pickDistinctSorted(n,k){
+      var idx = new Set();
+      while(idx.size < k) idx.add(Math.floor(Math.random()*n));
+      return Array.from(idx).sort(function(a,b){ return a-b; });
+    }
+    function swapRows(M,i,j){ var M2=M.map(function(r){return r.slice();}); var t=M2[i]; M2[i]=M2[j]; M2[j]=t; return M2; }
+    function addMultiple(M,i,j,k){ var M2=M.map(function(r){return r.slice();}); M2[j]=M2[j].map(function(v,c){return v+k*M2[i][c];}); return M2; }
+    function scaleRow(M,i,k){ var M2=M.map(function(r){return r.slice();}); M2[i]=M2[i].map(function(v){return v*k;}); return M2; }
+    function maxAbs(M){ return Math.max.apply(null, M.flat().map(Math.abs)); }
+    function scramble(M, rows, numOps){
+      var out = M;
+      for(var op=0; op<numOps; op++){
+        var kind = randChoice(['swap','add','add','scale']);
+        if(kind==='swap'){
+          var i=randInt(0,rows-1), j=randInt(0,rows-1);
+          while(j===i) j=randInt(0,rows-1);
+          out = swapRows(out,i,j);
+        } else if(kind==='add'){
+          var i2=randInt(0,rows-1), j2=randInt(0,rows-1);
+          while(j2===i2) j2=randInt(0,rows-1);
+          out = addMultiple(out,i2,j2,randChoice([-2,-1,1,2]));
+        } else {
+          out = scaleRow(out, randInt(0,rows-1), randChoice([-1,1,-1,1,2]));
+        }
+      }
+      return out;
+    }
+
+    function generateSystem(){
+      var shape = randChoice(SHAPES);
+      var m = shape.m, n = shape.n;
+      var maxOrderA = Math.min(m, n);
+      var r = randInt(1, maxOrderA);
+      var compatible = (r === m) ? true : randChoice([true, false]);
+
+      var aug, tries = 0;
+      do {
+        var pivots = pickDistinctSorted(n, r);
+        var seed = [];
+        for(var i=0;i<r;i++){
+          var row = new Array(n+1).fill(0);
+          var p = pivots[i];
+          row[p] = randNonZero(-6,6);
+          for(var c=p+1;c<n;c++) row[c] = randInt(-6,6);
+          row[n] = randInt(-6,6);
+          seed.push(row);
+        }
+        for(var j=r;j<m;j++){
+          var zrow = new Array(n+1).fill(0);
+          zrow[n] = compatible ? 0 : randNonZero(-6,6);
+          seed.push(zrow);
+        }
+        aug = scramble(seed, m, randInt(3,5));
+        tries++;
+      } while(maxAbs(aug) > 20 && tries < 50);
+
+      var A = aug.map(function(row){ return row.slice(0,n); });
+      var b = aug.map(function(row){ return row[n]; });
+      var rankA = r;
+      var rankAB = r + (compatible ? 0 : 1);
+      var classification = rankAB > rankA ? 'SI' : (rankA === n ? 'SCD' : 'SCI');
+      // se sortea UNA sola sub-pregunta por ronda (en vez de encadenar las 3)
+      var subQuestion = randChoice(['rankA', 'rankAB', 'classification']);
+
+      return { m:m, n:n, A:A, b:b, rankA:rankA, rankAB:rankAB, classification:classification, subQuestion:subQuestion };
+    }
+
+    function matrixLatex(current){
+      var colsSpec = new Array(current.n).fill('c').join('') + '|c';
+      var rows = current.A.map(function(row,i){ return row.concat([current.b[i]]).join(' & '); });
+      return '[A \\mid B] = \\left[\\begin{array}{' + colsSpec + '} ' + rows.join(' \\\\ ') + ' \\end{array}\\right]';
+    }
+    function renderContent(container, current){
+      window.katex.render(matrixLatex(current), container, { throwOnError:false });
+    }
+    function numberChoices(maxOrder){
+      var arr = [];
+      for(var i=1;i<=maxOrder;i++) arr.push({ value:String(i), label:String(i) });
+      return arr;
+    }
+
+    var PROMPTS = {
+      rankA: '¿Cuál es el rango de la matriz de coeficientes A?',
+      rankAB: '¿Cuál es el rango de la matriz ampliada [A | B]?',
+      classification: 'Según Rouché-Frobenius, ¿cómo se clasifica el sistema?'
+    };
+
+    EXERCISES.push({
+      id: 'rouche-frobenius',
+      title: 'Clasificá con Rouché-Frobenius',
+      unit: 'Unidad 1: Matrices y SEL',
+      topic: 'Rouché-Frobenius',
+      needsKatex: true,
+      type: 'choices',
+      prompt: function (current) { return PROMPTS[current.subQuestion]; },
+      generate: generateSystem,
+      renderContent: renderContent,
+      choices: function (current) {
+        if (current.subQuestion === 'rankA') return numberChoices(Math.min(current.m, current.n));
+        if (current.subQuestion === 'rankAB') return numberChoices(Math.min(current.m, current.n + 1));
+        return [
+          { value:'SCD', label:'SCD', sub:'Compatible determinado' },
+          { value:'SCI', label:'SCI', sub:'Compatible indeterminado' },
+          { value:'SI',  label:'SI',  sub:'Incompatible' }
+        ];
+      },
+      check: function (current, value) {
+        if (current.subQuestion === 'rankA') return parseInt(value,10) === current.rankA;
+        if (current.subQuestion === 'rankAB') return parseInt(value,10) === current.rankAB;
+        return current.classification === value;
+      },
+      explain: function (current, correct) {
+        var msg;
+        if (current.subQuestion === 'rankA') {
+          var maxOrderA = Math.min(current.m, current.n);
+          msg = current.rankA === maxOrderA
+            ? 'rango(A) = ' + current.rankA + ': orlando se llega a un menor de orden ' + current.rankA + ' no nulo, y no hay lugar para un menor de mayor orden dentro de A.'
+            : 'rango(A) = ' + current.rankA + ': orlando se llega a un menor de orden ' + current.rankA + ' no nulo, y cualquier menor de orden mayor dentro de A se anula.';
+        } else if (current.subQuestion === 'rankAB') {
+          msg = current.rankAB > current.rankA
+            ? 'rango([A|B]) = ' + current.rankAB + ': orlando con la columna B aparece un menor de orden ' + current.rankAB + ' no nulo que no se podía formar usando solo columnas de A.'
+            : 'rango([A|B]) = ' + current.rankAB + ' (igual que rango(A)): todo menor que incluya la columna B, de orden mayor a ' + current.rankA + ', se anula.';
+        } else {
+          if (current.classification === 'SI') msg = 'rango([A|B]) = ' + current.rankAB + ' > rango(A) = ' + current.rankA + ', así que el sistema es incompatible (SI): no tiene solución.';
+          else if (current.classification === 'SCD') msg = 'rango(A) = rango([A|B]) = ' + current.rankA + ', igual al número de incógnitas (' + current.n + '), así que el sistema es compatible determinado (SCD): solución única.';
+          else msg = 'rango(A) = rango([A|B]) = ' + current.rankA + ', menor al número de incógnitas (' + current.n + '), así que el sistema es compatible indeterminado (SCI): infinitas soluciones.';
+        }
+        return (correct ? '' : 'No es correcto. ') + msg;
+      }
+    });
+  })();
+  (function () {
+    function E(c,k,t){ return [c||0, k||0, t||0]; }
+    function eAdd(a,b){ return [a[0]+b[0], a[1]+b[1], a[2]+b[2]]; }
+    function eScale(a,s){ return [a[0]*s, a[1]*s, a[2]*s]; }
+
+    function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+    function randNonZero(min,max){ var v; do{ v=randInt(min,max); }while(v===0); return v; }
+    function randChoice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+    function pickDistinctSorted(n,k){
+      var idx=new Set();
+      while(idx.size<k) idx.add(Math.floor(Math.random()*n));
+      return Array.from(idx).sort(function(a,b){return a-b;});
+    }
+
+    var SHAPES = [
+      {rows:2,cols:2},{rows:2,cols:3},{rows:2,cols:4},
+      {rows:3,cols:2},{rows:3,cols:3},{rows:3,cols:4}
+    ];
+
+    function swapRows(M,i,j){ var M2=M.map(function(r){return r.slice();}); var t=M2[i]; M2[i]=M2[j]; M2[j]=t; return M2; }
+    function addMultiple(M,i,j,s){ var M2=M.map(function(r){return r.slice();}); M2[j]=M2[j].map(function(e,c){return eAdd(e, eScale(M2[i][c], s));}); return M2; }
+    function scaleRow(M,i,s){ var M2=M.map(function(r){return r.slice();}); M2[i]=M2[i].map(function(e){return eScale(e,s);}); return M2; }
+    function maxAbsConst(M){
+      var mx=0;
+      M.forEach(function(row){ row.forEach(function(e){ mx=Math.max(mx,Math.abs(e[0]),Math.abs(e[1]),Math.abs(e[2])); }); });
+      return mx;
+    }
+    function scramble(M, rows, numOps){
+      var out=M;
+      for(var op=0; op<numOps; op++){
+        var kind = randChoice(['swap','add','add','scale']);
+        if(kind==='swap'){
+          var i=randInt(0,rows-1), j=randInt(0,rows-1);
+          while(j===i) j=randInt(0,rows-1);
+          out = swapRows(out,i,j);
+        } else if(kind==='add'){
+          var i2=randInt(0,rows-1), j2=randInt(0,rows-1);
+          while(j2===i2) j2=randInt(0,rows-1);
+          out = addMultiple(out,i2,j2,randChoice([-2,-1,1,2]));
+        } else {
+          out = scaleRow(out, randInt(0,rows-1), randChoice([-1,1,-1,1,2]));
+        }
+      }
+      return out;
+    }
+    function constRow(cols, pivotCol){
+      var row = new Array(cols+1);
+      for(var c=0;c<cols;c++) row[c] = c<pivotCol ? E(0,0,0) : E(c===pivotCol?randNonZero(-4,4):randInt(-4,4),0,0);
+      row[cols] = E(randInt(-4,4),0,0);
+      return row;
+    }
+
+    var CLASSES = ['SCD','SCI','SI'];
+    function thirdOf(a,b){ return CLASSES.filter(function(x){ return x!==a && x!==b; })[0]; }
+
+    function build1Param(location, shape){
+      var rows=shape.rows, cols=shape.cols;
+      var maxOrderA=Math.min(rows,cols);
+      var canSCD = rows>=cols;
+      var c = randInt(-3,3);
+      var pivots = pickDistinctSorted(cols, maxOrderA);
+      var pIdx = randInt(0, maxOrderA-1);
+      var compatAtCritical = canSCD ? Math.random()<0.5 : false;
+
+      var seed=[];
+      for(var i=0;i<maxOrderA;i++){
+        var pivotCol=pivots[i];
+        if(i!==pIdx){ seed.push(constRow(cols,pivotCol)); continue; }
+        var fixedVec=[];
+        for(var c2=0;c2<cols;c2++) fixedVec.push(c2<pivotCol?0:(c2===pivotCol?randNonZero(-4,4):randInt(-4,4)));
+        var row=new Array(cols+1);
+        for(c2=0;c2<cols;c2++) row[c2]=E(-fixedVec[c2]*c, fixedVec[c2], 0);
+        if(location==='ambos'){
+          var target = compatAtCritical?0:randNonZero(-4,4);
+          row[cols]=E(target-c, 1, 0);
+        } else {
+          row[cols]=E(compatAtCritical?0:randNonZero(-4,4), 0, 0);
+        }
+        seed.push(row);
+      }
+      for(var e=0;e<rows-maxOrderA;e++){
+        var erow=[]; for(c2=0;c2<cols;c2++) erow.push(E(0,0,0)); erow.push(E(0,0,0)); seed.push(erow);
+      }
+
+      var genericCls = canSCD?'SCD':'SCI';
+      var criticalCls = compatAtCritical?'SCI':'SI';
+      var thirdCls = thirdOf(genericCls, criticalCls);
+      var descriptors={};
+      descriptors[genericCls]={type:'except', value:c};
+      descriptors[criticalCls]={type:'value', value:c};
+      descriptors[thirdCls]={type:'none'};
+
+      return { rows:rows, cols:cols, seed:seed, numParams:1, location:location, descriptors:descriptors };
+    }
+
+    function build1ParamB(shape){
+      var rows=shape.rows, cols=shape.cols;
+      var canSCDAtCritical = rows>cols;
+      var wantSCD = canSCDAtCritical ? Math.random()<0.5 : false;
+      var r0 = wantSCD ? cols : randInt(1, Math.min(rows-1, cols-1));
+      var c = randInt(-3,3);
+      var pivots = pickDistinctSorted(cols, r0);
+
+      var seed=[];
+      for(var i=0;i<r0;i++) seed.push(constRow(cols, pivots[i]));
+      var extraCount = rows-r0;
+      var designated = randInt(0, extraCount-1);
+      for(var e=0;e<extraCount;e++){
+        var erow=[]; for(var c2=0;c2<cols;c2++) erow.push(E(0,0,0));
+        erow.push(e===designated ? E(-c,1,0) : E(0,0,0));
+        seed.push(erow);
+      }
+
+      var genericCls='SI';
+      var criticalCls = wantSCD?'SCD':'SCI';
+      var thirdCls = thirdOf(genericCls, criticalCls);
+      var descriptors={};
+      descriptors[genericCls]={type:'except', value:c};
+      descriptors[criticalCls]={type:'value', value:c};
+      descriptors[thirdCls]={type:'none'};
+
+      return { rows:rows, cols:cols, seed:seed, numParams:1, location:'B', descriptors:descriptors };
+    }
+
+    function build2ParamAmbos(shape){
+      var rows=shape.rows, cols=shape.cols;
+      var maxOrderA=cols;
+      var c1=randInt(-3,3), c2v=randInt(-3,3);
+      var pivots = pickDistinctSorted(cols, maxOrderA);
+      var pIdx = randInt(0, maxOrderA-1);
+
+      var seed=[];
+      for(var i=0;i<maxOrderA;i++){
+        var pivotCol=pivots[i];
+        if(i!==pIdx){ seed.push(constRow(cols,pivotCol)); continue; }
+        var fixedVec=[];
+        for(var c3=0;c3<cols;c3++) fixedVec.push(c3<pivotCol?0:(c3===pivotCol?randNonZero(-4,4):randInt(-4,4)));
+        var row=new Array(cols+1);
+        for(c3=0;c3<cols;c3++) row[c3]=E(-fixedVec[c3]*c1, fixedVec[c3], 0);
+        row[cols]=E(-c2v,0,1);
+        seed.push(row);
+      }
+      for(var e=0;e<rows-maxOrderA;e++){
+        var erow=[]; for(c3=0;c3<cols;c3++) erow.push(E(0,0,0)); erow.push(E(0,0,0)); seed.push(erow);
+      }
+
+      var descriptors = {
+        SCD: {type:'except-k', k:c1},
+        SCI: {type:'pair', k:c1, t:c2v},
+        SI: {type:'partial', k:c1, tNot:c2v}
+      };
+      return { rows:rows, cols:cols, seed:seed, numParams:2, location:'ambos', descriptors:descriptors };
+    }
+
+    function build2ParamA(shape){
+      var rows=shape.rows, cols=shape.cols;
+      var maxOrderA=Math.min(rows,cols);
+      var canSCD = rows>=cols;
+      var D = randInt(-3,3);
+      var pivots = pickDistinctSorted(cols, maxOrderA);
+      var pIdx = randInt(0, maxOrderA-1);
+      var compatOnRelation = canSCD ? Math.random()<0.5 : false;
+
+      var seed=[];
+      for(var i=0;i<maxOrderA;i++){
+        var pivotCol=pivots[i];
+        if(i!==pIdx){ seed.push(constRow(cols,pivotCol)); continue; }
+        var fixedVec=[];
+        for(var c2=0;c2<cols;c2++) fixedVec.push(c2<pivotCol?0:(c2===pivotCol?randNonZero(-4,4):randInt(-4,4)));
+        var row=new Array(cols+1);
+        for(c2=0;c2<cols;c2++) row[c2]=E(-fixedVec[c2]*D, fixedVec[c2], -fixedVec[c2]);
+        row[cols]=E(compatOnRelation?0:randNonZero(-4,4), 0, 0);
+        seed.push(row);
+      }
+      for(var e=0;e<rows-maxOrderA;e++){
+        var erow=[]; for(c2=0;c2<cols;c2++) erow.push(E(0,0,0)); erow.push(E(0,0,0)); seed.push(erow);
+      }
+
+      var genericCls = canSCD?'SCD':'SCI';
+      var criticalCls = compatOnRelation?'SCI':'SI';
+      var thirdCls = thirdOf(genericCls, criticalCls);
+      var descriptors={};
+      descriptors[genericCls]={type:'except-relation', D:D};
+      descriptors[criticalCls]={type:'relation', D:D};
+      descriptors[thirdCls]={type:'none'};
+
+      return { rows:rows, cols:cols, seed:seed, numParams:2, location:'A', descriptors:descriptors };
+    }
+
+    function build2ParamB(shape){
+      var rows=shape.rows, cols=shape.cols;
+      var canSCDAtRelation = rows>cols;
+      var wantSCD = canSCDAtRelation ? Math.random()<0.5 : false;
+      var r0 = wantSCD ? cols : randInt(1, Math.min(rows-1, cols-1));
+      var D = randInt(-3,3);
+      var pivots = pickDistinctSorted(cols, r0);
+
+      var seed=[];
+      for(var i=0;i<r0;i++) seed.push(constRow(cols, pivots[i]));
+      var extraCount = rows-r0;
+      var designated = randInt(0, extraCount-1);
+      for(var e=0;e<extraCount;e++){
+        var erow=[]; for(var c2=0;c2<cols;c2++) erow.push(E(0,0,0));
+        erow.push(e===designated ? E(-D,1,-1) : E(0,0,0));
+        seed.push(erow);
+      }
+
+      var genericCls='SI';
+      var criticalCls = wantSCD?'SCD':'SCI';
+      var thirdCls = thirdOf(genericCls, criticalCls);
+      var descriptors={};
+      descriptors[genericCls]={type:'except-relation', D:D};
+      descriptors[criticalCls]={type:'relation', D:D};
+      descriptors[thirdCls]={type:'none'};
+
+      return { rows:rows, cols:cols, seed:seed, numParams:2, location:'B', descriptors:descriptors };
+    }
+
+    // ---------- punto de entrada del generador — a diferencia de la
+    // landing individual, acá numParams/location se sortean SOLOS
+    // (no se le pregunta al alumno), para que quede en una sola pregunta ----------
+    function generateSystem(){
+      var numParams = randChoice([1,1,2]);
+      var location = numParams===1 ? randChoice(['A','B','ambos']) : randChoice(['A','B','ambos']);
+      var shapePool = SHAPES;
+      if(numParams===2 && location==='ambos') shapePool = SHAPES.filter(function(s){ return s.rows>=s.cols; });
+      var shape = randChoice(shapePool);
+
+      var built, tries=0;
+      do{
+        if(numParams===1) built = (location==='B') ? build1ParamB(shape) : build1Param(location, shape);
+        else built = (location==='ambos') ? build2ParamAmbos(shape) : (location==='A') ? build2ParamA(shape) : build2ParamB(shape);
+        built.matrix = scramble(built.seed, built.rows, randInt(3,5));
+        tries++;
+      } while(maxAbsConst(built.matrix) > 30 && tries < 50);
+
+      built.paramNames = numParams===1 ? ['k'] : ['k','t'];
+      built.options = {};
+      CLASSES.forEach(function(cls){ built.options[cls] = buildOptions(built.descriptors[cls]); });
+      // se sortea UNA sola clasificación a preguntar por ronda
+      built.askedClass = randChoice(CLASSES);
+      return built;
+    }
+
+    function renderDescriptor(d){
+      switch(d.type){
+        case 'except': return 'k ≠ ' + d.value;
+        case 'value': return 'k = ' + d.value;
+        case 'none': return 'Ningún valor';
+        case 'pair': return 'k = ' + d.k + ',  t = ' + d.t;
+        case 'partial': return 'k = ' + d.k + ',  t ≠ ' + d.tNot;
+        case 'except-k': return 'k ≠ ' + d.k + ' (cualquier t)';
+        case 'relation': return 'k = t' + (d.D===0 ? '' : (d.D>0 ? ' + ' + d.D : ' − ' + Math.abs(d.D)));
+        case 'except-relation': return 'k ≠ t' + (d.D===0 ? '' : (d.D>0 ? ' + ' + d.D : ' − ' + Math.abs(d.D)));
+      }
+    }
+    function descEq(a,b){
+      if(a.type!==b.type) return false;
+      switch(a.type){
+        case 'except': case 'value': return a.value===b.value;
+        case 'none': return true;
+        case 'pair': return a.k===b.k && a.t===b.t;
+        case 'partial': return a.k===b.k && a.tNot===b.tNot;
+        case 'except-k': return a.k===b.k;
+        case 'relation': case 'except-relation': return a.D===b.D;
+      }
+    }
+    function buildDistractors(d){
+      switch(d.type){
+        case 'except': return [{type:'value',value:d.value}, {type:'value',value:d.value+randNonZero(-2,2)}, {type:'none'}];
+        case 'value': return [{type:'except',value:d.value}, {type:'value',value:d.value+randNonZero(-2,2)}, {type:'none'}];
+        case 'none': return [{type:'value',value:randInt(-3,3)}, {type:'except',value:randInt(-3,3)}];
+        case 'pair': return [{type:'partial',k:d.k,tNot:d.t}, {type:'pair',k:d.k+randNonZero(-2,2),t:d.t}, {type:'pair',k:d.k,t:d.t+randNonZero(-2,2)}];
+        case 'partial': return [{type:'pair',k:d.k,t:d.tNot}, {type:'partial',k:d.k+randNonZero(-2,2),tNot:d.tNot}, {type:'except-k',k:d.k}];
+        case 'except-k': return [{type:'pair',k:d.k,t:randInt(-3,3)}, {type:'none'}, {type:'except-k',k:d.k+randNonZero(-2,2)}];
+        case 'relation': return [{type:'except-relation',D:d.D}, {type:'relation',D:d.D+randNonZero(-2,2)}, {type:'none'}];
+        case 'except-relation': return [{type:'relation',D:d.D}, {type:'except-relation',D:d.D+randNonZero(-2,2)}, {type:'none'}];
+      }
+    }
+    function buildOptions(correct){
+      var pool = buildDistractors(correct);
+      var picked = [];
+      pool.forEach(function(cand){
+        if(descEq(cand, correct)) return;
+        if(picked.some(function(p){ return descEq(p, cand); })) return;
+        picked.push(cand);
+      });
+      picked = picked.slice(0,3);
+      var all = [{d:correct, value:'correct'}].concat(picked.map(function(d,i){ return {d:d, value:'w'+i}; }));
+      for(var i=all.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var tmp=all[i]; all[i]=all[j]; all[j]=tmp; }
+      return all.map(function(o){ return { value:o.value, label: renderDescriptor(o.d) }; });
+    }
+
+    function entryToLatex(e, paramNames){
+      var parts = [];
+      function push(str, isNeg){
+        if(parts.length===0) parts.push((isNeg?'-':'')+str);
+        else parts.push((isNeg?' - ':' + ')+str);
+      }
+      if(e[0]!==0) push(String(Math.abs(e[0])), e[0]<0);
+      var coefs = [e[1], e[2]];
+      for(var i=0;i<paramNames.length;i++){
+        var coef = coefs[i];
+        if(coef===0) continue;
+        var abs = Math.abs(coef);
+        push((abs===1?'':String(abs)) + paramNames[i], coef<0);
+      }
+      return parts.length ? parts.join('') : '0';
+    }
+    function matrixLatex(current){
+      var colsSpec = new Array(current.cols).fill('c').join('') + '|c';
+      var rows = current.matrix.map(function(row){
+        return row.map(function(e){ return entryToLatex(e, current.paramNames); }).join(' & ');
+      });
+      return '[A \\mid B] = \\left[\\begin{array}{' + colsSpec + '} ' + rows.join(' \\\\ ') + ' \\end{array}\\right]';
+    }
+    function renderContent(container, current){
+      window.katex.render(matrixLatex(current), container, { throwOnError:false });
+    }
+
+    var CLASS_LABEL = { SCD: '¿Para qué valores el sistema es SCD (compatible determinado)?', SCI: '¿Para qué valores es SCI (compatible indeterminado)?', SI: '¿Para qué valores es SI (incompatible)?' };
+
+    EXERCISES.push({
+      id: 'rouche-parametros',
+      title: 'Rouché-Frobenius con parámetros',
+      unit: 'Unidad 1: Matrices y SEL',
+      topic: 'Rouché-Frobenius',
+      needsKatex: true,
+      type: 'choices',
+      prompt: function (current) { return CLASS_LABEL[current.askedClass]; },
+      generate: generateSystem,
+      renderContent: renderContent,
+      choices: function (current) { return current.options[current.askedClass]; },
+      check: function (current, value) { return value === 'correct'; },
+      explain: function (current, correct) {
+        var cls = current.askedClass;
+        var msg = 'La condición correcta es: ' + renderDescriptor(current.descriptors[cls]) + '.';
+        if (current.descriptors[cls].type === 'none') msg = 'Con esta forma, ' + cls + ' no ocurre para ningún valor de los parámetros.';
+        return (correct ? '' : 'No es correcto. ') + msg;
+      }
+    });
+  })();
+  (function () {
+    var VARS = ['x','y','z','t','u'];
+
+    function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+    function randChoice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+    function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ var t=b; b=a%b; a=t; } return a||1; }
+    function Frac(n,d){
+      if(d===undefined) d=1;
+      if(d<0){ n=-n; d=-d; }
+      var g = gcd(n,d);
+      return { n: g? n/g : 0, d: g? d/g : 1 };
+    }
+    var fSub = function(a,b){ return Frac(a.n*b.d - b.n*a.d, a.d*b.d); };
+    var fMul = function(a,b){ return Frac(a.n*b.n, a.d*b.d); };
+    var fDiv = function(a,b){ return Frac(a.n*b.d, a.d*b.n); };
+    var fIsZero = function(a){ return a.n === 0; };
+
+    function rref(matrixOfFrac){
+      var M = matrixOfFrac.map(function(r){ return r.slice(); });
+      var rows = M.length, cols = M[0].length;
+      var lead = 0;
+      for(var r=0;r<rows;r++){
+        if(lead>=cols) break;
+        var i=r;
+        while(fIsZero(M[i][lead])){
+          i++;
+          if(i===rows){ i=r; lead++; if(lead===cols) return M; }
+        }
+        var tmp=M[i]; M[i]=M[r]; M[r]=tmp;
+        var pivot = M[r][lead];
+        M[r] = M[r].map(function(v){ return fDiv(v,pivot); });
+        for(var i2=0;i2<rows;i2++){
+          if(i2!==r){
+            var factor = M[i2][lead];
+            if(!fIsZero(factor)){
+              M[i2] = M[i2].map(function(v,c){ return fSub(v, fMul(factor, M[r][c])); });
+            }
+          }
+        }
+        lead++;
+      }
+      return M;
+    }
+    function rankOfIntRows(rows){
+      var fm = rows.map(function(r){ return r.map(function(x){ return Frac(x,1); }); });
+      var R = rref(fm);
+      return R.filter(function(row){ return row.some(function(v){ return !fIsZero(v); }); }).length;
+    }
+
+    function choosePivotCols(numVars, rank){
+      var idx = [];
+      for(var i=0;i<numVars;i++) idx.push(i);
+      for(var i2=idx.length-1;i2>0;i2--){
+        var j = randInt(0,i2);
+        var t = idx[i2]; idx[i2]=idx[j]; idx[j]=t;
+      }
+      return idx.slice(0,rank).sort(function(a,b){ return a-b; });
+    }
+
+    function generateSystem(){
+      var dof = randChoice([1,2,3]);
+      var maxRank = 5 - dof;
+      var rank = randInt(1, maxRank);
+      var numVars = rank + dof;
+      var pivotCols = choosePivotCols(numVars, rank);
+      var allCols = []; for(var i=0;i<numVars;i++) allCols.push(i);
+      var freeCols = allCols.filter(function(c){ return pivotCols.indexOf(c)===-1; });
+
+      var M = [];
+      for(var r=0;r<rank;r++){
+        var row = new Array(numVars+1).fill(0);
+        row[pivotCols[r]] = 1;
+        freeCols.forEach(function(fc){ row[fc] = randInt(-4,4); });
+        row[numVars] = randInt(-6,6);
+        M.push(row);
+      }
+
+      var p = new Array(numVars).fill(0);
+      pivotCols.forEach(function(pc,r2){ p[pc] = M[r2][numVars]; });
+
+      var dirs = freeCols.map(function(fc){
+        var v = new Array(numVars).fill(0);
+        v[fc] = 1;
+        pivotCols.forEach(function(pc,r3){ v[pc] = -M[r3][fc]; });
+        return v;
+      });
+
+      return { numVars:numVars, rank:rank, dof:dof, pivotCols:pivotCols, freeCols:freeCols, M:M, p:p, dirs:dirs };
+    }
+
+    function evalRow(rowCoeffs, vec){
+      var s = 0;
+      for(var c=0;c<vec.length;c++) s += rowCoeffs[c]*vec[c];
+      return s;
+    }
+    function particularOk(sys, p){
+      return sys.M.every(function(row){ return evalRow(row.slice(0,sys.numVars), p) === row[sys.numVars]; });
+    }
+    function homogeneousOk(sys, v){
+      return sys.M.every(function(row){ return evalRow(row.slice(0,sys.numVars), v) === 0; });
+    }
+
+    function systemLatex(current){
+      var n = current.numVars;
+      var headerCells = VARS.slice(0,n).map(function(v){ return '\\textcolor{#97A1D8}{'+v+'}'; });
+      headerCells.push('');
+      var rows = current.M.map(function(row){
+        return row.slice(0,n).join(' & ') + ' & ' + row[n];
+      }).join(' \\\\ ');
+      return '\\left[\\begin{array}{' + new Array(n+1).join('c') + '|c}' +
+        headerCells.join(' & ') + ' \\\\ \\hline ' + rows +
+        '\\end{array}\\right]';
+    }
+    function renderContent(container, current){
+      window.katex.render(systemLatex(current), container, { throwOnError:false });
+    }
+
+    function explainSolution(current, pOk, homOks, collectiveIssue, hasEmpty){
+      if(hasEmpty) return 'Dejaste alguna celda vacía (se tomó como 0 para revisar).';
+      var allHom = homOks.every(Boolean);
+      if(pOk && allHom && !collectiveIssue) return '¡Correcto! Tu solución particular verifica el sistema, y cada vector dirección resuelve el sistema homogéneo.';
+      var parts = [];
+      if(!pOk) parts.push('la solución particular no verifica el sistema (revisá que, al multiplicarla por cada fila de la matriz, dé el término independiente)');
+      var badIdx = homOks.map(function(ok,i){ return ok ? null : i; }).filter(function(i){ return i!==null; });
+      if(badIdx.length){
+        var labels = badIdx.map(function(i){ return VARS[current.freeCols[i]]; }).join(', ');
+        parts.push('el vector que acompaña a ' + labels + ' no es correcto');
+      }
+      if(collectiveIssue) parts.push('tus vectores sí resuelven el sistema homogéneo, pero entre todos no llegan a cubrir todos los grados de libertad (revisá que no hayas repetido un vector, o un múltiplo de él, en más de un parámetro)');
+      return 'No es correcto: ' + parts.join('; ') + '.';
+    }
+
+    EXERCISES.push({
+      id: 'solucion-parametrica',
+      title: 'Solución paramétrica',
+      unit: 'Unidad 1: Matrices y SEL',
+      topic: 'Sistemas indeterminados',
+      needsKatex: true,
+      type: 'vectors',
+      prompt: 'El sistema es compatible indeterminado (SCI). Completá la solución general.',
+      generate: generateSystem,
+      renderContent: renderContent,
+      vectors: {
+        rows: function (current) { return current.numVars; },
+        count: function (current) { return current.dof; },
+        hasParticular: true,
+        paramLabel: function (current, i) { return VARS[current.freeCols[i]]; }
+      },
+      checkVectors: function (current, particularVals, vectorVals, hasEmpty) {
+        var pOk = particularOk(current, particularVals);
+        var homOks = vectorVals.map(function (v) { return homogeneousOk(current, v); });
+        var allHom = homOks.every(Boolean);
+        var dirsOk = false, collectiveIssue = false;
+        if (allHom) {
+          var rk = rankOfIntRows(vectorVals);
+          dirsOk = rk === current.dof;
+          collectiveIssue = !dirsOk;
+        }
+        var correct = pOk && dirsOk && !hasEmpty;
+        return { correct: correct, feedbackText: explainSolution(current, pOk, homOks, collectiveIssue, hasEmpty) };
+      },
+      getAnswerVectors: function (current) { return { particular: current.p, vectors: current.dirs }; }
+    });
+  })();
+
   global.AptExercises = EXERCISES;
 })(window);
