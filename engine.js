@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v1.13)
+   ÁLGEBRA PARA TODOS · engine.js (v1.14)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -88,7 +88,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '1.13';
+  var ENGINE_VERSION = '1.14';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -1288,7 +1288,7 @@
       } else {
         interactionHTML = '<div class="apt-act__choices"></div>';
       }
-      var hasAnswer = !!(phase.getAnswerGrid || phase.getAnswerVectors);
+      var hasAnswer = !!(phase.getAnswerGrid || phase.getAnswerVectors || phase.getExpectedBasis);
       var actionsHTML =
         '<div class="apt-act__actions-row">' +
           '<button type="button" class="apt-act__retry-btn apt-act__retry-btn--hidden">Reintentar</button>' +
@@ -1442,6 +1442,7 @@
         p.checkBtn.disabled = false;
         p.checkBtn.onclick = function () { checkSpaceBasisPhase(idx); };
         if (p.retryBtn) p.retryBtn.onclick = function () { retrySpaceBasisPhase(idx); };
+        if (p.showAnswerBtn) p.showAnswerBtn.onclick = function () { showAnswerSpaceBasisPhase(idx); };
       } else if (phaseCfg.mode === 'setup') {
         var selections = {};
         var fieldEls = p.el.querySelectorAll('.apt-act__setup-field');
@@ -1725,6 +1726,7 @@
         advanceOrFinish(idx);
       } else {
         if (p.retryBtn) p.retryBtn.classList.remove('apt-act__retry-btn--hidden');
+        if (p.showAnswerBtn) p.showAnswerBtn.classList.remove('apt-act__retry-btn--hidden');
         refs.nextBtn.classList.remove('apt-act__next-btn--hidden');
         if (isLast) registerRoundResult(false);
       }
@@ -1741,9 +1743,27 @@
       });
       p.feedback.className = 'apt-act__feedback apt-act__feedback--hidden';
       if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
+      if (p.showAnswerBtn) p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
       refs.nextBtn.classList.add('apt-act__next-btn--hidden');
       p.checkBtn.disabled = false;
       phaseAnswered[idx] = false;
+    }
+
+    function showAnswerSpaceBasisPhase(idx) {
+      var phaseCfg = cfg.phases[idx];
+      var p = refs.phaseRefs[idx];
+      var sbSpace = typeof phaseCfg.space === 'function' ? phaseCfg.space(current) : (phaseCfg.space || current.space);
+      var answer = phaseCfg.getExpectedBasis(current);
+      answer.forEach(function (v, i) { fillSpaceInputWidget(p.spaceAnswer, sbSpace, 'v' + i, v); });
+
+      if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
+      if (p.showAnswerBtn) p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
+      renderFeedback(p.feedback, true, phaseCfg.answerTitle || 'Una respuesta posible',
+        phaseCfg.answerText || 'Esta es una base válida — no la única. Cualquier otra que respete la estructura y genere el mismo subespacio también vale.');
+
+      var isLast = idx === activePhaseCount() - 1;
+      if (isLast) { refs.nextBtn.classList.remove('apt-act__next-btn--hidden'); }
+      else { revealPhase(idx + 1); root.classList.remove('is-answered'); }
     }
 
     function showAnswerVectorsPhase(idx) {
@@ -2369,6 +2389,19 @@
       wrap.querySelector('.apt-act__cell').disabled = true;
       setSignDisabled(wrap, true);
     }
+  }
+  function fillSpaceInputWidget(container, space, key, nativeVal) {
+    var coords = space.toCoords(nativeVal);
+    coords.forEach(function (val, i) {
+      var wrap = container.querySelector('.apt-act__cellwrap[data-key="' + key + '"][data-index="' + i + '"]');
+      var input = wrap.querySelector('.apt-act__cell');
+      setSign(wrap, val < 0 ? '-' : '+');
+      input.value = String(Math.abs(val));
+      wrap.classList.remove('is-wrong');
+      wrap.classList.add('is-correct');
+      setSignDisabled(wrap, true);
+      input.disabled = true;
+    });
   }
 
   /* ---------- renderSevAsBasis / renderSevAsEquations (Decisión 5b) ---------- */
