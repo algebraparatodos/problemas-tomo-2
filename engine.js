@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v2.1)
+   ÁLGEBRA PARA TODOS · engine.js (v2.2)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -88,7 +88,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '2.1';
+  var ENGINE_VERSION = '2.2';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -231,6 +231,7 @@
        que el contenido se desborde de la tarjeta. -- */
     '.apt-act__choices--grid{ display:grid; grid-template-columns:1fr; gap:10px; }',
     '@media (min-width:420px){ .apt-act__choices--grid{ grid-template-columns:1fr 1fr; } }',
+    '.apt-act__choices--grid-1col{ grid-template-columns:1fr !important; }',
     '.apt-act__choices--grid .apt-act__choice-btn{ flex-direction:row; align-items:flex-start; justify-content:flex-start; gap:6px; background:var(--bg-card); border:1px solid rgba(151,161,216,0.25); border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,.4); padding:12px 8px; min-height:90px; }',
     '.apt-act__choices--grid .apt-act__choice-btn::before{ content:"☐"; flex:0 0 auto; font-size:14px; }',
     '.apt-act__choices--grid .apt-act__choice-btn.is-selected::before{ content:"☑"; }',
@@ -1442,6 +1443,7 @@
         p.choicesWrap.innerHTML = '';
         if (phaseCfg.choicesGrid) {
           p.choicesWrap.classList.add('apt-act__choices--grid');
+          p.choicesWrap.classList.toggle('apt-act__choices--grid-1col', !!phaseCfg.choicesGridSingleColumn);
         } else {
           p.choicesWrap.classList.toggle('apt-act__choices--stacked', phaseCfg.choicesStacked !== undefined ? phaseCfg.choicesStacked : choiceList.length <= 2);
         }
@@ -1910,6 +1912,7 @@
           refs.choicesWrap.innerHTML = '';
           if (cfg.choicesGrid) {
             refs.choicesWrap.classList.add('apt-act__choices--grid');
+            refs.choicesWrap.classList.toggle('apt-act__choices--grid-1col', !!cfg.choicesGridSingleColumn);
           } else {
             refs.choicesWrap.classList.toggle('apt-act__choices--stacked', cfg.choicesStacked !== undefined ? cfg.choicesStacked : choiceList.length <= 2);
           }
@@ -2519,6 +2522,62 @@
     return name + ' = \\left\\{ (' + names.join(',') + ') : ' + body + ' \\right\\}';
   }
 
+  // Nombres de variable POR FAMILIA de espacio: x_1..x_n para Rn, a_{fc}
+  // (fila,columna) para matrices SIEMPRE (nunca letras sueltas, aunque la
+  // matriz sea chica), a_0..a_k para polinomios (índice = grado).
+  function spaceVarNames(space) {
+    if (space.family === 'rn') {
+      return Array.from({ length: space.dim }, function (_, i) { return 'x_{' + (i + 1) + '}'; });
+    }
+    if (space.family === 'matrix') {
+      var names = [];
+      for (var r = 0; r < space.shape.rows; r++) {
+        for (var c = 0; c < space.shape.cols; c++) names.push('a_{' + (r + 1) + '' + (c + 1) + '}');
+      }
+      return names;
+    }
+    var namesP = [];
+    for (var k = 0; k <= space.shape.degree; k++) namesP.push('a_{' + k + '}');
+    return namesP;
+  }
+
+  // Versión compacta para mostrar como OPCIÓN de elección múltiple (2.14 y
+  // similares): nombra el elemento genérico como "vector x" (siempre, sin
+  // importar el espacio — así no hay que decidir "matriz A" vs "polinomio p"
+  // caso por caso), agrupa ecuaciones de una sola variable en una única
+  // línea x_1=x_2=...=0 en vez de repetirlas, y usa spaceVarNames (nunca
+  // letras sueltas para matrices, siempre a_{fc}).
+  function renderSevAsEquationsGrouped(space, equations, sevName, elementSymbol) {
+    var name = sevName || 'S';
+    var sym = elementSymbol || '\\vec{x}';
+    var names = spaceVarNames(space);
+    function rowToLatex(row) {
+      var parts = [];
+      row.forEach(function (c, i) {
+        if (c === 0) return;
+        var abs = Math.abs(c);
+        var coefStr = abs === 1 ? '' : String(abs);
+        var term = coefStr + names[i];
+        if (parts.length === 0) parts.push((c < 0 ? '-' : '') + term);
+        else parts.push((c < 0 ? ' - ' : ' + ') + term);
+      });
+      return (parts.length ? parts.join('') : '0') + ' = 0';
+    }
+    var singleVarIdx = [];
+    var otherLines = [];
+    equations.forEach(function (row) {
+      var nz = [];
+      row.forEach(function (v, i) { if (v !== 0) nz.push(i); });
+      if (nz.length === 1) singleVarIdx.push(nz[0]);
+      else otherLines.push(rowToLatex(row));
+    });
+    var lines = [];
+    if (singleVarIdx.length) lines.push(singleVarIdx.map(function (i) { return names[i]; }).join('=') + '=0');
+    lines = lines.concat(otherLines);
+    var body = lines.length > 1 ? '\\begin{cases} ' + lines.join(' \\\\ ') + ' \\end{cases}' : lines[0];
+    return name + ' = \\left\\{ \\, ' + sym + ' \\in ' + space.labelTex + ' \\ / \\ ' + body + ' \\, \\right\\}';
+  }
+
   function isMuted() { return muted; }
   function toggleMute() {
     muted = !muted;
@@ -2549,6 +2608,8 @@
     renderSevAmbient: renderSevAmbient,
     renderSevAsBasis: renderSevAsBasis,
     renderSevAsBasisWrapped: renderSevAsBasisWrapped,
-    renderSevAsEquations: renderSevAsEquations
+    renderSevAsEquations: renderSevAsEquations,
+    renderSevAsEquationsGrouped: renderSevAsEquationsGrouped,
+    spaceVarNames: spaceVarNames
   };
 })(window);
