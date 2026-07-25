@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v1.12)
+   ÁLGEBRA PARA TODOS · engine.js (v1.13)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -88,7 +88,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '1.12';
+  var ENGINE_VERSION = '1.13';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -248,6 +248,8 @@
     '.apt-act__divider{ width:2px; background:var(--chalk-light); opacity:.45; justify-self:center; }',
     '.apt-act__solution{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 8px; margin-bottom:4px; }',
     '.apt-act__space-answer{ display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:center; gap:14px 18px; margin-bottom:4px; }',
+    '.apt-act__space-answer--rows{ flex-direction:column; align-items:center; gap:14px; }',
+    '.apt-act__space-row{ display:flex; align-items:center; gap:8px; }',
     '.apt-act__eq{ font-family:var(--font-serif); font-weight:700; font-size:18px; color:var(--ink); }',
     '.apt-act__op{ font-family:var(--font-serif); font-weight:700; font-size:18px; color:var(--ink-soft); }',
     '.apt-act__paramlabel{ font-family:var(--font-serif); font-weight:700; font-size:17px; color:var(--ink); }',
@@ -1423,25 +1425,19 @@
         var sbSpace = typeof phaseCfg.space === 'function' ? phaseCfg.space(current) : (phaseCfg.space || current.space);
         p.spaceAnswer.innerHTML = '';
         p.spaceAnswer.dataset.count = sbCount;
+        p.spaceAnswer.classList.add('apt-act__space-answer--rows');
 
-        var sbLabel = (phaseCfg.answerLabel || 'B');
-        var sbEqOpen = document.createElement('span');
-        sbEqOpen.className = 'apt-act__eq';
-        sbEqOpen.textContent = sbLabel + ' = (';
-        p.spaceAnswer.appendChild(sbEqOpen);
+        var sbLabel = (phaseCfg.answerLabel || 'v');
         for (var sbi = 0; sbi < sbCount; sbi++) {
-          if (sbi > 0) {
-            var sbComma = document.createElement('span');
-            sbComma.className = 'apt-act__op';
-            sbComma.textContent = ',';
-            p.spaceAnswer.appendChild(sbComma);
-          }
-          buildSpaceInputWidget(p.spaceAnswer, sbSpace, 'v' + sbi);
+          var sbRow = document.createElement('div');
+          sbRow.className = 'apt-act__space-row';
+          var sbRowLabel = document.createElement('span');
+          sbRowLabel.className = 'apt-act__eq';
+          sbRowLabel.textContent = sbLabel + (_SUBS[sbi + 1] || ('_' + (sbi + 1))) + ' =';
+          sbRow.appendChild(sbRowLabel);
+          p.spaceAnswer.appendChild(sbRow);
+          buildSpaceInputWidget(sbRow, sbSpace, 'v' + sbi);
         }
-        var sbEqClose = document.createElement('span');
-        sbEqClose.className = 'apt-act__eq';
-        sbEqClose.textContent = ')';
-        p.spaceAnswer.appendChild(sbEqClose);
 
         p.checkBtn.disabled = false;
         p.checkBtn.onclick = function () { checkSpaceBasisPhase(idx); };
@@ -2179,7 +2175,7 @@
       varsPlain: ['x', 'y', 'z', 'w', 'v'].slice(0, n),
       toCoords: function (v) { return v.slice(); },
       fromCoords: function (c) { return c.slice(); },
-      toKatex: function (v) { return '\\begin{bmatrix} ' + v.join(' \\\\ ') + ' \\end{bmatrix}'; },
+      toKatex: function (v) { return '\\begin{pmatrix} ' + v.join(' \\\\ ') + ' \\end{pmatrix}'; },
       // Tupla en fila: (x, y, z). Es la notación que usa el libro para
       // Rⁿ en Unidad 3 (T(1,0,1) = (2,1)). NO reemplaza a toKatex.
       toKatexRow: function (v) { return '\\left(' + v.join(',\\ ') + '\\right)'; },
@@ -2187,7 +2183,7 @@
       // en vez de números — para enunciados simbólicos tipo T(x,y)=(2x-y, x).
       symbolicKatex: function (parts, opts) {
         return (opts && opts.column)
-          ? '\\begin{bmatrix} ' + parts.join(' \\\\ ') + ' \\end{bmatrix}'
+          ? '\\begin{pmatrix} ' + parts.join(' \\\\ ') + ' \\end{pmatrix}'
           : '\\left(' + parts.join(',\\ ') + '\\right)';
       }
     };
@@ -2203,7 +2199,7 @@
       symbolicKatex: function (parts) {
         var body = [];
         for (var r2 = 0; r2 < rows; r2++) body.push(parts.slice(r2 * cols, (r2 + 1) * cols).join(' & '));
-        return '\\begin{bmatrix} ' + body.join(' \\\\ ') + ' \\end{bmatrix}';
+        return '\\begin{pmatrix} ' + body.join(' \\\\ ') + ' \\end{pmatrix}';
       },
       toCoords: function (v) {
         var out = [];
@@ -2217,7 +2213,7 @@
       },
       toKatex: function (v) {
         var body = v.map(function (row) { return row.join(' & '); }).join(' \\\\ ');
-        return '\\begin{bmatrix} ' + body + ' \\end{bmatrix}';
+        return '\\begin{pmatrix} ' + body + ' \\end{pmatrix}';
       }
     };
   }
@@ -2330,7 +2326,25 @@
         wrap.appendChild(group);
       }
     }
-    container.appendChild(wrap);
+
+    // Regla del proyecto: nunca corchetes, siempre paréntesis. Para
+    // columna/matriz envolvemos con el mismo paréntesis curvo (border-radius
+    // elíptico) que ya usa 'vectors' — un polinomio NO va entre paréntesis
+    // (no es la notación del libro), así que 'poly' queda sin envolver.
+    if (space.shape.kind === 'column' || space.shape.kind === 'matrix') {
+      var bracketed = document.createElement('div');
+      bracketed.className = 'apt-act__vec';
+      var bLeft = document.createElement('span');
+      bLeft.className = 'apt-act__vec-bracket apt-act__vec-bracket--left';
+      var bRight = document.createElement('span');
+      bRight.className = 'apt-act__vec-bracket apt-act__vec-bracket--right';
+      bracketed.appendChild(bLeft);
+      bracketed.appendChild(wrap);
+      bracketed.appendChild(bRight);
+      container.appendChild(bracketed);
+    } else {
+      container.appendChild(wrap);
+    }
     return wrap;
   }
   function readSpaceInputWidget(container, space, key) {
