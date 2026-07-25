@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v1.14)
+   ÁLGEBRA PARA TODOS · engine.js (v2.0)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -88,7 +88,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '1.14';
+  var ENGINE_VERSION = '2.0';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -241,9 +241,13 @@
     '.apt-act__choice-btn:disabled{ opacity:.5; cursor:default; }',
     '.apt-act__choice-btn:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
     '.apt-act__matrixwrap{ display:flex; align-items:stretch; justify-content:center; gap:6px; }',
-    '.apt-act__bracket{ width:9px; border-top:3px solid var(--ink-soft); border-bottom:3px solid var(--ink-soft); }',
-    '.apt-act__bracket--left{ border-left:3px solid var(--ink-soft); border-radius:5px 0 0 5px; }',
-    '.apt-act__bracket--right{ border-right:3px solid var(--ink-soft); border-radius:0 5px 5px 0; }',
+    /* Delimitadores de la grilla de inputs: PARÉNTESIS, para coincidir
+       con la notación del libro impreso. El arco se logra con un radio
+       elíptico grande sobre un único borde lateral — sin bordes arriba
+       y abajo, que son los que daban el corchete. v2.0 */
+    '.apt-act__bracket{ width:14px; flex:0 0 14px; }',
+    '.apt-act__bracket--left{ border-left:3px solid var(--ink-soft); border-radius:60px 0 0 60px / 50% 0 0 50%; }',
+    '.apt-act__bracket--right{ border-right:3px solid var(--ink-soft); border-radius:0 60px 60px 0 / 0 50% 50% 0; }',
     '.apt-act__grid{ display:grid; gap:8px 6px; padding:4px 4px; }',
     '.apt-act__divider{ width:2px; background:var(--chalk-light); opacity:.45; justify-self:center; }',
     '.apt-act__solution{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 8px; margin-bottom:4px; }',
@@ -528,8 +532,52 @@
     }
   }
 
+  /* ------------------------------------------------------------
+     Normalización de delimitadores de matriz (v2.0)
+     ------------------------------------------------------------
+     Notación del proyecto: las matrices van con PARÉNTESIS, para
+     coincidir con el libro impreso. Este archivo ya está todo en
+     pmatrix, pero las landings publicadas tienen su propio LaTeX
+     escrito con corchetes y viven en Kajabi, no en este repo — así
+     que en vez de editarlas una por una, se normaliza acá, que es
+     el único punto por el que pasa TODO el LaTeX de TODAS las
+     actividades.
+
+     El reemplazo es DELIBERADAMENTE quirúrgico. Solo toca:
+       \begin{bmatrix} ... \end{bmatrix}              (siempre es matriz)
+       \left[\begin{array} ... \end{array}\right]     (matriz ampliada)
+     y NO toca los corchetes sueltos, porque ahí el corchete significa
+     otra cosa: [0,1] es un intervalo CERRADO (pasarlo a paréntesis lo
+     volvería abierto, o sea un error matemático) y [v]_B son las
+     coordenadas de un vector en una base, que van con corchetes.
+     ------------------------------------------------------------ */
+  function normalizeMatrixDelims(tex) {
+    if (typeof tex !== 'string') return tex;
+    if (tex.indexOf('bmatrix') === -1 && tex.indexOf('[') === -1) return tex;
+    return tex
+      .replace(/\\begin\{bmatrix\}/g, '\\begin{pmatrix}')
+      .replace(/\\end\{bmatrix\}/g, '\\end{pmatrix}')
+      .replace(/\\left\[\s*\\begin\{array\}/g, '\\left(\\begin{array}')
+      .replace(/\\end\{array\}\s*\\right\]/g, '\\end{array}\\right)');
+  }
+
+  var _katexPatched = false;
+  function patchKatexDelims() {
+    if (_katexPatched || !window.katex) return;
+    var k = window.katex;
+    if (typeof k.render === 'function') {
+      var origRender = k.render;
+      k.render = function (tex, el, opts) { return origRender.call(k, normalizeMatrixDelims(tex), el, opts); };
+    }
+    if (typeof k.renderToString === 'function') {
+      var origRTS = k.renderToString;
+      k.renderToString = function (tex, opts) { return origRTS.call(k, normalizeMatrixDelims(tex), opts); };
+    }
+    _katexPatched = true;
+  }
+
   function ensureKatex(callback) {
-    if (window.katex) { callback(); return; }
+    if (window.katex) { patchKatexDelims(); callback(); return; }
     if (!document.getElementById(KATEX_CSS_ID)) {
       var link = document.createElement('link');
       link.id = KATEX_CSS_ID;
@@ -544,7 +592,7 @@
       document.head.appendChild(script);
     }
     var poll = setInterval(function () {
-      if (window.katex) { clearInterval(poll); callback(); }
+      if (window.katex) { clearInterval(poll); patchKatexDelims(); callback(); }
     }, 50);
   }
 
@@ -2492,6 +2540,7 @@
     // -- Módulo de espacios (Unidad 2), agregado en v1.8 --
     Frac: { Frac: Frac, fAdd: fAdd, fSub: fSub, fMul: fMul, fDiv: fDiv, fIsZero: fIsZero, fEquals: fEquals, fromInt: fromInt, intMatrixToFrac: intMatrixToFrac, rref: rref, rankOf: rankOf, rrefEqual: rrefEqual, fracRowToIntRow: fracRowToIntRow },
     checkSpanEquivalence: checkSpanEquivalence,
+    normalizeMatrixDelims: normalizeMatrixDelims,
     SPACES: SPACES,
     randomSpace: randomSpace,
     buildSpaceInputWidget: buildSpaceInputWidget,
