@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v2.2)
+   ÁLGEBRA PARA TODOS · engine.js (v2.3)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -88,7 +88,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '2.2';
+  var ENGINE_VERSION = '2.3';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -2474,14 +2474,13 @@
   // Así el navegador puede partir la lista en varias líneas cuando no
   // entra en el ancho disponible — nunca hace falta scroll horizontal,
   // a diferencia de renderSevAsBasis (un solo bloque indivisible de KaTeX).
-  function renderSevAsBasisWrapped(container, space, vectors, sevName) {
-    var name = sevName || 'S';
+  function _renderWrappedList(container, vectors, space, name, openSym, closeSym) {
     container.innerHTML = '';
     container.classList.add('apt-act__sev-basis');
 
     var eq = document.createElement('span');
     eq.className = 'apt-act__eq';
-    eq.textContent = name + ' = \u27e8';
+    eq.textContent = name + ' = ' + openSym;
     container.appendChild(eq);
 
     vectors.forEach(function (v, i) {
@@ -2498,8 +2497,17 @@
 
     var close = document.createElement('span');
     close.className = 'apt-act__eq';
-    close.textContent = '\u27e9';
+    close.textContent = closeSym;
     container.appendChild(close);
+  }
+  // Conjunto GENERADOR de un SEV: S = <v1, v2, ...> (ángulos = "generado por")
+  function renderSevAsBasisWrapped(container, space, vectors, sevName) {
+    _renderWrappedList(container, vectors, space, sevName || 'S', '\u27e8', '\u27e9');
+  }
+  // BASE ordenada (de V o de un SEV): B = {v1, v2, ...} (llaves = conjunto,
+  // NO ángulos -- una base no es "lo que genera", es el conjunto en sí).
+  function renderBasisWrapped(container, space, vectors, basisName) {
+    _renderWrappedList(container, vectors, space, basisName || 'B', '{', '}');
   }
   function renderSevAsEquations(space, equations, sevName, varNames) {
     var name = sevName || 'S';
@@ -2608,6 +2616,7 @@
     renderSevAmbient: renderSevAmbient,
     renderSevAsBasis: renderSevAsBasis,
     renderSevAsBasisWrapped: renderSevAsBasisWrapped,
+    renderBasisWrapped: renderBasisWrapped,
     renderSevAsEquations: renderSevAsEquations,
     renderSevAsEquationsGrouped: renderSevAsEquationsGrouped,
     spaceVarNames: spaceVarNames
