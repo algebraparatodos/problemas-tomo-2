@@ -114,7 +114,7 @@
     function matrixLatex(current){
       var colsSpec = new Array(current.n).fill('c').join('') + '|c';
       var rows = current.A.map(function(row,i){ return row.concat([current.b[i]]).join(' & '); });
-      return '[A \\mid B] = \\left(\\begin{array}{' + colsSpec + '} ' + rows.join(' \\\\ ') + ' \\end{array}\\right)';
+      return '(A \\mid B) = \\left(\\begin{array}{' + colsSpec + '} ' + rows.join(' \\\\ ') + ' \\end{array}\\right)';
     }
     function renderContent(container, current){
       window.katex.render(matrixLatex(current), container, { throwOnError:false });
@@ -163,9 +163,9 @@
           explain: function(current, correct, value){
             var msg;
             if(current.rankAB > current.rankA){
-              msg = 'rango([A|B]) = ' + current.rankAB + ': orlando con la columna B aparece un menor de orden ' + current.rankAB + ' no nulo que no se podía formar usando solo columnas de A.';
+              msg = 'rango((A|B)) = ' + current.rankAB + ': orlando con la columna B aparece un menor de orden ' + current.rankAB + ' no nulo que no se podía formar usando solo columnas de A.';
             } else {
-              msg = 'rango([A|B]) = ' + current.rankAB + ' (igual que rango(A)): todo menor que incluya la columna B, de orden mayor a ' + current.rankA + ', se anula.';
+              msg = 'rango((A|B)) = ' + current.rankAB + ' (igual que rango(A)): todo menor que incluya la columna B, de orden mayor a ' + current.rankA + ', se anula.';
             }
             return (correct ? '' : 'No es correcto. ') + msg;
           }
@@ -182,11 +182,11 @@
           explain: function(current, correct, value){
             var msg;
             if(current.classification === 'SI'){
-              msg = 'rango([A|B]) = ' + current.rankAB + ' > rango(A) = ' + current.rankA + ', así que el sistema es incompatible (SI): no tiene solución.';
+              msg = 'rango((A|B)) = ' + current.rankAB + ' > rango(A) = ' + current.rankA + ', así que el sistema es incompatible (SI): no tiene solución.';
             } else if(current.classification === 'SCD'){
-              msg = 'rango(A) = rango([A|B]) = ' + current.rankA + ', igual al número de incógnitas (' + current.n + '), así que el sistema es compatible determinado (SCD): solución única.';
+              msg = 'rango(A) = rango((A|B)) = ' + current.rankA + ', igual al número de incógnitas (' + current.n + '), así que el sistema es compatible determinado (SCD): solución única.';
             } else {
-              msg = 'rango(A) = rango([A|B]) = ' + current.rankA + ', menor al número de incógnitas (' + current.n + '), así que el sistema es compatible indeterminado (SCI): infinitas soluciones.';
+              msg = 'rango(A) = rango((A|B)) = ' + current.rankA + ', menor al número de incógnitas (' + current.n + '), así que el sistema es compatible indeterminado (SCI): infinitas soluciones.';
             }
             return (correct ? '' : 'No es correcto. ') + msg;
           }
