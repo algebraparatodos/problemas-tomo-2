@@ -1,13 +1,20 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v3.1)
+   ÁLGEBRA PARA TODOS · engine.js (v3.2)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
    (paleta, tipografías, layout, sonido, footer, modo compacto...).
 
    Cada landing de Kajabi solo carga este script y le pasa un
-   objeto de configuración con SU lógica particular. El engine
-   soporta tres modos de interacción:
+   objeto de configuración con SU lógica particular.
+
+   NOTA DE NOTACIÓN: las matrices van con PARÉNTESIS, para coincidir
+   con el libro impreso. Si una landing necesita dibujar delimitadores,
+   tiene que usar las clases de acá (.apt-act__matrixwrap y
+   .apt-act__bracket) en vez de definir las suyas — así un cambio de
+   notación se aplica solo, sin re-pegar la landing una por una.
+
+   El engine soporta tres modos de interacción:
 
      mode: 'choices' — botones de elección (ej: SCD/SCI/SI).
        cfg.choices, cfg.check(current,value), cfg.explain(...)
@@ -88,7 +95,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '3.1';
+  var ENGINE_VERSION = '3.2';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -252,14 +259,16 @@
     '.apt-act__choices--grid .apt-act__choice-main{ flex:1 1 auto; min-width:0; font-size:clamp(10px,3vw,13px); text-align:center; overflow-x:auto; overflow-y:hidden; }',
     '.apt-act__choice-btn:disabled{ opacity:.5; cursor:default; }',
     '.apt-act__choice-btn:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
-    '.apt-act__matrixwrap{ display:flex; align-items:stretch; justify-content:center; gap:6px; }',
+    '.apt-act__matrixwrap{ display:flex; align-items:stretch; justify-content:center; gap:3px; }',
     '.apt-act__grid-row{ display:flex; align-items:stretch; justify-content:center; gap:8px; }',
     '.apt-act__grid-label{ display:flex; align-items:center; font-size:1.1em; color:var(--ink); }',
     /* Delimitadores de la grilla de inputs: PARÉNTESIS, para coincidir
        con la notación del libro impreso. El arco se logra con un radio
        elíptico grande sobre un único borde lateral — sin bordes arriba
        y abajo, que son los que daban el corchete. v2.0 */
-    '.apt-act__bracket{ width:14px; flex:0 0 14px; }',
+    /* 11px + gap 3px ocupa lo MISMO que el corchete viejo (9px + gap 6px).
+       Con 14px la grilla de 3x4 se pasaba 5px de la pantalla a 320px. v3.2 */
+    '.apt-act__bracket{ width:11px; flex:0 0 11px; }',
     '.apt-act__bracket--left{ border-left:3px solid var(--ink-soft); border-radius:60px 0 0 60px / 50% 0 0 50%; }',
     '.apt-act__bracket--right{ border-right:3px solid var(--ink-soft); border-radius:0 60px 60px 0 / 0 50% 50% 0; }',
     '.apt-act__grid{ display:grid; gap:8px 6px; padding:4px 4px; }',
@@ -520,6 +529,7 @@
      Inyección de assets (una sola vez por página)
      ------------------------------------------------------------ */
   function ensureAssets() {
+    schedulePatchKatex();
     if (!document.getElementById(FONT_LINK_ID)) {
       var pre = document.createElement('link');
       pre.rel = 'preconnect';
@@ -588,6 +598,28 @@
       k.renderToString = function (tex, opts) { return origRTS.call(k, normalizeMatrixDelims(tex), opts); };
     }
     _katexPatched = true;
+  }
+
+  /* El normalizador tiene que quedar instalado ANTES de que cualquier
+     actividad dibuje su primera fórmula, y por CUALQUIER camino:
+       - actividades con needsKatex, que pasan por ensureKatex
+       - actividades que cargan KaTeX por su cuenta con su propio <script>
+       - el modo examen
+     Colgarlo solo de ensureKatex dejaba afuera a las dos últimas (se
+     medían ~3 de cada 10 fórmulas saliendo con corchetes). Por eso se
+     arranca además desde ensureAssets(), que es lo primero que corre
+     en todos los casos, con un poll acotado por si KaTeX todavía no
+     terminó de cargar. v3.2 */
+  var _katexPatchPoll = null;
+  function schedulePatchKatex() {
+    patchKatexDelims();
+    if (_katexPatched || _katexPatchPoll) return;
+    var tries = 0;
+    _katexPatchPoll = setInterval(function () {
+      tries++;
+      patchKatexDelims();
+      if (_katexPatched || tries > 400) { clearInterval(_katexPatchPoll); _katexPatchPoll = null; }
+    }, 25);
   }
 
   function ensureKatex(callback) {
