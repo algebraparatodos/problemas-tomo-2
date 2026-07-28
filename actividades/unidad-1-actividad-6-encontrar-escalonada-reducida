@@ -1,0 +1,202 @@
+<script src="https://algebraparatodos.github.io/problemas-tomo-2/engine.js"></script>
+
+<script>
+(function(){
+  var ROWS = 3, COLS = 4;
+
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function randChoice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function randNonZero(min,max){ var v; do{ v=randInt(min,max); }while(v===0); return v; }
+
+  function pivotOf(row){
+    for(var c=0;c<row.length;c++) if(row[c]!==0) return c;
+    return null;
+  }
+
+  // ---------- Construcción de la RREF "semilla" (la respuesta correcta y única) ----------
+  function buildRow(pivotCol, pivotVal){
+    var row = new Array(COLS).fill(0);
+    row[pivotCol] = pivotVal;
+    for(var c=pivotCol+1;c<COLS;c++) row[c] = randNonZero(-9,9); // celdas libres nunca en 0
+    return row;
+  }
+  function buildSkeleton(){
+    // Rango 2 o 3 (nunca 1: un sistema de rango 1 siempre se ve con
+    // demasiados ceros sin importar cuánto se mezcle después, porque
+    // todas las filas son múltiplos de una sola dirección).
+    var rank = randChoice([3,3,3,2,2]);
+    var rows = [];
+    var lastPivot = -1;
+    for(var r=0;r<ROWS;r++){
+      if(r >= rank){
+        rows.push(new Array(COLS).fill(0));
+        continue;
+      }
+      var maxStart = COLS - (rank - r);
+      var pivotCol = randInt(lastPivot+1, maxStart);
+      rows.push(buildRow(pivotCol, 1));
+      lastPivot = pivotCol;
+    }
+    return rows;
+  }
+  function cleanPivotColumns(rows){
+    var r2 = rows.map(function(row){ return row.slice(); });
+    for(var r=0;r<r2.length;r++){
+      var p = pivotOf(r2[r]);
+      if(p===null) continue;
+      for(var i=0;i<r2.length;i++){
+        if(i!==r) r2[i][p] = 0;
+      }
+    }
+    return r2;
+  }
+  function buildRREFSeed(){
+    var rows = cleanPivotColumns(buildSkeleton());
+    if(rows.every(function(row){ return row.every(function(v){ return v===0; }); })){
+      return buildRREFSeed();
+    }
+    return rows;
+  }
+
+  // ---------- Desordenar con operaciones de fila válidas ----------
+  function swapRows(M,i,j){ var M2=M.map(function(r){return r.slice();}); var t=M2[i]; M2[i]=M2[j]; M2[j]=t; return M2; }
+  function addMultiple(M,i,j,k){ var M2=M.map(function(r){return r.slice();}); M2[j]=M2[j].map(function(v,c){ return v + k*M2[i][c]; }); return M2; }
+  function scaleRow(M,i,k){ var M2=M.map(function(r){return r.slice();}); M2[i]=M2[i].map(function(v){ return v*k; }); return M2; }
+  function maxAbs(M){
+    var max = 0;
+    M.forEach(function(row){ row.forEach(function(v){ var a=Math.abs(v); if(a>max) max=a; }); });
+    return max;
+  }
+  function scramble(seed, numOps){
+    var M = seed;
+    // Barajamos el orden de las filas siempre, para que no queden ya
+    // "ordenadas" como en la respuesta (si no, se nota demasiado la
+    // estructura y la actividad queda trivial).
+    var order = [0,1,2];
+    for(var oi=order.length-1;oi>0;oi--){
+      var oj = randInt(0,oi);
+      var ot=order[oi]; order[oi]=order[oj]; order[oj]=ot;
+    }
+    M = order.map(function(idx){ return M[idx]; });
+
+    for(var op=0; op<numOps; op++){
+      // Más peso a "add": es la única operación que rellena ceros con
+      // valores no triviales. "scale" sola no cambia qué es cero.
+      var kind = randChoice(['add','add','add','scale']);
+      if(kind==='add'){
+        var i2=randInt(0,ROWS-1), j2=randInt(0,ROWS-1);
+        while(j2===i2) j2=randInt(0,ROWS-1);
+        var k = randChoice([-2,-1,1,2]);
+        M = addMultiple(M,i2,j2,k);
+      } else {
+        var i3=randInt(0,ROWS-1);
+        var k2 = randChoice([-2,-1,1,2]);
+        M = scaleRow(M,i3,k2);
+      }
+    }
+    return M;
+  }
+  function generateShown(){
+    var seed, shown, tries=0;
+    do{
+      seed = buildRREFSeed();
+      shown = scramble(seed, randInt(8,11));
+      tries++;
+    } while(maxAbs(shown) > 45 && tries < 100);
+    return { seed: seed, shown: shown };
+  }
+
+  // ---------- Checker estructural (echelon + pivote=1 + columna limpia) ----------
+  function isReducedEchelon(matrix){
+    var lastPivot = -1, sawZero = false, pivots = [];
+    for(var r=0;r<matrix.length;r++){
+      var p = pivotOf(matrix[r]);
+      if(p === null){ sawZero = true; continue; }
+      if(sawZero) return { ok:false, reason:'zero-not-last', badRow:r };
+      if(p <= lastPivot) return { ok:false, reason:'pivot-not-increasing', badRow:r, refRow:r-1 };
+      lastPivot = p;
+      pivots.push({ row:r, col:p });
+    }
+    for(var i=0;i<pivots.length;i++){
+      var pr = pivots[i].row, pc = pivots[i].col;
+      if(matrix[pr][pc] !== 1){
+        return { ok:false, reason:'pivot-not-one', badRow:pr, badCol:pc, value:matrix[pr][pc] };
+      }
+    }
+    for(var i2=0;i2<pivots.length;i2++){
+      var pr2 = pivots[i2].row, pc2 = pivots[i2].col;
+      for(var r2=0;r2<matrix.length;r2++){
+        if(r2!==pr2 && matrix[r2][pc2] !== 0){
+          return { ok:false, reason:'not-reduced', badRow:r2, refRow:pr2, badCol:pc2 };
+        }
+      }
+    }
+    return { ok:true };
+  }
+
+  function matricesEqual(A,B){
+    for(var r=0;r<A.length;r++) for(var c=0;c<A[0].length;c++) if(A[r][c]!==B[r][c]) return false;
+    return true;
+  }
+
+  function matrixLatex(M){
+    var body = M.map(function(row){ return row.join(' & '); }).join(' \\\\ ');
+    return '\\left[\\begin{array}{ccc|c} ' + body + ' \\end{array}\\right]';
+  }
+
+  function explainStructural(v){
+    if(v.reason === 'zero-not-last') return 'No está en forma escalonada: la fila ' + (v.badRow+1) + ' es no nula pero aparece después de una fila nula.';
+    if(v.reason === 'pivot-not-increasing') return 'No está en forma escalonada: el primer elemento no nulo de la fila ' + (v.badRow+1) + ' no está estrictamente a la derecha del de la fila ' + (v.refRow+1) + '.';
+    if(v.reason === 'pivot-not-one') return 'Es escalonada, pero no reducida: el pivote de la fila ' + (v.badRow+1) + ' vale ' + v.value + ' — en la forma reducida, todo pivote debe valer exactamente 1.';
+    return 'Es escalonada, pero no reducida: la columna del pivote de la fila ' + (v.refRow+1) + ' tiene otro valor no nulo en la fila ' + (v.badRow+1) + ' — el pivote debe ser el único elemento no nulo de su columna.';
+  }
+
+  AptActivity.init({
+    eyebrow: 'Unidad 1 · Matrices y SEL',
+    title: 'Encontrá la forma escalonada reducida',
+    subtitle: 'A diferencia de la escalonada, esta forma es única: hay una sola respuesta correcta.',
+    nextLabel: 'Probar con otra matriz →',
+    needsKatex: true,
+    mode: 'grid',
+    grid: { rows: 3, cols: 4, dividerAfterCol: 3 },
+    generate: function(){
+      var g = generateShown();
+      return { matrix: g.shown, answer: g.seed };
+    },
+    renderContent: function(container, current){
+      window.katex.render(matrixLatex(current.matrix), container, { throwOnError:false });
+    },
+    checkGrid: function(current, M, hasEmpty){
+      if(hasEmpty){
+        var nullRows = [[null,null,null,null],[null,null,null,null],[null,null,null,null]];
+        return { correct:false, cellStatus:nullRows, feedbackText:'Dejaste alguna celda vacía (se tomó como 0 para revisar) — completá todas antes de comprobar la próxima vez.' };
+      }
+      var structCheck = isReducedEchelon(M);
+      if(!structCheck.ok){
+        var cellStatus = [[null,null,null,null],[null,null,null,null],[null,null,null,null]];
+        cellStatus[structCheck.badRow] = ['wrong','wrong','wrong','wrong'];
+        return { correct:false, cellStatus:cellStatus, feedbackText: explainStructural(structCheck) };
+      }
+      var isTheAnswer = matricesEqual(M, current.answer);
+      if(isTheAnswer){
+        return {
+          correct:true,
+          cellStatus: [['correct','correct','correct','correct'],['correct','correct','correct','correct'],['correct','correct','correct','correct']],
+          feedbackText: '¡Correcto! Como la forma escalonada reducida es única, esta es exactamente la respuesta.'
+        };
+      }
+      return {
+        correct:false,
+        cellStatus: [[null,null,null,null],[null,null,null,null],[null,null,null,null]],
+        feedbackText: 'Tu matriz sí está en forma escalonada reducida, pero no representa el mismo sistema que la original — revisá las operaciones de fila que aplicaste.'
+      };
+    },
+    getAnswerGrid: function(current){
+      return current.answer;
+    },
+    answerTitle: 'La respuesta correcta',
+    answerText: 'A diferencia de la forma escalonada común, la forma reducida es única: esta es la única respuesta válida para esta matriz.'
+  });
+})();
+</script>
