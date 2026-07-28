@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v2.7)
+   ÁLGEBRA PARA TODOS · engine.js (v2.8)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -88,7 +88,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '2.7';
+  var ENGINE_VERSION = '2.8';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -208,6 +208,7 @@
     '.apt-act__content{ width:100%; display:flex; flex-direction:column; align-items:center; gap:6px; font-size:clamp(15px,4.4vw,19px); }',
     '.apt-act__content--sev{ font-size:clamp(12px,3.4vw,16px); }',
     '.apt-act__sev-basis{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 10px; }',
+    '.apt-act__sev-bracket{ font-size:2.8em; font-weight:400; line-height:1; color:var(--ink-soft); }',
     '.apt-act__content-ambient{ font-size:clamp(11px,3vw,13px); color:var(--ink-soft); }',
     '.apt-act__content svg{ width:100%; max-width:300px; aspect-ratio:1/1; display:block; }',
     '.apt-act__content .katex{ color:var(--ink); }',
@@ -1354,7 +1355,7 @@
         '</div>';
 
       return '<div class="apt-act__phase' + (idx > 0 ? ' apt-act__phase--hidden' : '') + '" data-phase="' + idx + '">' +
-        '<p class="apt-act__question">' + (phase.question || '') + '</p>' +
+        '<p class="apt-act__question">' + renderTextWithMath(phase.question || '') + '</p>' +
         interactionHTML +
         '<div class="apt-act__feedback apt-act__feedback--hidden"></div>' +
         actionsHTML +
@@ -1492,7 +1493,7 @@
           sbRow.className = 'apt-act__space-row';
           var sbRowLabel = document.createElement('span');
           sbRowLabel.className = 'apt-act__eq';
-          sbRowLabel.textContent = sbLabel + (_SUBS[sbi + 1] || ('_' + (sbi + 1))) + ' =';
+          sbRowLabel.textContent = sbLabel + (sbCount > 1 ? (_SUBS[sbi + 1] || ('_' + (sbi + 1))) : '') + ' =';
           sbRow.appendChild(sbRowLabel);
           p.spaceAnswer.appendChild(sbRow);
           buildSpaceInputWidget(sbRow, sbSpace, 'v' + sbi);
@@ -2507,8 +2508,13 @@
 
     var eq = document.createElement('span');
     eq.className = 'apt-act__eq';
-    eq.textContent = name + ' = ' + openSym;
+    eq.textContent = name + ' =';
     container.appendChild(eq);
+
+    var open = document.createElement('span');
+    open.className = 'apt-act__sev-bracket';
+    open.textContent = openSym;
+    container.appendChild(open);
 
     vectors.forEach(function (v, i) {
       if (i > 0) {
@@ -2523,7 +2529,7 @@
     });
 
     var close = document.createElement('span');
-    close.className = 'apt-act__eq';
+    close.className = 'apt-act__sev-bracket';
     close.textContent = closeSym;
     container.appendChild(close);
   }
