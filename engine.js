@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v3.0)
+   ÁLGEBRA PARA TODOS · engine.js (v3.1)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -88,7 +88,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '3.0';
+  var ENGINE_VERSION = '3.1';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -209,6 +209,7 @@
     '.apt-act__content--sev{ font-size:clamp(12px,3.4vw,16px); }',
     '.apt-act__sev-basis{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 10px; }',
     '.apt-act__sev-bracket{ line-height:1; color:var(--ink-soft); }',
+    '.apt-act__sev-item{ display:inline-flex; align-items:center; gap:6px; flex-wrap:nowrap; }',
     '.apt-act__content-ambient{ font-size:clamp(11px,3vw,13px); color:var(--ink-soft); }',
     '.apt-act__content svg{ width:100%; max-width:300px; aspect-ratio:1/1; display:block; }',
     '.apt-act__content .katex{ color:var(--ink); }',
@@ -2536,22 +2537,32 @@
     container.appendChild(open);
     window.katex.render('\\bigg' + openSym, open, { throwOnError: false });
 
+    // Cada vector se agrupa con lo que le sigue (coma, o la llave de cierre
+    // si es el último) en un único item flex -- así nunca quedan separados
+    // al hacer wrap (evita que la llave de cierre "salte" sola a otra línea).
     vectors.forEach(function (v, i) {
-      if (i > 0) {
+      var isLast = i === vectors.length - 1;
+      var itemWrap = document.createElement('span');
+      itemWrap.className = 'apt-act__sev-item';
+
+      var span = document.createElement('span');
+      itemWrap.appendChild(span);
+      window.katex.render(space.toKatex(v), span, { throwOnError: false });
+
+      if (!isLast) {
         var comma = document.createElement('span');
         comma.className = 'apt-act__op';
         comma.textContent = ',';
-        container.appendChild(comma);
+        itemWrap.appendChild(comma);
+      } else {
+        var close = document.createElement('span');
+        close.className = 'apt-act__sev-bracket';
+        itemWrap.appendChild(close);
+        window.katex.render('\\bigg' + closeSym, close, { throwOnError: false });
       }
-      var span = document.createElement('span');
-      container.appendChild(span);
-      window.katex.render(space.toKatex(v), span, { throwOnError: false });
-    });
 
-    var close = document.createElement('span');
-    close.className = 'apt-act__sev-bracket';
-    container.appendChild(close);
-    window.katex.render('\\bigg' + closeSym, close, { throwOnError: false });
+      container.appendChild(itemWrap);
+    });
   }
   // Conjunto GENERADOR de un SEV: S = <v1, v2, ...> (ángulos = "generado por")
   function renderSevAsBasisWrapped(container, space, vectors, sevName) {
