@@ -1,0 +1,173 @@
+<script src="https://algebraparatodos.github.io/problemas-tomo-2/engine.js"></script>
+
+<script>
+(function(){
+  var ROWS = 3, COLS = 4;
+
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function randChoice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function randNonZero(min,max){ var v; do{ v=randInt(min,max); }while(v===0); return v; }
+  function randPivotValNotOne(){ var v; do{ v = randNonZero(-9,9); }while(v===1); return v; }
+
+  function pivotOf(row){
+    for(var c=0;c<row.length;c++) if(row[c]!==0) return c;
+    return null;
+  }
+
+  // ---------- Verificador: única fuente de verdad ----------
+  function isReducedEchelon(matrix){
+    var lastPivot = -1, sawZero = false, pivots = [];
+    for(var r=0;r<matrix.length;r++){
+      var p = pivotOf(matrix[r]);
+      if(p === null){ sawZero = true; continue; }
+      if(sawZero) return { ok:false, reason:'zero-not-last', badRow:r };
+      if(p <= lastPivot) return { ok:false, reason:'pivot-not-increasing', badRow:r, refRow:r-1 };
+      lastPivot = p;
+      pivots.push({ row:r, col:p });
+    }
+    for(var i=0;i<pivots.length;i++){
+      var pr = pivots[i].row, pc = pivots[i].col;
+      if(matrix[pr][pc] !== 1){
+        return { ok:false, reason:'pivot-not-one', badRow:pr, badCol:pc, value:matrix[pr][pc] };
+      }
+    }
+    for(var i2=0;i2<pivots.length;i2++){
+      var pr2 = pivots[i2].row, pc2 = pivots[i2].col;
+      for(var r2=0;r2<matrix.length;r2++){
+        if(r2!==pr2 && matrix[r2][pc2] !== 0){
+          return { ok:false, reason:'not-reduced', badRow:r2, refRow:pr2, badCol:pc2 };
+        }
+      }
+    }
+    return { ok:true };
+  }
+
+  // ---------- Generador ----------
+  function buildRow(pivotCol, pivotVal){
+    var row = new Array(COLS).fill(0);
+    row[pivotCol] = pivotVal;
+    for(var c=pivotCol+1;c<COLS;c++) row[c] = randInt(-9,9);
+    return row;
+  }
+
+  function buildSkeleton(pivotValFn){
+    var rows = [];
+    var lastPivot = -1;
+    for(var r=0;r<ROWS;r++){
+      if(lastPivot >= COLS-1 || Math.random() < 0.15){
+        rows.push(new Array(COLS).fill(0));
+        continue;
+      }
+      var pivotCol = randInt(lastPivot+1, COLS-1);
+      rows.push(buildRow(pivotCol, pivotValFn()));
+      lastPivot = pivotCol;
+    }
+    return rows;
+  }
+
+  function cleanPivotColumns(rows){
+    var r2 = rows.map(function(row){ return row.slice(); });
+    for(var r=0;r<r2.length;r++){
+      var p = pivotOf(r2[r]);
+      if(p===null) continue;
+      for(var i=0;i<r2.length;i++){
+        if(i!==r) r2[i][p] = 0;
+      }
+    }
+    return r2;
+  }
+
+  function breakEchelon(rows){
+    var kind = Math.random() < 0.5 ? 'zero-not-last' : 'pivot-not-increasing';
+    var r = rows.map(function(row){ return row.slice(); });
+    if(kind === 'zero-not-last'){
+      var zeroIdx = randInt(0, ROWS-2);
+      r[zeroIdx] = new Array(COLS).fill(0);
+      if(r[zeroIdx+1].every(function(v){ return v===0; })){
+        r[zeroIdx+1][randInt(0,COLS-1)] = randNonZero(1,9);
+      }
+      return r;
+    } else {
+      var idx = randInt(1, ROWS-1);
+      var prevPivot = pivotOf(r[idx-1]);
+      var col = (prevPivot===null) ? 0 : randInt(0, prevPivot);
+      r[idx] = new Array(COLS).fill(0);
+      for(var c=col;c<COLS;c++) r[idx][c] = c===col ? randNonZero(1,9) : randInt(-9,9);
+      return r;
+    }
+  }
+
+  function generateMatrix(){
+    var recipe = randChoice(['clean-rref','break-structure','pivot-value','not-reduced']);
+    var rows;
+    if(recipe === 'clean-rref'){
+      rows = cleanPivotColumns(buildSkeleton(function(){ return 1; }));
+    } else if(recipe === 'break-structure'){
+      rows = breakEchelon(buildSkeleton(function(){ return 1; }));
+    } else if(recipe === 'pivot-value'){
+      rows = cleanPivotColumns(buildSkeleton(function(){ return randPivotValNotOne(); }));
+    } else {
+      rows = buildSkeleton(function(){ return 1; });
+    }
+    if(rows.every(function(row){ return row.every(function(v){ return v===0; }); })){
+      return generateMatrix();
+    }
+    return rows;
+  }
+
+  function plainLatex(rows){
+    return '\\begin{bmatrix} ' + rows.map(function(r){ return r.join(' & '); }).join(' \\\\ ') + ' \\end{bmatrix}';
+  }
+
+  function highlightLatex(rows, v){
+    var body = rows.map(function(row, ri){
+      if(!v.ok && ri === v.badRow){
+        return row.map(function(x){ return '\\textcolor{#D65252}{'+x+'}'; }).join(' & ');
+      }
+      if(v.ok){
+        var p = pivotOf(row);
+        return row.map(function(x,c){ return c===p ? '\\textcolor{#5BCD9A}{'+x+'}' : x; }).join(' & ');
+      }
+      return row.join(' & ');
+    }).join(' \\\\ ');
+    return '\\begin{bmatrix} ' + body + ' \\end{bmatrix}';
+  }
+
+  function explain(v){
+    if(v.ok) return 'Está en forma escalonada reducida: la matriz es escalonada, cada pivote vale 1, y es el único elemento no nulo de su columna.';
+    if(v.reason === 'zero-not-last') return 'No es escalonada (y por lo tanto tampoco reducida): la fila ' + (v.badRow+1) + ' es no nula pero aparece después de una fila nula.';
+    if(v.reason === 'pivot-not-increasing') return 'No es escalonada (y por lo tanto tampoco reducida): el primer elemento no nulo de la fila ' + (v.badRow+1) + ' no está estrictamente a la derecha del de la fila ' + (v.refRow+1) + '.';
+    if(v.reason === 'pivot-not-one') return 'Es escalonada, pero no reducida: el pivote de la fila ' + (v.badRow+1) + ' vale ' + v.value + ' — en la forma reducida, todo pivote debe valer exactamente 1.';
+    return 'Es escalonada, pero no reducida: la columna del pivote de la fila ' + (v.refRow+1) + ' tiene otro valor no nulo en la fila ' + (v.badRow+1) + ' — en la forma reducida, el pivote debe ser el único elemento no nulo de su columna.';
+  }
+
+  AptActivity.init({
+    eyebrow: 'Unidad 1 · Matrices y SEL',
+    title: '¿Es escalonada reducida?',
+    subtitle: 'Mirá la matriz y decidí si está en su forma escalonada reducida por filas.',
+    nextLabel: 'Probar con otra matriz →',
+    needsKatex: true,
+    mode: 'choices',
+    choices: [
+      { value:'si', label:'Sí, es reducida' },
+      { value:'no', label:'No, no es reducida' }
+    ],
+    generate: function(){
+      var matrix = generateMatrix();
+      return { matrix: matrix, verdict: isReducedEchelon(matrix) };
+    },
+    renderContent: function(container, current){
+      window.katex.render(plainLatex(current.matrix), container, { throwOnError:false });
+    },
+    check: function(current, value){
+      return (value === 'si') === current.verdict.ok;
+    },
+    explain: function(current, correct){
+      return explain(current.verdict);
+    },
+    onAnswered: function(container, current, correct){
+      window.katex.render(highlightLatex(current.matrix, current.verdict), container, { throwOnError:false });
+    }
+  });
+})();
+</script>
