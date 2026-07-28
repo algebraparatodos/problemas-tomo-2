@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v2.4)
+   ÁLGEBRA PARA TODOS · engine.js (v2.6)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -88,7 +88,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '2.4';
+  var ENGINE_VERSION = '2.6';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -155,7 +155,14 @@
         { title: '¿Es un subespacio vectorial?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-5' },
         { title: '¿Es LI o LD?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-6' },
         { title: '¿Genera V? ¿Es base?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-7' },
-        { title: 'Coordenadas de un vector en una base', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-8' }
+        { title: 'Coordenadas de un vector en una base', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-8' },
+        { title: 'Matriz de cambio de base', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-9' },
+        { title: 'Base de un SEV', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-10' },
+        { title: 'Ecuaciones implícitas desde un conjunto generador', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-11' },
+        { title: 'Cambio de base en un SEV', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-12' },
+        { title: 'Intersección de subespacios', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-13' },
+        { title: 'Complemento ortogonal', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-14' },
+        { title: 'Proyección ortogonal', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-15' }
       ] },
     { title: 'Unidad 3: Transformaciones Lineales', activities: [
         { title: '¿Es lineal?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-3-actividad-1' },
@@ -1739,16 +1746,32 @@
       var expectedVectors = phaseCfg.getExpectedBasis(current);
       var expectedCoords = expectedVectors.map(function (v) { return sbSpace.toCoords(v); });
 
-      var spanResult = hasEmpty ? null : checkSpanEquivalence(reads, expectedCoords);
-      var correct = !hasEmpty && spanResult.ok;
+      var correct, spanResult, exactMatches;
+      if (phaseCfg.exactMatch) {
+        // Coincidencia EXACTA componente a componente (no "cualquier base
+        // equivalente") -- para respuestas con un único valor correcto,
+        // como una proyección ortogonal o un paso de Gram-Schmidt.
+        exactMatches = reads.map(function (r, i) {
+          var exp = expectedCoords[i];
+          return !exp ? false : r.every(function (v, c) { return v === exp[c]; });
+        });
+        correct = !hasEmpty && exactMatches.every(Boolean) && reads.length === expectedCoords.length;
+      } else {
+        spanResult = hasEmpty ? null : checkSpanEquivalence(reads, expectedCoords);
+        correct = !hasEmpty && spanResult.ok;
+      }
 
       var feedbackText;
       if (hasEmpty) {
         feedbackText = 'Dejaste alguna celda vacía (se tomó como 0 al revisar) — completá todas antes de comprobar la próxima vez.';
       } else if (phaseCfg.explain) {
-        feedbackText = phaseCfg.explain(current, correct, spanResult);
+        feedbackText = phaseCfg.explain(current, correct, phaseCfg.exactMatch ? exactMatches : spanResult);
       } else if (correct) {
-        feedbackText = '¡Correcto! Es una base válida de ese subespacio (no hacía falta que coincidiera con una única respuesta).';
+        feedbackText = phaseCfg.exactMatch
+          ? '¡Correcto!'
+          : '¡Correcto! Es una base válida de ese subespacio (no hacía falta que coincidiera con una única respuesta).';
+      } else if (phaseCfg.exactMatch) {
+        feedbackText = 'No es correcto: revisá el resultado marcado en rojo.';
       } else if (spanResult.reason === 'not-independent') {
         feedbackText = 'Los vectores que pusiste no son linealmente independientes entre sí, así que no forman una base.';
       } else if (spanResult.reason === 'not-in-span') {
@@ -1760,7 +1783,9 @@
       for (var ci = 0; ci < sbCount; ci++) {
         var cls = null;
         if (correct) cls = 'is-correct';
-        else if (!hasEmpty && spanResult.reason === 'not-in-span') {
+        else if (phaseCfg.exactMatch && !hasEmpty) {
+          cls = exactMatches[ci] ? 'is-correct' : 'is-wrong';
+        } else if (!hasEmpty && spanResult.reason === 'not-in-span') {
           cls = spanResult.perVectorInSpan[ci] ? 'is-correct' : 'is-wrong';
         }
         colorSpaceInputWidget(p.spaceAnswer, 'v' + ci, sbSpace.dim, cls);
