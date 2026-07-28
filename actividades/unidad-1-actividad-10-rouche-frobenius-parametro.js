@@ -330,7 +330,7 @@
       return all.map(function(o){ return { value:o.value, label: renderDescriptor(o.d) }; });
     }
 
-    // ---------- render de la matriz [A|B] parametrizada con KaTeX ----------
+    // ---------- render de la matriz (A|B) parametrizada con KaTeX ----------
     function entryToLatex(e, paramNames){
       var parts = [];
       function push(str, isNeg){
@@ -352,7 +352,7 @@
       var rows = current.matrix.map(function(row){
         return row.map(function(e){ return entryToLatex(e, current.paramNames); }).join(' & ');
       });
-      return '[A \\mid B] = \\left(\\begin{array}{' + colsSpec + '} ' + rows.join(' \\\\ ') + ' \\end{array}\\right)';
+      return '(A \\mid B) = \\left(\\begin{array}{' + colsSpec + '} ' + rows.join(' \\\\ ') + ' \\end{array}\\right)';
     }
     function renderContent(container, current){
       window.katex.render(matrixLatex(current), container, { throwOnError:false });
@@ -392,7 +392,7 @@
           choices: function(current){ return current.options.SCD; },
           check: function(current, value){ return value === 'correct'; },
           explain: function(current, correct, value){
-            var msg = 'La condición correcta es: ' + renderDescriptor(current.descriptors.SCD) + '. Orlando, ahí rango(A) llega al número de incógnitas y coincide con rango([A|B]).';
+            var msg = 'La condición correcta es: ' + renderDescriptor(current.descriptors.SCD) + '. Orlando, ahí rango(A) llega al número de incógnitas y coincide con rango((A|B)).';
             if(current.descriptors.SCD.type === 'none') msg = 'Con esta forma, rango(A) nunca puede llegar al número de incógnitas — SCD es imposible acá, para cualquier valor de los parámetros.';
             return (correct ? '' : 'No es correcto. ') + msg;
           }
@@ -403,7 +403,7 @@
           choices: function(current){ return current.options.SCI; },
           check: function(current, value){ return value === 'correct'; },
           explain: function(current, correct, value){
-            var msg = 'La condición correcta es: ' + renderDescriptor(current.descriptors.SCI) + '. Ahí rango(A) = rango([A|B]), pero por debajo del número de incógnitas.';
+            var msg = 'La condición correcta es: ' + renderDescriptor(current.descriptors.SCI) + '. Ahí rango(A) = rango((A|B)), pero por debajo del número de incógnitas.';
             if(current.descriptors.SCI.type === 'none') msg = 'Con este sistema, SCI no ocurre para ningún valor de los parámetros.';
             return (correct ? '' : 'No es correcto. ') + msg;
           }
@@ -414,7 +414,7 @@
           choices: function(current){ return current.options.SI; },
           check: function(current, value){ return value === 'correct'; },
           explain: function(current, correct, value){
-            var msg = 'La condición correcta es: ' + renderDescriptor(current.descriptors.SI) + '. Ahí, orlando con la columna B aparece un menor no nulo que no estaba en A: rango([A|B]) > rango(A).';
+            var msg = 'La condición correcta es: ' + renderDescriptor(current.descriptors.SI) + '. Ahí, orlando con la columna B aparece un menor no nulo que no estaba en A: rango((A|B)) > rango(A).';
             if(current.descriptors.SI.type === 'none') msg = 'Con este sistema, SI no ocurre para ningún valor de los parámetros.';
             return (correct ? '' : 'No es correcto. ') + msg;
           }
