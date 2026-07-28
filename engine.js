@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v2.6)
+   ÁLGEBRA PARA TODOS · engine.js (v2.7)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -88,7 +88,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '2.6';
+  var ENGINE_VERSION = '2.7';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -161,8 +161,10 @@
         { title: 'Ecuaciones implícitas desde un conjunto generador', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-11' },
         { title: 'Cambio de base en un SEV', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-12' },
         { title: 'Intersección de subespacios', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-13' },
-        { title: 'Complemento ortogonal', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-14' },
-        { title: 'Proyección ortogonal', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-15' }
+        { title: 'Suma de subespacios / suma directa', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-14' },
+        { title: 'Complemento ortogonal', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-15' },
+        { title: 'Proyección ortogonal', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-16' },
+        { title: 'Método de Gram-Schmidt', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-17' }
       ] },
     { title: 'Unidad 3: Transformaciones Lineales', activities: [
         { title: '¿Es lineal?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-3-actividad-1' },
