@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v2.8)
+   ÁLGEBRA PARA TODOS · engine.js (v3.0)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -88,7 +88,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '2.8';
+  var ENGINE_VERSION = '3.0';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -208,7 +208,7 @@
     '.apt-act__content{ width:100%; display:flex; flex-direction:column; align-items:center; gap:6px; font-size:clamp(15px,4.4vw,19px); }',
     '.apt-act__content--sev{ font-size:clamp(12px,3.4vw,16px); }',
     '.apt-act__sev-basis{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 10px; }',
-    '.apt-act__sev-bracket{ font-size:2.8em; font-weight:400; line-height:1; color:var(--ink-soft); }',
+    '.apt-act__sev-bracket{ line-height:1; color:var(--ink-soft); }',
     '.apt-act__content-ambient{ font-size:clamp(11px,3vw,13px); color:var(--ink-soft); }',
     '.apt-act__content svg{ width:100%; max-width:300px; aspect-ratio:1/1; display:block; }',
     '.apt-act__content .katex{ color:var(--ink); }',
@@ -252,6 +252,8 @@
     '.apt-act__choice-btn:disabled{ opacity:.5; cursor:default; }',
     '.apt-act__choice-btn:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
     '.apt-act__matrixwrap{ display:flex; align-items:stretch; justify-content:center; gap:6px; }',
+    '.apt-act__grid-row{ display:flex; align-items:stretch; justify-content:center; gap:8px; }',
+    '.apt-act__grid-label{ display:flex; align-items:center; font-size:1.1em; color:var(--ink); }',
     /* Delimitadores de la grilla de inputs: PARÉNTESIS, para coincidir
        con la notación del libro impreso. El arco se logra con un radio
        elíptico grande sobre un único borde lateral — sin bordes arriba
@@ -1196,11 +1198,15 @@
     var interactionHTML = '';
     if (cfg.mode === 'grid') {
       var hideBrackets = !!(cfg.grid && cfg.grid.hideBrackets);
+      var gridLabel = cfg.grid && cfg.grid.label;
       interactionHTML =
-        '<div class="apt-act__matrixwrap">' +
-          (hideBrackets ? '' : '<span class="apt-act__bracket apt-act__bracket--left"></span>') +
-          '<div class="apt-act__grid"></div>' +
-          (hideBrackets ? '' : '<span class="apt-act__bracket apt-act__bracket--right"></span>') +
+        '<div class="apt-act__grid-row">' +
+          (gridLabel ? '<span class="apt-act__eq apt-act__grid-label"></span>' : '') +
+          '<div class="apt-act__matrixwrap">' +
+            (hideBrackets ? '' : '<span class="apt-act__bracket apt-act__bracket--left"></span>') +
+            '<div class="apt-act__grid"></div>' +
+            (hideBrackets ? '' : '<span class="apt-act__bracket apt-act__bracket--right"></span>') +
+          '</div>' +
         '</div>' +
         '<p class="apt-act__hint">Tocá − o + para cambiar el signo' + (hideBrackets ? '' : ' de cada número') + '.</p>' +
         '<button type="button" class="apt-act__check-btn">Comprobar</button>';
@@ -1241,6 +1247,11 @@
       '</div>';
 
     var footerCtl = mountFooter(root.querySelector('.apt-act__footer-slot'));
+
+    if (cfg.mode === 'grid' && cfg.grid && cfg.grid.label && window.katex) {
+      var gridLabelEl = root.querySelector('.apt-act__grid-label');
+      if (gridLabelEl) window.katex.render(cfg.grid.label, gridLabelEl, { throwOnError: false });
+    }
 
     return {
       content: root.querySelector('.apt-act__content'),
@@ -1312,11 +1323,15 @@
       var interactionHTML;
       if (phase.mode === 'grid') {
         var phaseHideBrackets = !!(phase.grid && phase.grid.hideBrackets);
+        var phaseGridLabel = phase.grid && phase.grid.label;
         interactionHTML =
-          '<div class="apt-act__matrixwrap">' +
-            (phaseHideBrackets ? '' : '<span class="apt-act__bracket apt-act__bracket--left"></span>') +
-            '<div class="apt-act__grid"></div>' +
-            (phaseHideBrackets ? '' : '<span class="apt-act__bracket apt-act__bracket--right"></span>') +
+          '<div class="apt-act__grid-row">' +
+            (phaseGridLabel ? '<span class="apt-act__eq apt-act__grid-label"></span>' : '') +
+            '<div class="apt-act__matrixwrap">' +
+              (phaseHideBrackets ? '' : '<span class="apt-act__bracket apt-act__bracket--left"></span>') +
+              '<div class="apt-act__grid"></div>' +
+              (phaseHideBrackets ? '' : '<span class="apt-act__bracket apt-act__bracket--right"></span>') +
+            '</div>' +
           '</div>' +
           '<p class="apt-act__hint">' + (phase.hint || 'Tocá − o + para cambiar el signo de cada número.') + '</p>' +
           '<button type="button" class="apt-act__check-btn">Comprobar</button>';
@@ -1379,7 +1394,7 @@
     var footerCtl = mountFooter(root.querySelector('.apt-act__footer-slot'));
 
     var phaseRefs = [];
-    root.querySelectorAll('.apt-act__phase').forEach(function (el) {
+    root.querySelectorAll('.apt-act__phase').forEach(function (el, phaseIdx) {
       phaseRefs.push({
         el: el,
         choicesWrap: el.querySelector('.apt-act__choices'),
@@ -1392,6 +1407,11 @@
         retryBtn: el.querySelector('.apt-act__retry-btn'),
         showAnswerBtn: el.querySelector('.apt-act__showanswer-btn')
       });
+      var phaseCfgForLabel = cfg.phases[phaseIdx];
+      if (phaseCfgForLabel && phaseCfgForLabel.mode === 'grid' && phaseCfgForLabel.grid && phaseCfgForLabel.grid.label && window.katex) {
+        var phaseGridLabelEl = el.querySelector('.apt-act__grid-label');
+        if (phaseGridLabelEl) window.katex.render(phaseCfgForLabel.grid.label, phaseGridLabelEl, { throwOnError: false });
+      }
     });
 
     return {
@@ -2513,8 +2533,8 @@
 
     var open = document.createElement('span');
     open.className = 'apt-act__sev-bracket';
-    open.textContent = openSym;
     container.appendChild(open);
+    window.katex.render('\\bigg' + openSym, open, { throwOnError: false });
 
     vectors.forEach(function (v, i) {
       if (i > 0) {
@@ -2530,17 +2550,17 @@
 
     var close = document.createElement('span');
     close.className = 'apt-act__sev-bracket';
-    close.textContent = closeSym;
     container.appendChild(close);
+    window.katex.render('\\bigg' + closeSym, close, { throwOnError: false });
   }
   // Conjunto GENERADOR de un SEV: S = <v1, v2, ...> (ángulos = "generado por")
   function renderSevAsBasisWrapped(container, space, vectors, sevName) {
-    _renderWrappedList(container, vectors, space, sevName || 'S', '\u27e8', '\u27e9');
+    _renderWrappedList(container, vectors, space, sevName || 'S', '\\langle', '\\rangle');
   }
   // BASE ordenada (de V o de un SEV): B = {v1, v2, ...} (llaves = conjunto,
   // NO ángulos -- una base no es "lo que genera", es el conjunto en sí).
   function renderBasisWrapped(container, space, vectors, basisName) {
-    _renderWrappedList(container, vectors, space, basisName || 'B', '{', '}');
+    _renderWrappedList(container, vectors, space, basisName || 'B', '\\{', '\\}');
   }
   function renderSevAsEquations(space, equations, sevName, varNames) {
     var name = sevName || 'S';
