@@ -178,7 +178,7 @@
           count: function () { return 1; },
           space: function (current) { return current.space; },
           exactMatch: true,
-          answerLabel: 'proj_S(x)',
+          answerLabel: 'projₛ',
           getExpectedBasis: function (current) { return [current.projNative]; },
           explain: function (current, correct) {
             return correct ? '¡Correcto!' : 'No es correcto: esa no es la proyección ortogonal de x sobre S.';
