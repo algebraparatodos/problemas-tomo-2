@@ -1,11 +1,11 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · Unidad 1 — índice y ruteo
+   ÁLGEBRA PARA TODOS · Unidad 2 · Subespacios vectoriales — índice y ruteo
    ------------------------------------------------------------
    UNA sola landing de Kajabi para TODAS las actividades de la
    unidad. El número de actividad viaja en el fragmento de la URL:
 
-     .../qrt2u1#7   → abre directamente la actividad 7
-     .../qrt2u1     → muestra la grilla "Elegí el QR"
+     .../qrt2u2#7   → abre directamente la actividad 7
+     .../qrt2u2     → muestra la grilla "Elegí el QR"
 
    Se usa el fragmento (#) y no un parámetro (?) a propósito: lo
    que va después del # nunca se envía al servidor, así que ninguna
@@ -17,7 +17,7 @@
 
      <div id="apt-unidad"></div>
      <script src="https://algebraparatodos.github.io/problemas-tomo-2/engine.js"><\/script>
-     <script src="https://algebraparatodos.github.io/problemas-tomo-2/unidad-1.js"><\/script>
+     <script src="https://algebraparatodos.github.io/problemas-tomo-2/unidad-2.js"><\/script>
 
    Para agregar una actividad nueva: subir su archivo a actividades/
    y sumar una línea a la lista de abajo. Nada más — Kajabi no se toca.
@@ -32,29 +32,31 @@
      expone, esta lista se puede derivar de ahí y dejan de poder
      desincronizarse. */
   var ACTIVIDADES = [
-    { n: 1,  titulo: 'Clasificá el sistema',                      archivo: 'unidad-1-actividad-1-clasifica-el-sistema.js' },
-    { n: 2,  titulo: 'Matriz ampliada',                           archivo: 'unidad-1-actividad-2-matriz-ampliada.js' },
-    { n: 3,  titulo: '¿Es escalonada?',                           archivo: 'unidad-1-actividad-3-escalonada.js' },
-    { n: 4,  titulo: 'Aplicá el método de eliminación de Gauss',   archivo: 'unidad-1-actividad-4-metodo-de-gauss.js' },
-    { n: 5,  titulo: '¿Es escalonada reducida?',                  archivo: 'unidad-1-actividad-5-escalonada-reducida.js' },
-    { n: 6,  titulo: 'Encontrá la forma escalonada reducida',     archivo: 'unidad-1-actividad-6-encontrar-escalonada-reducida.js' },
-    { n: 7,  titulo: 'Solución paramétrica',                      archivo: 'unidad-1-actividad-7-solucion-parametrica.js' },
-    { n: 8,  titulo: 'Rango por orlado',                          archivo: 'unidad-1-actividad-8-rango-orlado.js' },
-    { n: 9,  titulo: 'Clasificá con Rouché-Frobenius',            archivo: 'unidad-1-actividad-9-rouche-frobenius.js' },
-    { n: 10, titulo: 'Rouché-Frobenius con parámetros',           archivo: 'unidad-1-actividad-10-rouche-frobenius-parametro.js' },
-    { n: 11, titulo: 'Tipos de matrices',                         archivo: 'unidad-1-actividad-11-tipos-de-matrices.js' },
-    { n: 12, titulo: 'Suma de matrices',                          archivo: 'unidad-1-actividad-12-suma-de-matrices.js' },
-    { n: 13, titulo: 'Producto de una matriz por un escalar',     archivo: 'unidad-1-actividad-13-producto-por-escalar.js' },
-    { n: 14, titulo: 'Trasposición de matrices',                  archivo: 'unidad-1-actividad-14-trasposicion.js' },
-    { n: 15, titulo: 'Producto de matrices',                      archivo: 'unidad-1-actividad-15-producto-de-matrices.js' }
+    { n: 1 , titulo: 'Operaciones con conjuntos',                          archivo: 'unidad-2-actividad-1-operaciones-con-conjuntos.js' },
+    { n: 2 , titulo: '¿Es una LCI?',                                       archivo: 'unidad-2-actividad-2-es-lci.js' },
+    { n: 3 , titulo: '¿Es una LCE?',                                       archivo: 'unidad-2-actividad-3-es-lce.js' },
+    { n: 4 , titulo: 'Neutro y simétrico de una operación "rara"',         archivo: 'unidad-2-actividad-4-neutro-y-simetrico.js' },
+    { n: 5 , titulo: '¿Es un subespacio vectorial?',                       archivo: 'unidad-2-actividad-5-es-sev.js' },
+    { n: 6 , titulo: '¿Es LI o LD?',                                       archivo: 'unidad-2-actividad-6-son-li.js' },
+    { n: 7 , titulo: '¿Genera V? ¿Es base?',                               archivo: 'unidad-2-actividad-7-genera-s.js' },
+    { n: 8 , titulo: 'Coordenadas de un vector en una base',               archivo: 'unidad-2-actividad-8-coordenadas-base.js' },
+    { n: 9 , titulo: 'Matriz de cambio de base',                           archivo: 'unidad-2-actividad-9-matriz-cambio-base.js' },
+    { n: 10, titulo: 'Base de un SEV',                                     archivo: 'unidad-2-actividad-10-base-sev.js' },
+    { n: 11, titulo: 'Ecuaciones implícitas desde un conjunto generador',  archivo: 'unidad-2-actividad-11-ecuaciones-implicitas.js' },
+    { n: 12, titulo: 'Cambio de base en un SEV',                           archivo: 'unidad-2-actividad-12-cambio-base.js' },
+    { n: 13, titulo: 'Intersección de subespacios',                        archivo: 'unidad-2-actividad-13-interseccion-sev.js' },
+    { n: 14, titulo: 'Suma de subespacios / suma directa',                 archivo: 'unidad-2-actividad-14-suma-sev.js' },
+    { n: 15, titulo: 'Complemento ortogonal',                              archivo: 'unidad-2-actividad-15-complemento-ortogonal.js' },
+    { n: 16, titulo: 'Proyección ortogonal',                               archivo: 'unidad-2-actividad-16-proyeccion-ortogonal.js' },
+    { n: 17, titulo: 'Método de Gram-Schmidt',                             archivo: 'unidad-2-actividad-17-metodo-de-gram.js' }
   ];
 
-  var UNIDAD_TITULO = 'Unidad 1 · Matrices y SEL';
+  var UNIDAD_TITULO = 'Unidad 2 · Subespacios vectoriales';
 
   /* ---------- punto de montaje ----------
      Igual que en las actividades: se captura la posición del <script>
      mientras document.currentScript todavía es válido. */
-  var MOUNT_ID = 'apt-indice-u1';
+  var MOUNT_ID = 'apt-indice-u2';
   (function placeMount() {
     if (document.getElementById(MOUNT_ID)) return;
     var d = document.createElement('div');
@@ -93,7 +95,9 @@
     '.apt-idx__item:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
     '.apt-idx__num{ flex:0 0 30px; height:30px; display:flex; align-items:center; justify-content:center;' +
       ' border-radius:8px; background:var(--chalk); color:#fff;' +
-      ' font-family:var(--font-serif); font-weight:700; font-size:14px; }'
+      ' font-family:var(--font-serif); font-weight:700; font-size:14px; }',
+    '.apt-idx__vacio{ text-align:center; font-family:var(--font-mono); font-size:13.5px;' +
+      ' color:var(--ink-soft); line-height:1.6; padding:18px 8px; }'
   ].join('\n');
 
   function injectCSS() {
@@ -125,22 +129,29 @@
     root.className = 'apt-act';
     var wrap = document.createElement('div');
     wrap.className = 'apt-idx';
+    var hayActividades = ACTIVIDADES.length > 0;
     wrap.innerHTML =
       '<div class="apt-idx__topbar">' +
         '<p class="apt-idx__eyebrow">' + UNIDAD_TITULO + '</p>' +
-        '<h1 class="apt-idx__title">Elegí el QR</h1>' +
-        '<p class="apt-idx__subtitle">Tocá el número que aparece junto al QR en el libro.</p>' +
+        '<h1 class="apt-idx__title">' + (hayActividades ? 'Elegí el QR' : 'Próximamente') + '</h1>' +
+        '<p class="apt-idx__subtitle">' +
+          (hayActividades
+            ? 'Tocá el número que aparece junto al QR en el libro.'
+            : 'Todavía no hay ejercicios interactivos para esta unidad.') +
+        '</p>' +
       '</div>' +
-      '<div class="apt-idx__grid"></div>';
-    var grid = wrap.querySelector('.apt-idx__grid');
-    ACTIVIDADES.forEach(function (a) {
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'apt-idx__item';
-      btn.innerHTML = '<span class="apt-idx__num">' + a.n + '</span><span>' + a.titulo + '</span>';
-      btn.addEventListener('click', function () { window.location.hash = String(a.n); });
-      grid.appendChild(btn);
-    });
+      (hayActividades ? '<div class="apt-idx__grid"></div>' : '');
+    if (hayActividades) {
+      var grid = wrap.querySelector('.apt-idx__grid');
+      ACTIVIDADES.forEach(function (a) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'apt-idx__item';
+        btn.innerHTML = '<span class="apt-idx__num">' + a.n + '</span><span>' + a.titulo + '</span>';
+        btn.addEventListener('click', function () { window.location.hash = String(a.n); });
+        grid.appendChild(btn);
+      });
+    }
     root.appendChild(wrap);
     if (window.AptActivity && typeof window.AptActivity.mountFooter === 'function') {
       var pie = document.createElement('div');
