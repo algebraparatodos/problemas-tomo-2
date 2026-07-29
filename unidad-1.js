@@ -93,12 +93,7 @@
     '.apt-idx__item:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
     '.apt-idx__num{ flex:0 0 30px; height:30px; display:flex; align-items:center; justify-content:center;' +
       ' border-radius:8px; background:var(--chalk); color:#fff;' +
-      ' font-family:var(--font-serif); font-weight:700; font-size:14px; }',
-    '.apt-idx__back{ display:flex; justify-content:center; padding:10px 16px 0; }',
-    '.apt-idx__back-btn{ background:none; border:none; cursor:pointer; padding:6px 10px;' +
-      ' font-family:var(--font-mono); font-size:13px; color:var(--chalk-light);' +
-      ' text-decoration:underline; -webkit-tap-highlight-color:transparent; }',
-    '.apt-idx__back-btn:focus-visible{ outline:2px solid var(--chalk-light); outline-offset:2px; border-radius:4px; }'
+      ' font-family:var(--font-serif); font-weight:700; font-size:14px; }'
   ].join('\n');
 
   function injectCSS() {
@@ -134,7 +129,7 @@
       '<div class="apt-idx__topbar">' +
         '<p class="apt-idx__eyebrow">' + UNIDAD_TITULO + '</p>' +
         '<h1 class="apt-idx__title">Elegí el QR</h1>' +
-        '<p class="apt-idx__subtitle">Tocá el número que aparece junto al ejercicio en el libro.</p>' +
+        '<p class="apt-idx__subtitle">Tocá el número que aparece junto al QR en el libro.</p>' +
       '</div>' +
       '<div class="apt-idx__grid"></div>';
     var grid = wrap.querySelector('.apt-idx__grid');
@@ -159,18 +154,8 @@
     if (!act) { mostrarIndice(); return; }
     limpiar();
 
-    // Barra para volver, ARRIBA de la actividad: el contenedor de una
-    // actividad mide 100vh de alto, así que un enlace abajo quedaría
-    // fuera de pantalla.
-    var back = document.createElement('div');
-    back.className = 'apt-idx__back';
-    var bbtn = document.createElement('button');
-    bbtn.type = 'button';
-    bbtn.className = 'apt-idx__back-btn';
-    bbtn.textContent = '← Todos los ejercicios de la unidad';
-    bbtn.addEventListener('click', function () { window.location.hash = ''; });
-    back.appendChild(bbtn);
-    root.appendChild(back);
+    // Sin barra de "volver": el botón "Todos los ejercicios" del footer
+    // del engine ya cumple esa función, y tenerla dos veces sobra.
 
     // La actividad se inserta DENTRO de este contenedor: así su propio
     // document.currentScript apunta acá y se dibuja en el lugar correcto.
