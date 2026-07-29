@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v3.3)
+   ÁLGEBRA PARA TODOS · engine.js (v3.4)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -101,7 +101,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '3.3';
+  var ENGINE_VERSION = '3.4';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -182,7 +182,12 @@
     { title: 'Unidad 3: Transformaciones Lineales', activities: [
         { title: '¿Es lineal?', url: 'https://www.algebraparatodos.com/qrt2u3#1' },
         { title: '¿Existe? ¿Es única?', url: 'https://www.algebraparatodos.com/qrt2u3#2' },
-        { title: 'Armá la matriz asociada', url: 'https://www.algebraparatodos.com/qrt2u3#3' }
+        { title: 'Armá la matriz asociada', url: 'https://www.algebraparatodos.com/qrt2u3#3' },
+        { title: 'Núcleo e imagen', url: 'https://www.algebraparatodos.com/qrt2u3#4' },
+        { title: 'Clasificá la TL', url: 'https://www.algebraparatodos.com/qrt2u3#5' },
+        { title: 'Determinante y área', url: 'https://www.algebraparatodos.com/qrt2u3#6' },
+        { title: 'Armá la base natural', url: 'https://www.algebraparatodos.com/qrt2u3#7' },
+        { title: 'Matriz asociada en otras bases', url: 'https://www.algebraparatodos.com/qrt2u3#8' }
       ] },
     { title: 'Unidad 4: Diagonalización', activities: [] }
   ];
