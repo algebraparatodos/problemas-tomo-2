@@ -32,9 +32,14 @@
      expone, esta lista se puede derivar de ahí y dejan de poder
      desincronizarse. */
   var ACTIVIDADES = [
-    { n: 1 , titulo: '¿Es lineal?',              archivo: 'unidad-3-actividad-1-es-lineal.js' },
-    { n: 2 , titulo: '¿Existe? ¿Es única?',      archivo: 'unidad-3-actividad-2-existe-es-unica.js' },
-    { n: 3 , titulo: 'Armá la matriz asociada',  archivo: 'unidad-3-actividad-3-matriz-asociada.js' }
+    { n: 1 , titulo: '¿Es lineal?',                    archivo: 'unidad-3-actividad-1-es-lineal.js' },
+    { n: 2 , titulo: '¿Existe? ¿Es única?',            archivo: 'unidad-3-actividad-2-existe-es-unica.js' },
+    { n: 3 , titulo: 'Armá la matriz asociada',        archivo: 'unidad-3-actividad-3-matriz-asociada.js' },
+    { n: 4 , titulo: 'Núcleo e imagen',                archivo: 'unidad-3-actividad-4-dim-nucleo-e-imagen.js' },
+    { n: 5 , titulo: 'Clasificá la TL',                archivo: 'unidad-3-actividad-5-clasificar-tl.js' },
+    { n: 6 , titulo: 'Determinante y área',            archivo: 'unidad-3-actividad-6-determinante-area.js' },
+    { n: 7 , titulo: 'Armá la base natural',           archivo: 'unidad-3-actividad-7-base-natural.js' },
+    { n: 8 , titulo: 'Matriz asociada en otras bases', archivo: 'unidad-3-actividad-8-matriz-asociada.js' }
   ];
 
   var UNIDAD_TITULO = 'Unidad 3 · Transformaciones Lineales';
