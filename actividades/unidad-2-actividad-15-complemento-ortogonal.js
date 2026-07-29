@@ -140,7 +140,7 @@
       mode: 'phases',
       eyebrow: 'Unidad 2 · Subespacios vectoriales',
       title: 'Complemento ortogonal',
-      subtitle: 'Te damos un conjunto generador de S. Encontrá una base de S<sup>⊥</sup> (el complemento ortogonal de S).',
+      subtitle: 'Te damos un conjunto generador de S. Encontrá una base de S⊥ (el complemento ortogonal de S).',
       needsKatex: true,
       generate: generateCase,
       renderContent: function (el, current) {
@@ -153,7 +153,7 @@
       phases: [
         {
           mode: 'choices',
-          question: '¿Cuántos vectores tiene una base de S<sup>⊥</sup>?',
+          question: '¿Cuántos vectores tiene una base de S⊥?',
           choices: function (current) {
             return current.countOptions.map(function (n) { return { value: String(n), label: String(n) }; });
           },
@@ -161,13 +161,13 @@
           check: function (current, value) { return Number(value) === current.m; },
           explain: function (current, correct) {
             return correct
-              ? 'Correcto: la dimensión de S<sup>⊥</sup> es ' + current.m + ' (dim V − dim S = ' + current.n + ' − ' + current.k + ').'
-              : 'La dimensión real de S<sup>⊥</sup> es ' + current.m + ' (dim V − dim S = ' + current.n + ' − ' + current.k + ').';
+              ? 'Correcto: la dimensión de S⊥ es ' + current.m + ' (dim V − dim S = ' + current.n + ' − ' + current.k + ').'
+              : 'La dimensión real de S⊥ es ' + current.m + ' (dim V − dim S = ' + current.n + ' − ' + current.k + ').';
           }
         },
         {
           mode: 'space-basis',
-          question: 'Escribí una base de S<sup>⊥</sup> (no hace falta que coincida con una en particular).',
+          question: 'Escribí una base de S⊥ (no hace falta que coincida con una en particular).',
           count: function (current) { return current.m; },
           space: function (current) { return current.space; },
           getExpectedBasis: function (current) { return current.orthComplementNative; }
