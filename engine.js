@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v3.4)
+   ÁLGEBRA PARA TODOS · engine.js (v4.2)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -101,7 +101,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '3.4';
+  var ENGINE_VERSION = '4.2';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -187,7 +187,15 @@
         { title: 'Clasificá la TL', url: 'https://www.algebraparatodos.com/qrt2u3#5' },
         { title: 'Determinante y área', url: 'https://www.algebraparatodos.com/qrt2u3#6' },
         { title: 'Armá la base natural', url: 'https://www.algebraparatodos.com/qrt2u3#7' },
-        { title: 'Matriz asociada en otras bases', url: 'https://www.algebraparatodos.com/qrt2u3#8' }
+        { title: 'Matriz asociada en otras bases', url: 'https://www.algebraparatodos.com/qrt2u3#8' },
+        { title: 'Cambio de base de M(T)', url: 'https://www.algebraparatodos.com/qrt2u3#9' },
+        { title: '¿Pertenece a la imagen o al núcleo?', url: 'https://www.algebraparatodos.com/qrt2u3#10' },
+        { title: 'Base de la imagen y del núcleo', url: 'https://www.algebraparatodos.com/qrt2u3#11' },
+        { title: 'Composición de TL', url: 'https://www.algebraparatodos.com/qrt2u3#12' },
+        { title: '¿Qué es posible?', url: 'https://www.algebraparatodos.com/qrt2u3#13' },
+        { title: 'Hallá M(T⁻¹)', url: 'https://www.algebraparatodos.com/qrt2u3#14' },
+        { title: 'Identificá la TL geométrica', url: 'https://www.algebraparatodos.com/qrt2u3#15' },
+        { title: 'Componé geométricas', url: 'https://www.algebraparatodos.com/qrt2u3#16' }
       ] },
     { title: 'Unidad 4: Diagonalización', activities: [] }
   ];
