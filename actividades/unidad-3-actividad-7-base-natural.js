@@ -57,13 +57,26 @@
     return tipo === 'reflexion' ? 'la reflexión respecto de r' : 'la proyección ortogonal sobre r';
   }
 
+  var PISO = 0.68;
   function ajustarAncho(rowEl) {
     var k = rowEl.querySelector('.katex');
     if (!k) return;
     rowEl.style.fontSize = '';
-    var disp = rowEl.clientWidth, ancho = k.getBoundingClientRect().width;
-    if (!disp || !ancho || ancho <= disp) return;
-    rowEl.style.fontSize = (Math.max(0.68, disp / ancho) * 100).toFixed(1) + '%';
+    var disp = rowEl.clientWidth;
+    if (!disp) return;
+    // Margen de 2px: achicar la tipografía no reduce el ancho de forma
+    // exactamente proporcional, y sin margen queda 1-2px de desborde.
+    var meta = disp - 2;
+    var ancho = k.getBoundingClientRect().width;
+    if (!ancho || ancho <= meta) return;
+    var escala = Math.max(PISO, meta / ancho);
+    rowEl.style.fontSize = (escala * 100).toFixed(1) + '%';
+    // Segunda pasada: se re-mide con la tipografía ya aplicada y se
+    // corrige si todavía sobra.
+    var ancho2 = k.getBoundingClientRect().width;
+    if (ancho2 > meta && escala > PISO) {
+      rowEl.style.fontSize = (Math.max(PISO, escala * (meta / ancho2)) * 100).toFixed(1) + '%';
+    }
   }
 
   function renderContent(container, cur) {
