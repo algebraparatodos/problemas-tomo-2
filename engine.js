@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v3.2)
+   ÁLGEBRA PARA TODOS · engine.js (v3.3)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -7,6 +7,12 @@
 
    Cada landing de Kajabi solo carga este script y le pasa un
    objeto de configuración con SU lógica particular.
+
+   ESQUEMA DE URLs: hay UNA landing por unidad (/qrt2u1, /qrt2u2, ...)
+   y el número de actividad viaja en el fragmento: /qrt2u1#7. La landing
+   carga engine.js y unidad-N.js, y ese último resuelve qué actividad
+   mostrar. Las URLs del CATALOG de abajo siguen ese esquema; si se
+   cambia una, hay que cambiarla también en el QR impreso.
 
    NOTA DE NOTACIÓN: las matrices van con PARÉNTESIS, para coincidir
    con el libro impreso. Si una landing necesita dibujar delimitadores,
@@ -95,7 +101,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '3.2';
+  var ENGINE_VERSION = '3.3';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -137,46 +143,46 @@
     {
       title: 'Unidad 1: Matrices y SEL',
       activities: [
-        { title: 'Clasificá el sistema', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-1' },
-        { title: 'Matriz ampliada', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-2' },
-        { title: '¿Es escalonada?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-3' },
-        { title: 'Aplicá el método de eliminación de Gauss', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-4' },
-        { title: '¿Es escalonada reducida?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-5' },
-        { title: 'Encontrá la forma escalonada reducida', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-6' },
-        { title: 'Solución paramétrica', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-7' },
-        { title: 'Rango por orlado', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-8' },
-        { title: 'Clasificá con Rouché-Frobenius', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-9' },
-        { title: 'Rouché-Frobenius con parámetros', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-10' },
-        { title: 'Tipos de matrices', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-11' },
-        { title: 'Suma de matrices', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-12' },
-        { title: 'Producto de una matriz por un escalar', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-13' },
-        { title: 'Trasposición de matrices', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-14' },
-        { title: 'Producto de matrices', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-1-actividad-15' }
+        { title: 'Clasificá el sistema', url: 'https://www.algebraparatodos.com/qrt2u1#1' },
+        { title: 'Matriz ampliada', url: 'https://www.algebraparatodos.com/qrt2u1#2' },
+        { title: '¿Es escalonada?', url: 'https://www.algebraparatodos.com/qrt2u1#3' },
+        { title: 'Aplicá el método de eliminación de Gauss', url: 'https://www.algebraparatodos.com/qrt2u1#4' },
+        { title: '¿Es escalonada reducida?', url: 'https://www.algebraparatodos.com/qrt2u1#5' },
+        { title: 'Encontrá la forma escalonada reducida', url: 'https://www.algebraparatodos.com/qrt2u1#6' },
+        { title: 'Solución paramétrica', url: 'https://www.algebraparatodos.com/qrt2u1#7' },
+        { title: 'Rango por orlado', url: 'https://www.algebraparatodos.com/qrt2u1#8' },
+        { title: 'Clasificá con Rouché-Frobenius', url: 'https://www.algebraparatodos.com/qrt2u1#9' },
+        { title: 'Rouché-Frobenius con parámetros', url: 'https://www.algebraparatodos.com/qrt2u1#10' },
+        { title: 'Tipos de matrices', url: 'https://www.algebraparatodos.com/qrt2u1#11' },
+        { title: 'Suma de matrices', url: 'https://www.algebraparatodos.com/qrt2u1#12' },
+        { title: 'Producto de una matriz por un escalar', url: 'https://www.algebraparatodos.com/qrt2u1#13' },
+        { title: 'Trasposición de matrices', url: 'https://www.algebraparatodos.com/qrt2u1#14' },
+        { title: 'Producto de matrices', url: 'https://www.algebraparatodos.com/qrt2u1#15' }
       ]
     },
     { title: 'Unidad 2: Subespacios vectoriales', activities: [
-        { title: 'Operaciones con conjuntos', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-1' },
-        { title: '¿Es una LCI?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-2' },
-        { title: '¿Es una LCE?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-3' },
-        { title: 'Neutro y simétrico de una operación "rara"', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-4' },
-        { title: '¿Es un subespacio vectorial?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-5' },
-        { title: '¿Es LI o LD?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-6' },
-        { title: '¿Genera V? ¿Es base?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-7' },
-        { title: 'Coordenadas de un vector en una base', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-8' },
-        { title: 'Matriz de cambio de base', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-9' },
-        { title: 'Base de un SEV', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-10' },
-        { title: 'Ecuaciones implícitas desde un conjunto generador', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-11' },
-        { title: 'Cambio de base en un SEV', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-12' },
-        { title: 'Intersección de subespacios', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-13' },
-        { title: 'Suma de subespacios / suma directa', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-14' },
-        { title: 'Complemento ortogonal', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-15' },
-        { title: 'Proyección ortogonal', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-16' },
-        { title: 'Método de Gram-Schmidt', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-2-actividad-17' }
+        { title: 'Operaciones con conjuntos', url: 'https://www.algebraparatodos.com/qrt2u2#1' },
+        { title: '¿Es una LCI?', url: 'https://www.algebraparatodos.com/qrt2u2#2' },
+        { title: '¿Es una LCE?', url: 'https://www.algebraparatodos.com/qrt2u2#3' },
+        { title: 'Neutro y simétrico de una operación "rara"', url: 'https://www.algebraparatodos.com/qrt2u2#4' },
+        { title: '¿Es un subespacio vectorial?', url: 'https://www.algebraparatodos.com/qrt2u2#5' },
+        { title: '¿Es LI o LD?', url: 'https://www.algebraparatodos.com/qrt2u2#6' },
+        { title: '¿Genera V? ¿Es base?', url: 'https://www.algebraparatodos.com/qrt2u2#7' },
+        { title: 'Coordenadas de un vector en una base', url: 'https://www.algebraparatodos.com/qrt2u2#8' },
+        { title: 'Matriz de cambio de base', url: 'https://www.algebraparatodos.com/qrt2u2#9' },
+        { title: 'Base de un SEV', url: 'https://www.algebraparatodos.com/qrt2u2#10' },
+        { title: 'Ecuaciones implícitas desde un conjunto generador', url: 'https://www.algebraparatodos.com/qrt2u2#11' },
+        { title: 'Cambio de base en un SEV', url: 'https://www.algebraparatodos.com/qrt2u2#12' },
+        { title: 'Intersección de subespacios', url: 'https://www.algebraparatodos.com/qrt2u2#13' },
+        { title: 'Suma de subespacios / suma directa', url: 'https://www.algebraparatodos.com/qrt2u2#14' },
+        { title: 'Complemento ortogonal', url: 'https://www.algebraparatodos.com/qrt2u2#15' },
+        { title: 'Proyección ortogonal', url: 'https://www.algebraparatodos.com/qrt2u2#16' },
+        { title: 'Método de Gram-Schmidt', url: 'https://www.algebraparatodos.com/qrt2u2#17' }
       ] },
     { title: 'Unidad 3: Transformaciones Lineales', activities: [
-        { title: '¿Es lineal?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-3-actividad-1' },
-        { title: '¿Existe? ¿Es única?', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-3-actividad-2' },
-        { title: 'Armá la matriz asociada', url: 'https://www.algebraparatodos.com/qr-tomo-ii-unidad-3-actividad-3' }
+        { title: '¿Es lineal?', url: 'https://www.algebraparatodos.com/qrt2u3#1' },
+        { title: '¿Existe? ¿Es única?', url: 'https://www.algebraparatodos.com/qrt2u3#2' },
+        { title: 'Armá la matriz asociada', url: 'https://www.algebraparatodos.com/qrt2u3#3' }
       ] },
     { title: 'Unidad 4: Diagonalización', activities: [] }
   ];
