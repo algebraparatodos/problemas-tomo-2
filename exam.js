@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · exam.js (v1.0)
+   ÁLGEBRA PARA TODOS · exam.js (v2.1)
    ------------------------------------------------------------
    Modo examen: independiente de engine.js a propósito (son dos
    cosas distintas que conviven, no una extensión de la otra).
@@ -18,6 +18,12 @@
    ============================================================ */
 (function (global) {
   'use strict';
+
+  /* Subir esto en CADA cambio, aunque sea chico: menor para ajustes,
+     mayor para cambios de fondo. Y mantener sincronizado el numero del
+     comentario de arriba. La 2.0 es el salto de leer exercises.js a leer
+     las actividades del repo, mas las preguntas compuestas. */
+  var VERSION = '2.1';
 
   var FONT_LINK_ID = 'apt-exam-fonts';
   var KATEX_CSS_ID = 'apt-exam-katex-css';
@@ -97,6 +103,12 @@
       + ' font-size:13px; color:var(--ink-soft); line-height:1.6; margin:0; padding:14px 6px; }',
     '.apt-exam__unit-block{ margin-bottom:16px; }',
     '.apt-exam__unit-block:last-child{ margin-bottom:0; }',
+    '.apt-exam__space-answer{ display:flex; flex-direction:column; gap:10px; align-items:center; width:100%; }',
+    '.apt-exam__space-row{ display:flex; align-items:center; justify-content:center; gap:8px;'
+      + ' flex-wrap:wrap; width:100%; }',
+    '.apt-exam__eq{ font-family:var(--font-mono); font-weight:700; font-size:15px; color:var(--ink); }',
+    '.apt-exam__versiones{ text-align:center; font-family:var(--font-mono); font-size:10.5px;'
+      + ' color:var(--ink-soft); opacity:.55; margin:10px 0 0; letter-spacing:.03em; }',
     '.apt-exam__unit-toggle{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px;'
       + ' background:transparent; border:none; cursor:pointer; padding:8px 2px; margin:0 0 4px;'
       + ' -webkit-tap-highlight-color:transparent; }',
@@ -230,6 +242,8 @@
   }
 
   /* ---------- grilla de entrada (self-contained, no depende de engine.js) ---------- */
+  var SUBS = ['\u2080', '\u2081', '\u2082', '\u2083', '\u2084', '\u2085', '\u2086'];
+
   function resolveNum(spec, current) {
     return typeof spec === 'function' ? spec(current) : spec;
   }
@@ -503,6 +517,7 @@
           '<p class="apt-exam__subtitle">' + (cfg.subtitle || 'Elegí los temas que querés practicar. Se arma un examen cronometrado, sin volver atrás.') + '</p>' +
           '<div class="apt-exam__card"><div class="apt-exam__topics"></div></div>' +
           '<button type="button" class="apt-exam__start-btn" disabled>Empezar examen</button>' +
+          '<p class="apt-exam__versiones"></p>' +
         '</div>' +
         '<div class="apt-exam__screen apt-exam__screen--running apt-exam__screen--hidden">' +
           '<div class="apt-exam__progress-row"><span class="apt-exam__progress-label"></span><span class="apt-exam__timers"><span class="apt-exam__timer-total"></span><span class="apt-exam__timer">0:00</span></span></div>' +
@@ -627,6 +642,18 @@
        incluye actividades-registro.js: el examen no tiene de dónde sacar
        los ejercicios. Mejor decirlo que dejar al alumno mirando una
        pantalla que no responde. */
+    /* Las tres versiones a la vista. Cuando algo no anda, lo primero es
+       saber si el navegador esta usando los archivos nuevos o una copia
+       cacheada; asi se ve de un vistazo, sin abrir la consola. */
+    (function () {
+      var E = engine();
+      var partes = ['examen v' + VERSION];
+      if (global.AptRegistro && global.AptRegistro.version) partes.push('registro v' + global.AptRegistro.version);
+      if (E && E.version) partes.push('engine v' + E.version);
+      var el = root.querySelector('.apt-exam__versiones');
+      if (el) el.textContent = partes.join(' \u00b7 ');
+    })();
+
     if (!registry.length) {
       var aviso = document.createElement('p');
       aviso.className = 'apt-exam__sin-temas';
@@ -706,6 +733,15 @@
         } else if (fase.mode === 'multiselect') {
           e.type = 'multiselect';
           e.options = (typeof fase.options === 'function') ? fase.options : function () { return fase.options; };
+        } else if (fase.mode === 'space-basis') {
+          /* Escribir una base. El widget y su lectura los pone el engine, asi
+             que aca solo se guardan los datos para armarlo y corregirlo. */
+          e.type = 'space-basis';
+          e.sbCount = fase.count;
+          e.sbSpace = fase.space;
+          e.sbLabel = fase.answerLabel || 'v';
+          e.sbExactMatch = !!fase.exactMatch;
+          e.getExpectedBasis = fase.getExpectedBasis;
         } else if (fase.mode === 'vectors') {
           e.type = 'vectors';
           e.vectors = fase.vectors;
@@ -844,6 +880,46 @@
           submitAnswer(readVectors());
         });
         refs.answer.appendChild(vCheckBtn);
+      } else if (q.exercise.type === 'space-basis') {
+        /* Escribir una base. El widget y su lectura los pone el engine
+           (buildSpaceInputWidget / readSpaceInputWidget): aca no se
+           reimplementa nada, que es el punto de apoyarse en el engine. */
+        var A_sb = engine();
+        var sbCount = resolveNum(q.exercise.sbCount, q.current);
+        var sbSpace = (typeof q.exercise.sbSpace === 'function')
+          ? q.exercise.sbSpace(q.current) : q.exercise.sbSpace;
+        var sbWrap = document.createElement('div');
+        sbWrap.className = 'apt-exam__space-answer';
+        for (var sbi = 0; sbi < sbCount; sbi++) {
+          var sbRow = document.createElement('div');
+          sbRow.className = 'apt-exam__space-row';
+          var sbLab = document.createElement('span');
+          sbLab.className = 'apt-exam__eq';
+          sbLab.textContent = q.exercise.sbLabel +
+            (sbCount > 1 ? (SUBS[sbi + 1] || ('_' + (sbi + 1))) : '') + ' =';
+          sbRow.appendChild(sbLab);
+          sbWrap.appendChild(sbRow);
+          A_sb.buildSpaceInputWidget(sbRow, sbSpace, 'v' + sbi);
+        }
+        refs.answer.appendChild(sbWrap);
+        var sbHint = document.createElement('p');
+        sbHint.className = 'apt-exam__hint';
+        sbHint.textContent = 'Toc\u00e1 \u2212 o + para cambiar el signo de cada n\u00famero.';
+        refs.answer.appendChild(sbHint);
+        var sbBtn = document.createElement('button');
+        sbBtn.type = 'button';
+        sbBtn.className = 'apt-exam__check-btn';
+        sbBtn.textContent = 'Confirmar respuesta';
+        sbBtn.addEventListener('click', function () {
+          var reads = [], vacio = false;
+          for (var i = 0; i < sbCount; i++) {
+            var r = A_sb.readSpaceInputWidget(sbWrap, sbSpace, 'v' + i);
+            reads.push(r.coords);
+            if (r.hasEmpty) vacio = true;
+          }
+          submitAnswer({ reads: reads, hasEmpty: vacio, space: sbSpace });
+        });
+        refs.answer.appendChild(sbBtn);
       } else if (q.exercise.type === 'multiselect') {
         var msWrap = document.createElement('div');
         msWrap.className = 'apt-exam__multiselect';
@@ -921,6 +997,34 @@
         } else {
           correctAnswerDisplay = { type: 'text', value: '(hay más de una respuesta válida — ver la explicación)' };
         }
+      } else if (q.exercise.type === 'space-basis') {
+        /* La comparacion la hace el engine. Si la fase pide coincidencia
+           exacta se compara componente a componente; si no, se acepta
+           CUALQUIER base del mismo subespacio, que es lo matematicamente
+           correcto y lo que ya hacen las landings. */
+        var A_chk = engine();
+        var esperados = q.exercise.getExpectedBasis(q.current);
+        var espCoords = esperados.map(function (v) { return value.space.toCoords(v); });
+        if (q.exercise.sbExactMatch) {
+          correct = !value.hasEmpty && value.reads.length === espCoords.length &&
+            value.reads.every(function (r, i) {
+              var e2 = espCoords[i];
+              return !!e2 && r.every(function (x, c) { return x === e2[c]; });
+            });
+        } else {
+          correct = !value.hasEmpty && A_chk.checkSpanEquivalence(value.reads, espCoords).ok;
+        }
+        var tupla = function (r) { return '(' + r.join(', ') + ')'; };
+        studentAnswerDisplay = {
+          type: 'list',
+          value: value.hasEmpty ? ['(incompleta)'] : value.reads.map(tupla)
+        };
+        correctAnswerDisplay = {
+          type: 'list',
+          value: q.exercise.sbExactMatch
+            ? espCoords.map(tupla)
+            : espCoords.map(tupla).concat(['(cualquier base equivalente es v\u00e1lida)'])
+        };
       } else if (q.exercise.type === 'grid') {
         var result = q.exercise.checkGrid(q.current, value, !!hasEmpty);
         correct = result.correct && !hasEmpty;
