@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v4.2)
+   ÁLGEBRA PARA TODOS · engine.js (v4.3)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -101,7 +101,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '4.2';
+  var ENGINE_VERSION = '4.3';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -972,7 +972,7 @@
         '<button type="button" class="apt-act__catalog-btn">📚 Todos los ejercicios</button>' +
         (nextEntry ? '<a class="apt-act__nav-btn apt-act__nav-btn--next" href="' + nextEntry.url + '">Siguiente →</a>' : '') +
       '</div>' +
-      '<a class="apt-act__exam-btn" href="https://www.algebraparatodos.com/ejercicios-algebra-lineal">📝 Modo examen</a>' +
+      '<a class="apt-act__exam-btn" href="https://www.algebraparatodos.com/examen-algebra">📝 Modo examen</a>' +
       '<div class="apt-act__footer-row">' +
         '<span class="apt-act__brand-group">' +
           '<a class="apt-act__brand-link" href="https://www.instagram.com/soyjuanisilva/" target="_blank" rel="noopener">Álgebra Para Todos</a>' +
