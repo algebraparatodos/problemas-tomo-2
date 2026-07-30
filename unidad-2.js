@@ -32,15 +32,15 @@
      expone, esta lista se puede derivar de ahí y dejan de poder
      desincronizarse. */
   var ACTIVIDADES = [
-    { n: 1 , titulo: 'Operaciones con conjuntos',                          archivo: 'unidad-2-actividad-1-operaciones-con-conjuntos.js' },
-    { n: 2 , titulo: '¿Es una LCI?',                                       archivo: 'unidad-2-actividad-2-es-lci.js' },
-    { n: 3 , titulo: '¿Es una LCE?',                                       archivo: 'unidad-2-actividad-3-es-lce.js' },
-    { n: 4 , titulo: 'Neutro y simétrico de una operación "rara"',         archivo: 'unidad-2-actividad-4-neutro-y-simetrico.js' },
-    { n: 5 , titulo: '¿Es un subespacio vectorial?',                       archivo: 'unidad-2-actividad-5-es-sev.js' },
-    { n: 6 , titulo: '¿Es LI o LD?',                                       archivo: 'unidad-2-actividad-6-son-li.js' },
-    { n: 7 , titulo: '¿Genera V? ¿Es base?',                               archivo: 'unidad-2-actividad-7-genera-s.js' },
-    { n: 8 , titulo: 'Coordenadas de un vector en una base',               archivo: 'unidad-2-actividad-8-coordenadas-base.js' },
-    { n: 9 , titulo: 'Matriz de cambio de base',                           archivo: 'unidad-2-actividad-9-matriz-cambio-base.js' },
+    { n: 1,  titulo: 'Operaciones con conjuntos',                          archivo: 'unidad-2-actividad-1-operaciones-con-conjuntos.js' },
+    { n: 2,  titulo: '¿Es una LCI?',                                       archivo: 'unidad-2-actividad-2-es-lci.js' },
+    { n: 3,  titulo: '¿Es una LCE?',                                       archivo: 'unidad-2-actividad-3-es-lce.js' },
+    { n: 4,  titulo: 'Neutro y simétrico de una operación "rara"',         archivo: 'unidad-2-actividad-4-neutro-y-simetrico.js' },
+    { n: 5,  titulo: '¿Es un subespacio vectorial?',                       archivo: 'unidad-2-actividad-5-es-sev.js' },
+    { n: 6,  titulo: '¿Es LI o LD?',                                       archivo: 'unidad-2-actividad-6-son-li.js' },
+    { n: 7,  titulo: '¿Genera V? ¿Es base?',                               archivo: 'unidad-2-actividad-7-genera-s.js' },
+    { n: 8,  titulo: 'Coordenadas de un vector en una base',               archivo: 'unidad-2-actividad-8-coordenadas-base.js' },
+    { n: 9,  titulo: 'Matriz de cambio de base',                           archivo: 'unidad-2-actividad-9-matriz-cambio-base.js' },
     { n: 10, titulo: 'Base de un SEV',                                     archivo: 'unidad-2-actividad-10-base-sev.js' },
     { n: 11, titulo: 'Ecuaciones implícitas desde un conjunto generador',  archivo: 'unidad-2-actividad-11-ecuaciones-implicitas.js' },
     { n: 12, titulo: 'Cambio de base en un SEV',                           archivo: 'unidad-2-actividad-12-cambio-base.js' },
@@ -76,10 +76,13 @@
     '.apt-idx__topbar{ text-align:center; }',
     '.apt-idx__eyebrow{ font-family:var(--font-serif); font-weight:700; font-size:12px; letter-spacing:.1em;' +
       ' text-transform:uppercase; color:var(--chalk-light); margin:0 0 8px; }',
-    '.apt-idx__title{ font-family:var(--font-mono); font-weight:700; font-size:clamp(22px,6.5vw,28px);' +
+    '.apt-idx__title{ text-wrap:balance; font-family:var(--font-mono); font-weight:700; font-size:clamp(22px,6.5vw,28px);' +
       ' margin:0; color:var(--ink); line-height:1.25; }',
-    '.apt-idx__subtitle{ font-family:var(--font-mono); font-size:13.5px; color:var(--ink-soft);' +
+    '.apt-idx__subtitle{ text-wrap:pretty; font-family:var(--font-mono); font-size:13.5px; color:var(--ink-soft);' +
       ' margin:8px 0 0; line-height:1.5; }',
+    /* text-wrap:balance iguala el largo de las lineas en titulos de
+       dos lineas; text-wrap:pretty evita que un parrafo termine con una
+       sola palabra colgada. Si el navegador no los soporta, los ignora. */
     /* Columnas fijas con media query, NO auto-fit/minmax: con títulos de
        largo muy distinto, auto-fit da columnas desparejas. */
     '.apt-idx__grid{ display:grid; grid-template-columns:1fr; gap:8px; }',
@@ -96,7 +99,7 @@
     '.apt-idx__num{ flex:0 0 30px; height:30px; display:flex; align-items:center; justify-content:center;' +
       ' border-radius:8px; background:var(--chalk); color:#fff;' +
       ' font-family:var(--font-serif); font-weight:700; font-size:14px; }',
-    '.apt-idx__vacio{ text-align:center; font-family:var(--font-mono); font-size:13.5px;' +
+    '.apt-idx__vacio{ text-wrap:pretty; text-align:center; font-family:var(--font-mono); font-size:13.5px;' +
       ' color:var(--ink-soft); line-height:1.6; padding:18px 8px; }'
   ].join('\n');
 
