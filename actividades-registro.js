@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · actividades-registro.js (v1.8)
+   ÁLGEBRA PARA TODOS · actividades-registro.js (v1.9)
    ------------------------------------------------------------
    Le da al modo examen los ejercicios LEYENDO los archivos de
    actividades/, en vez de tener una segunda copia de su lógica.
@@ -39,14 +39,14 @@
   /* Subir esto en CADA cambio, aunque sea chico: menor para ajustes,
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. */
-  var VERSION = '1.8';
+  var VERSION = '1.9';
 
   var BASE = 'https://algebraparatodos.github.io/problemas-tomo-2/actividades/';
   var JAULA_ID = 'apt-registro-jaula';
 
   /* --- generado: unidad, número, título y archivo de cada actividad --- */
   var MANIFIESTO = [
-    { id: 'u1a1', unidad: 1, n: 1 , titulo: 'Clasificá el sistema',                                modo: 'choices',      archivo: 'unidad-1-actividad-1-clasifica-el-sistema.js',
+    { id: 'u1a1', unidad: 1, n: 1 , titulo: 'Clasificá el sistema',                                modo: 'choices',      grupo: 'Clasificación de una SEL', archivo: 'unidad-1-actividad-1-clasifica-el-sistema.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
     { id: 'u1a2', unidad: 1, n: 2 , titulo: 'Matriz ampliada',                                     modo: 'grid',         grupo: 'Eliminación Gaussiana y forma escalonada', archivo: 'unidad-1-actividad-2-matriz-ampliada.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
@@ -118,7 +118,7 @@
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a4', unidad: 3, n: 4 , titulo: 'Núcleo e imagen',                                     modo: 'phases',       grupo: 'Núcleo e imagen de una TL', submodos: ['choices'], archivo: 'unidad-3-actividad-4-dim-nucleo-e-imagen.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
-    { id: 'u3a5', unidad: 3, n: 5 , titulo: 'Clasificá la TL',                                     modo: 'choices',      archivo: 'unidad-3-actividad-5-clasificar-tl.js',
+    { id: 'u3a5', unidad: 3, n: 5 , titulo: 'Clasificá la TL',                                     modo: 'choices',      grupo: 'Clasificación de una TL', archivo: 'unidad-3-actividad-5-clasificar-tl.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a6', unidad: 3, n: 6 , titulo: 'Determinante y área',                                 modo: 'phases',       grupo: 'Existencia de TL', submodos: ['choices'], archivo: 'unidad-3-actividad-6-determinante-area.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
@@ -134,7 +134,7 @@
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a12', unidad: 3, n: 12, titulo: 'Composición de TL',                                   modo: 'phases',       grupo: 'Composición e inversa de TL', submodos: ['choices'], archivo: 'unidad-3-actividad-12-composicion-tl.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
-    { id: 'u3a13', unidad: 3, n: 13, titulo: '¿Qué es posible?',                                    modo: 'multiselect',  archivo: 'unidad-3-actividad-13-es-posible-clasificacion.js',
+    { id: 'u3a13', unidad: 3, n: 13, titulo: '¿Qué es posible?',                                    modo: 'multiselect',  grupo: 'Clasificación de una TL', archivo: 'unidad-3-actividad-13-es-posible-clasificacion.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a14', unidad: 3, n: 14, titulo: 'Hallá M(T⁻¹)',                                        modo: 'phases',       grupo: 'Composición e inversa de TL', submodos: ['choices'], archivo: 'unidad-3-actividad-14-matriz-inversa-tl.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
