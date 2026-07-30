@@ -456,7 +456,21 @@
      ============================================================ */
   function init(cfg) {
     ensureAssets();
-    var registry = cfg.registry || global.AptExercises || [];
+    /* De donde salen los ejercicios, por orden de preferencia:
+         1. cfg.registry, si la landing pasa uno a mano
+         2. AptRegistro — el manifiesto que LEE las actividades del repo.
+            Solo trae metadatos; los generadores se descargan cuando el
+            alumno elige los temas.
+         3. AptExercises — el registro viejo, con la logica duplicada,
+            que queda solo como respaldo.
+       Del manifiesto se muestran unicamente las actividades cuyo modo el
+       examen ya sabe presentar. */
+    var registry = cfg.registry ||
+      (global.AptRegistro
+        ? global.AptRegistro.lista().filter(function (e) { return e.soportado; })
+        : null) ||
+      global.AptExercises || [];
+    var usaRegistro = !cfg.registry && !!global.AptRegistro;
     var questionsPerTopic = cfg.questionsPerTopic || 3;
 
     var mountEl = cfg.mount ? document.querySelector(cfg.mount) : null;
@@ -559,13 +573,50 @@
 
     refs.startBtn.addEventListener('click', function () {
       var topics = Object.keys(selectedTopics).filter(function (t) { return selectedTopics[t]; });
+      /* Con AptRegistro los generadores todavia no estan en memoria: se
+         descargan solo los de los temas elegidos. Las 48 actividades
+         juntas pesan mas de medio mega; asi una sesion baja tres o
+         cuatro archivos. */
+      if (usaRegistro) {
+        var faltan = registry.filter(function (e) {
+          return topics.indexOf(e.topic) !== -1 && typeof e.generate !== 'function';
+        });
+        if (faltan.length) {
+          var textoBoton = refs.startBtn.textContent;
+          refs.startBtn.disabled = true;
+          refs.startBtn.textContent = 'Preparando el examen...';
+          global.AptRegistro.cargar(faltan, function (cargadas) {
+            // cada entrada del manifiesto se reemplaza por la version
+            // con generadores, conservando su posicion
+            cargadas.forEach(function (ex) {
+              for (var i = 0; i < registry.length; i++) {
+                if (registry[i].id === ex.id) { registry[i] = ex; break; }
+              }
+            });
+            refs.startBtn.disabled = false;
+            refs.startBtn.textContent = textoBoton;
+            var listos = topics.filter(function (t) {
+              return registry.some(function (e) { return e.topic === t && typeof e.generate === 'function'; });
+            });
+            if (!listos.length) {
+              refs.startBtn.textContent = 'No se pudieron cargar los ejercicios';
+              return;
+            }
+            startExam(listos);
+          });
+          return;
+        }
+      }
       startExam(topics);
     });
 
     function startExam(topics) {
       var questions = [];
       topics.forEach(function (topic) {
-        var pool = registry.filter(function (e) { return e.topic === topic; });
+        var pool = registry.filter(function (e) {
+          return e.topic === topic && typeof e.generate === 'function';
+        });
+        if (!pool.length) return;
         for (var i = 0; i < questionsPerTopic; i++) {
           var ex = randChoice(pool);
           questions.push({ exercise: ex, current: ex.generate(), topic: topic });
@@ -591,7 +642,16 @@
 
       q.exercise.renderContent(refs.content, q.current);
       ajustarAnchoFormulas(refs.content);
-      refs.promptEl.textContent = (typeof q.exercise.prompt === 'function' ? q.exercise.prompt(q.current) : q.exercise.prompt) || '';
+      /* Los subtitulos de las actividades pueden traer $...$. Se usa la
+         funcion del engine en vez de reimplementar el parseo; si el
+         engine no esta, se cae a texto plano. */
+      var textoPrompt = (typeof q.exercise.prompt === 'function' ? q.exercise.prompt(q.current) : q.exercise.prompt) || '';
+      var A_eng = engine();
+      if (A_eng && typeof A_eng.renderTextWithMath === 'function' && textoPrompt.indexOf('$') !== -1) {
+        refs.promptEl.innerHTML = A_eng.renderTextWithMath(textoPrompt);
+      } else {
+        refs.promptEl.textContent = textoPrompt;
+      }
 
       refs.answer.innerHTML = '';
       var readMatrix = null;
@@ -667,6 +727,11 @@
         });
         refs.answer.appendChild(msCheckBtn);
       }
+
+      /* Las opciones tambien pueden ser formulas anchas —las de
+         "Ecuaciones implicitas" son sistemas completos en KaTeX— asi que
+         el ajuste de ancho se aplica igual que al enunciado. */
+      ajustarAnchoFormulas(refs.answer);
 
       examState.qStartTime = Date.now();
       if (examState.timerInterval) clearInterval(examState.timerInterval);
