@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · exam.js (v2.1)
+   ÁLGEBRA PARA TODOS · exam.js (v2.2)
    ------------------------------------------------------------
    Modo examen: independiente de engine.js a propósito (son dos
    cosas distintas que conviven, no una extensión de la otra).
@@ -23,7 +23,7 @@
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. La 2.0 es el salto de leer exercises.js a leer
      las actividades del repo, mas las preguntas compuestas. */
-  var VERSION = '2.1';
+  var VERSION = '2.2';
 
   var FONT_LINK_ID = 'apt-exam-fonts';
   var KATEX_CSS_ID = 'apt-exam-katex-css';
@@ -103,6 +103,7 @@
       + ' font-size:13px; color:var(--ink-soft); line-height:1.6; margin:0; padding:14px 6px; }',
     '.apt-exam__unit-block{ margin-bottom:16px; }',
     '.apt-exam__unit-block:last-child{ margin-bottom:0; }',
+    '.apt-exam__result-nota{ font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); opacity:.7; }',
     '.apt-exam__space-answer{ display:flex; flex-direction:column; gap:10px; align-items:center; width:100%; }',
     '.apt-exam__space-row{ display:flex; align-items:center; justify-content:center; gap:8px;'
       + ' flex-wrap:wrap; width:100%; }',
@@ -1014,16 +1015,30 @@
         } else {
           correct = !value.hasEmpty && A_chk.checkSpanEquivalence(value.reads, espCoords).ok;
         }
+        /* Los vectores se muestran COMO SON en su espacio, no como su
+           fila de coordenadas: una matriz se ve matriz y un polinomio,
+           polinomio. Sin esto, (1, 0, 2) aparecia igual para el vector de
+           R3 y para el polinomio 1 + 2x2 de P2. */
+        var esp_ = value.space;
         var tupla = function (r) { return '(' + r.join(', ') + ')'; };
-        studentAnswerDisplay = {
-          type: 'list',
-          value: value.hasEmpty ? ['(incompleta)'] : value.reads.map(tupla)
+        var comoBase = function (vectoresNativos) {
+          var piezas = vectoresNativos.map(function (v) { return esp_.toKatex(v); });
+          return '\\left\\{\\, ' + piezas.join(',\\ ') + ' \\,\\right\\}';
         };
+        if (value.hasEmpty) {
+          studentAnswerDisplay = { type: 'text', value: '(incompleta)' };
+        } else {
+          studentAnswerDisplay = {
+            type: 'katex',
+            value: comoBase(value.reads.map(function (r) { return esp_.fromCoords(r); })),
+            plano: value.reads.map(tupla).join(', ')
+          };
+        }
         correctAnswerDisplay = {
-          type: 'list',
-          value: q.exercise.sbExactMatch
-            ? espCoords.map(tupla)
-            : espCoords.map(tupla).concat(['(cualquier base equivalente es v\u00e1lida)'])
+          type: 'katex',
+          value: comoBase(esperados),
+          plano: espCoords.map(tupla).join(', '),
+          nota: q.exercise.sbExactMatch ? null : '(cualquier base equivalente es v\u00e1lida)'
         };
       } else if (q.exercise.type === 'grid') {
         var result = q.exercise.checkGrid(q.current, value, !!hasEmpty);
@@ -1131,6 +1146,28 @@
         container.innerHTML = display.value;
       } else if (display.type === 'list') {
         container.textContent = display.value.join(', ');
+      } else if (display.type === 'katex') {
+        /* Una formula ya armada en LaTeX. Se usa para las respuestas de
+           base: asi un elemento de M2x2 se ve como matriz y uno de P2 como
+           polinomio, en vez de como una fila de coordenadas que el alumno
+           tiene que decodificar — y que ademas significa cosas distintas
+           segun el espacio. */
+        container.innerHTML = '';
+        var kWrap = document.createElement('span');
+        container.appendChild(kWrap);
+        if (global.katex) {
+          try { global.katex.render(display.value, kWrap, { throwOnError: false }); }
+          catch (e) { kWrap.textContent = display.plano || display.value; }
+        } else {
+          kWrap.textContent = display.plano || display.value;
+        }
+        if (display.nota) {
+          var nEl = document.createElement('span');
+          nEl.className = 'apt-exam__result-nota';
+          nEl.textContent = ' ' + display.nota;
+          container.appendChild(nEl);
+        }
+        ajustarAnchoFormulas(container);
       } else if (display.type === 'matrix') {
         if (global.katex) global.katex.render(matrixToLatex(display.value), container, { throwOnError: false });
         else container.textContent = JSON.stringify(display.value);
