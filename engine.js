@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v4.4)
+   ÁLGEBRA PARA TODOS · engine.js (v4.5)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -101,7 +101,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '4.4';
+  var ENGINE_VERSION = '4.5';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -2726,6 +2726,11 @@
     /* Lo usa el modo examen para pintar enunciados con $...$ sin tener
        que reimplementar el parseo. */
     renderTextWithMath: renderTextWithMath,
+    /* La version, para que el modo examen pueda mostrarla junto a la suya.
+       Una version en un comentario no se puede verificar desde el
+       navegador, y confirmar que un archivo propago es justo lo que mas
+       falta cuando algo no anda. */
+    version: ENGINE_VERSION,
     SPACES: SPACES,
     randomSpace: randomSpace,
     buildSpaceInputWidget: buildSpaceInputWidget,
