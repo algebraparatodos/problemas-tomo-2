@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · actividades-registro.js (v1.9)
+   ÁLGEBRA PARA TODOS · actividades-registro.js (v2.0)
    ------------------------------------------------------------
    Le da al modo examen los ejercicios LEYENDO los archivos de
    actividades/, en vez de tener una segunda copia de su lógica.
@@ -39,7 +39,7 @@
   /* Subir esto en CADA cambio, aunque sea chico: menor para ajustes,
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. */
-  var VERSION = '1.9';
+  var VERSION = '2.0';
 
   var BASE = 'https://algebraparatodos.github.io/problemas-tomo-2/actividades/';
   var JAULA_ID = 'apt-registro-jaula';
@@ -96,9 +96,9 @@
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
     { id: 'u2a10', unidad: 2, n: 10, titulo: 'Base de un SEV',                                      modo: 'phases',       grupo: 'Bases y ecuaciones de un SEV', submodos: ['choices','space-basis'], archivo: 'unidad-2-actividad-10-base-sev.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
-    { id: 'u2a11', unidad: 2, n: 11, titulo: 'Ecuaciones implícitas desde un conjunto generador',   modo: 'choices',      grupo: 'Cambio de base', archivo: 'unidad-2-actividad-11-ecuaciones-implicitas.js',
+    { id: 'u2a11', unidad: 2, n: 11, titulo: 'Ecuaciones implícitas desde un conjunto generador',   modo: 'choices',      grupo: 'Bases y ecuaciones de un SEV', archivo: 'unidad-2-actividad-11-ecuaciones-implicitas.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
-    { id: 'u2a12', unidad: 2, n: 12, titulo: 'Cambio de base en un SEV',                            modo: 'choices',      archivo: 'unidad-2-actividad-12-cambio-base.js',
+    { id: 'u2a12', unidad: 2, n: 12, titulo: 'Cambio de base en un SEV',                            modo: 'choices',      grupo: 'Cambio de base', archivo: 'unidad-2-actividad-12-cambio-base.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
     { id: 'u2a13', unidad: 2, n: 13, titulo: 'Intersección de subespacios',                         modo: 'phases',       grupo: 'Operaciones con SEV', submodos: ['choices','space-basis'], archivo: 'unidad-2-actividad-13-interseccion-sev.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
