@@ -60,10 +60,13 @@
     '.apt-idx__topbar{ text-align:center; }',
     '.apt-idx__eyebrow{ font-family:var(--font-serif); font-weight:700; font-size:12px; letter-spacing:.1em;' +
       ' text-transform:uppercase; color:var(--chalk-light); margin:0 0 8px; }',
-    '.apt-idx__title{ font-family:var(--font-mono); font-weight:700; font-size:clamp(22px,6.5vw,28px);' +
+    '.apt-idx__title{ text-wrap:balance; font-family:var(--font-mono); font-weight:700; font-size:clamp(22px,6.5vw,28px);' +
       ' margin:0; color:var(--ink); line-height:1.25; }',
-    '.apt-idx__subtitle{ font-family:var(--font-mono); font-size:13.5px; color:var(--ink-soft);' +
+    '.apt-idx__subtitle{ text-wrap:pretty; font-family:var(--font-mono); font-size:13.5px; color:var(--ink-soft);' +
       ' margin:8px 0 0; line-height:1.5; }',
+    /* text-wrap:balance iguala el largo de las lineas en titulos de
+       dos lineas; text-wrap:pretty evita que un parrafo termine con una
+       sola palabra colgada. Si el navegador no los soporta, los ignora. */
     /* Columnas fijas con media query, NO auto-fit/minmax: con títulos de
        largo muy distinto, auto-fit da columnas desparejas. */
     '.apt-idx__grid{ display:grid; grid-template-columns:1fr; gap:8px; }',
@@ -80,7 +83,7 @@
     '.apt-idx__num{ flex:0 0 30px; height:30px; display:flex; align-items:center; justify-content:center;' +
       ' border-radius:8px; background:var(--chalk); color:#fff;' +
       ' font-family:var(--font-serif); font-weight:700; font-size:14px; }',
-    '.apt-idx__vacio{ text-align:center; font-family:var(--font-mono); font-size:13.5px;' +
+    '.apt-idx__vacio{ text-wrap:pretty; text-align:center; font-family:var(--font-mono); font-size:13.5px;' +
       ' color:var(--ink-soft); line-height:1.6; padding:18px 8px; }'
   ].join('\n');
 
