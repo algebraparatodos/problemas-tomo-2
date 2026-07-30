@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · actividades-registro.js (v1.5)
+   ÁLGEBRA PARA TODOS · actividades-registro.js (v1.8)
    ------------------------------------------------------------
    Le da al modo examen los ejercicios LEYENDO los archivos de
    actividades/, en vez de tener una segunda copia de su lógica.
@@ -39,7 +39,7 @@
   /* Subir esto en CADA cambio, aunque sea chico: menor para ajustes,
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. */
-  var VERSION = '1.5';
+  var VERSION = '1.8';
 
   var BASE = 'https://algebraparatodos.github.io/problemas-tomo-2/actividades/';
   var JAULA_ID = 'apt-registro-jaula';
@@ -62,9 +62,9 @@
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
     { id: 'u1a8', unidad: 1, n: 8 , titulo: 'Rango por orlado',                                    modo: 'phases',       submodos: ['choices'], archivo: 'unidad-1-actividad-8-rango-orlado.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
-    { id: 'u1a9', unidad: 1, n: 9 , titulo: 'Clasificá con Rouché-Frobenius',                      modo: 'phases',       submodos: ['choices'], archivo: 'unidad-1-actividad-9-rouche-frobenius.js',
+    { id: 'u1a9', unidad: 1, n: 9 , titulo: 'Clasificá con Rouché-Frobenius',                      modo: 'phases',       grupo: 'Rouché-Frobenius', submodos: ['choices'], archivo: 'unidad-1-actividad-9-rouche-frobenius.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
-    { id: 'u1a10', unidad: 1, n: 10, titulo: 'Rouché-Frobenius con parámetros',                     modo: 'phases',       submodos: ['setup','choices'], archivo: 'unidad-1-actividad-10-rouche-frobenius-parametro.js',
+    { id: 'u1a10', unidad: 1, n: 10, titulo: 'Rouché-Frobenius con parámetros',                     modo: 'phases',       grupo: 'Rouché-Frobenius', submodos: ['setup','choices'], archivo: 'unidad-1-actividad-10-rouche-frobenius-parametro.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
     { id: 'u1a11', unidad: 1, n: 11, titulo: 'Tipos de matrices',                                   modo: 'multiselect',  archivo: 'unidad-1-actividad-11-tipos-de-matrices.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
@@ -90,13 +90,13 @@
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
     { id: 'u2a7', unidad: 2, n: 7 , titulo: '¿Genera V? ¿Es base?',                                modo: 'choices',      grupo: 'Independencia lineal', archivo: 'unidad-2-actividad-7-genera-s.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
-    { id: 'u2a8', unidad: 2, n: 8 , titulo: 'Coordenadas de un vector en una base',                modo: 'grid',         archivo: 'unidad-2-actividad-8-coordenadas-base.js',
+    { id: 'u2a8', unidad: 2, n: 8 , titulo: 'Coordenadas de un vector en una base',                modo: 'grid',         grupo: 'Cambio de base', archivo: 'unidad-2-actividad-8-coordenadas-base.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
-    { id: 'u2a9', unidad: 2, n: 9 , titulo: 'Matriz de cambio de base',                            modo: 'choices',      archivo: 'unidad-2-actividad-9-matriz-cambio-base.js',
+    { id: 'u2a9', unidad: 2, n: 9 , titulo: 'Matriz de cambio de base',                            modo: 'choices',      grupo: 'Cambio de base', archivo: 'unidad-2-actividad-9-matriz-cambio-base.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
     { id: 'u2a10', unidad: 2, n: 10, titulo: 'Base de un SEV',                                      modo: 'phases',       grupo: 'Bases y ecuaciones de un SEV', submodos: ['choices','space-basis'], archivo: 'unidad-2-actividad-10-base-sev.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
-    { id: 'u2a11', unidad: 2, n: 11, titulo: 'Ecuaciones implícitas desde un conjunto generador',   modo: 'choices',      grupo: 'Bases y ecuaciones de un SEV', archivo: 'unidad-2-actividad-11-ecuaciones-implicitas.js',
+    { id: 'u2a11', unidad: 2, n: 11, titulo: 'Ecuaciones implícitas desde un conjunto generador',   modo: 'choices',      grupo: 'Cambio de base', archivo: 'unidad-2-actividad-11-ecuaciones-implicitas.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
     { id: 'u2a12', unidad: 2, n: 12, titulo: 'Cambio de base en un SEV',                            modo: 'choices',      archivo: 'unidad-2-actividad-12-cambio-base.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
@@ -116,13 +116,13 @@
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a3', unidad: 3, n: 3 , titulo: 'Armá la matriz asociada',                             modo: 'grid',         grupo: 'Matriz asociada y cambio de base en una TL', archivo: 'unidad-3-actividad-3-matriz-asociada.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
-    { id: 'u3a4', unidad: 3, n: 4 , titulo: 'Núcleo e imagen',                                     modo: 'phases',       submodos: ['choices'], archivo: 'unidad-3-actividad-4-dim-nucleo-e-imagen.js',
+    { id: 'u3a4', unidad: 3, n: 4 , titulo: 'Núcleo e imagen',                                     modo: 'phases',       grupo: 'Núcleo e imagen de una TL', submodos: ['choices'], archivo: 'unidad-3-actividad-4-dim-nucleo-e-imagen.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a5', unidad: 3, n: 5 , titulo: 'Clasificá la TL',                                     modo: 'choices',      archivo: 'unidad-3-actividad-5-clasificar-tl.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
-    { id: 'u3a6', unidad: 3, n: 6 , titulo: 'Determinante y área',                                 modo: 'phases',       submodos: ['choices'], archivo: 'unidad-3-actividad-6-determinante-area.js',
+    { id: 'u3a6', unidad: 3, n: 6 , titulo: 'Determinante y área',                                 modo: 'phases',       grupo: 'Existencia de TL', submodos: ['choices'], archivo: 'unidad-3-actividad-6-determinante-area.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
-    { id: 'u3a7', unidad: 3, n: 7 , titulo: 'Armá la base natural',                                modo: 'phases',       submodos: ['grid'], archivo: 'unidad-3-actividad-7-base-natural.js',
+    { id: 'u3a7', unidad: 3, n: 7 , titulo: 'Armá la base natural',                                modo: 'phases',       grupo: 'Hallar TL', submodos: ['grid'], archivo: 'unidad-3-actividad-7-base-natural.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a8', unidad: 3, n: 8 , titulo: 'Matriz asociada en otras bases',                      modo: 'grid',         grupo: 'Matriz asociada y cambio de base en una TL', archivo: 'unidad-3-actividad-8-matriz-asociada.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
@@ -132,15 +132,15 @@
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a11', unidad: 3, n: 11, titulo: 'Base de la imagen y del núcleo',                      modo: 'phases',       grupo: 'Núcleo e imagen de una TL', submodos: ['choices','space-basis'], archivo: 'unidad-3-actividad-11-base-img-nuc.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
-    { id: 'u3a12', unidad: 3, n: 12, titulo: 'Composición de TL',                                   modo: 'phases',       submodos: ['choices'], archivo: 'unidad-3-actividad-12-composicion-tl.js',
+    { id: 'u3a12', unidad: 3, n: 12, titulo: 'Composición de TL',                                   modo: 'phases',       grupo: 'Composición e inversa de TL', submodos: ['choices'], archivo: 'unidad-3-actividad-12-composicion-tl.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a13', unidad: 3, n: 13, titulo: '¿Qué es posible?',                                    modo: 'multiselect',  archivo: 'unidad-3-actividad-13-es-posible-clasificacion.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
-    { id: 'u3a14', unidad: 3, n: 14, titulo: 'Hallá M(T⁻¹)',                                        modo: 'phases',       submodos: ['choices'], archivo: 'unidad-3-actividad-14-matriz-inversa-tl.js',
+    { id: 'u3a14', unidad: 3, n: 14, titulo: 'Hallá M(T⁻¹)',                                        modo: 'phases',       grupo: 'Composición e inversa de TL', submodos: ['choices'], archivo: 'unidad-3-actividad-14-matriz-inversa-tl.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a15', unidad: 3, n: 15, titulo: 'Identificá la TL geométrica',                         modo: 'choices',      archivo: 'unidad-3-actividad-15-tl-geometrica.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
-    { id: 'u3a16', unidad: 3, n: 16, titulo: 'Componé geométricas',                                 modo: 'choices',      archivo: 'unidad-3-actividad-16-composicion-geometricas.js',
+    { id: 'u3a16', unidad: 3, n: 16, titulo: 'Componé geométricas',                                 modo: 'choices',      grupo: 'Composición e inversa de TL', archivo: 'unidad-3-actividad-16-composicion-geometricas.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' }
   ];
 
@@ -198,7 +198,12 @@
     var ex = {
       id: entrada.id,
       unit: entrada.unidadTitulo,
-      topic: entrada.titulo,
+      /* El GRUPO, no el titulo. lista() ya devuelve topic = grupo || titulo,
+         asi que se respeta lo que venga. Poner el titulo aca rompia los
+         grupos: al terminar de cargar, el examen buscaba el tema por el
+         nombre del grupo y no lo encontraba, y descartaba la actividad en
+         silencio. */
+      topic: entrada.topic || entrada.titulo,
       title: cfg.title || entrada.titulo,
       needsKatex: cfg.needsKatex !== false,
       prompt: cfg.subtitle || '',
