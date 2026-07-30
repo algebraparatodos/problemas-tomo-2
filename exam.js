@@ -93,6 +93,8 @@
     '.apt-exam__title{ font-family:var(--font-mono); font-weight:700; font-size:clamp(22px,6.5vw,28px); margin:0; color:var(--ink); line-height:1.25; text-align:center; }',
     '.apt-exam__subtitle{ font-family:var(--font-mono); font-size:13.5px; color:var(--ink-soft); margin:8px 0 0; line-height:1.5; text-align:center; }',
     '.apt-exam__card{ background:var(--bg-card); border:1px solid rgba(151,161,216,0.18); border-radius:var(--radius); box-shadow:0 1px 3px rgba(0,0,0,.4), 0 10px 24px rgba(0,0,0,.35); padding:18px; }',
+    '.apt-exam__sin-temas{ text-wrap:pretty; text-align:center; font-family:var(--font-mono);'
+      + ' font-size:13px; color:var(--ink-soft); line-height:1.6; margin:0; padding:14px 6px; }',
     '.apt-exam__unit-block{ margin-bottom:16px; }',
     '.apt-exam__unit-block:last-child{ margin-bottom:0; }',
     '.apt-exam__unit-title{ font-family:var(--font-serif); font-weight:700; font-size:14px; color:var(--ink); margin:0 0 8px; }',
@@ -568,6 +570,20 @@
       });
       refs.topicsWrap.appendChild(block);
     });
+
+    /* Si no hay ni un tema, la pantalla quedaba con una tarjeta vacía y un
+       botón muerto, sin decir nada. Pasa, por ejemplo, si la landing no
+       incluye actividades-registro.js: el examen no tiene de dónde sacar
+       los ejercicios. Mejor decirlo que dejar al alumno mirando una
+       pantalla que no responde. */
+    if (!registry.length) {
+      var aviso = document.createElement('p');
+      aviso.className = 'apt-exam__sin-temas';
+      aviso.textContent = 'No se pudieron cargar los ejercicios. ' +
+        'Probá recargar la página en un momento.';
+      refs.topicsWrap.appendChild(aviso);
+      refs.startBtn.style.display = 'none';
+    }
 
     var examState = null;
 
