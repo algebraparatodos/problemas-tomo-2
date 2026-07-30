@@ -32,22 +32,22 @@
      expone, esta lista se puede derivar de ahí y dejan de poder
      desincronizarse. */
   var ACTIVIDADES = [
-    { n: 1, titulo: '¿Es lineal?', archivo: 'unidad-3-actividad-1-es-lineal.js' },
-    { n: 2, titulo: '¿Existe? ¿Es única?', archivo: 'unidad-3-actividad-2-existe-es-unica.js' },
-    { n: 3, titulo: 'Armá la matriz asociada', archivo: 'unidad-3-actividad-3-matriz-asociada.js' },
-    { n: 4, titulo: 'Núcleo e imagen', archivo: 'unidad-3-actividad-4-dim-nucleo-e-imagen.js' },
-    { n: 5, titulo: 'Clasificá la TL', archivo: 'unidad-3-actividad-5-clasificar-tl.js' },
-    { n: 6, titulo: 'Determinante y área', archivo: 'unidad-3-actividad-6-determinante-area.js' },
-    { n: 7, titulo: 'Armá la base natural', archivo: 'unidad-3-actividad-7-base-natural.js' },
-    { n: 8, titulo: 'Matriz asociada en otras bases', archivo: 'unidad-3-actividad-8-matriz-asociada.js' },
-    { n: 9, titulo: 'Cambio de base de M(T)', archivo: 'unidad-3-actividad-9-cambio-base-matriz-asociada.js' },
-    { n: 10, titulo: '¿Pertenece a la imagen o al núcleo?', archivo: 'unidad-3-actividad-10-pertenece-im-nuc.js' },
-    { n: 11, titulo: 'Base de la imagen y del núcleo', archivo: 'unidad-3-actividad-11-base-img-nuc.js' },
-    { n: 12, titulo: 'Composición de TL', archivo: 'unidad-3-actividad-12-composicion-tl.js' },
-    { n: 13, titulo: '¿Qué es posible?', archivo: 'unidad-3-actividad-13-es-posible-clasificacion.js' },
-    { n: 14, titulo: 'Hallá M(T⁻¹)', archivo: 'unidad-3-actividad-14-matriz-inversa-tl.js' },
-    { n: 15, titulo: 'Identificá la TL geométrica', archivo: 'unidad-3-actividad-15-tl-geometrica.js' },
-    { n: 16, titulo: 'Componé geométricas', archivo: 'unidad-3-actividad-16-composicion-geometricas.js' }
+    { n: 1,  titulo: '¿Es lineal?',                          archivo: 'unidad-3-actividad-1-es-lineal.js' },
+    { n: 2,  titulo: '¿Existe? ¿Es única?',                  archivo: 'unidad-3-actividad-2-existe-es-unica.js' },
+    { n: 3,  titulo: 'Armá la matriz asociada',              archivo: 'unidad-3-actividad-3-matriz-asociada.js' },
+    { n: 4,  titulo: 'Núcleo e imagen',                      archivo: 'unidad-3-actividad-4-dim-nucleo-e-imagen.js' },
+    { n: 5,  titulo: 'Clasificá la TL',                      archivo: 'unidad-3-actividad-5-clasificar-tl.js' },
+    { n: 6,  titulo: 'Determinante y área',                  archivo: 'unidad-3-actividad-6-determinante-area.js' },
+    { n: 7,  titulo: 'Armá la base natural',                 archivo: 'unidad-3-actividad-7-base-natural.js' },
+    { n: 8,  titulo: 'Matriz asociada en otras bases',       archivo: 'unidad-3-actividad-8-matriz-asociada.js' },
+    { n: 9,  titulo: 'Cambio de base de M(T)',               archivo: 'unidad-3-actividad-9-cambio-base-matriz-asociada.js' },
+    { n: 10, titulo: '¿Pertenece a la imagen o al núcleo?',  archivo: 'unidad-3-actividad-10-pertenece-im-nuc.js' },
+    { n: 11, titulo: 'Base de la imagen y del núcleo',       archivo: 'unidad-3-actividad-11-base-img-nuc.js' },
+    { n: 12, titulo: 'Composición de TL',                    archivo: 'unidad-3-actividad-12-composicion-tl.js' },
+    { n: 13, titulo: '¿Qué es posible?',                     archivo: 'unidad-3-actividad-13-es-posible-clasificacion.js' },
+    { n: 14, titulo: 'Hallá M(T⁻¹)',                         archivo: 'unidad-3-actividad-14-matriz-inversa-tl.js' },
+    { n: 15, titulo: 'Identificá la TL geométrica',          archivo: 'unidad-3-actividad-15-tl-geometrica.js' },
+    { n: 16, titulo: 'Componé geométricas',                  archivo: 'unidad-3-actividad-16-composicion-geometricas.js' }
   ];
 
   var UNIDAD_TITULO = 'Unidad 3 · Transformaciones Lineales';
@@ -75,10 +75,13 @@
     '.apt-idx__topbar{ text-align:center; }',
     '.apt-idx__eyebrow{ font-family:var(--font-serif); font-weight:700; font-size:12px; letter-spacing:.1em;' +
       ' text-transform:uppercase; color:var(--chalk-light); margin:0 0 8px; }',
-    '.apt-idx__title{ font-family:var(--font-mono); font-weight:700; font-size:clamp(22px,6.5vw,28px);' +
+    '.apt-idx__title{ text-wrap:balance; font-family:var(--font-mono); font-weight:700; font-size:clamp(22px,6.5vw,28px);' +
       ' margin:0; color:var(--ink); line-height:1.25; }',
-    '.apt-idx__subtitle{ font-family:var(--font-mono); font-size:13.5px; color:var(--ink-soft);' +
+    '.apt-idx__subtitle{ text-wrap:pretty; font-family:var(--font-mono); font-size:13.5px; color:var(--ink-soft);' +
       ' margin:8px 0 0; line-height:1.5; }',
+    /* text-wrap:balance iguala el largo de las lineas en titulos de
+       dos lineas; text-wrap:pretty evita que un parrafo termine con una
+       sola palabra colgada. Si el navegador no los soporta, los ignora. */
     /* Columnas fijas con media query, NO auto-fit/minmax: con títulos de
        largo muy distinto, auto-fit da columnas desparejas. */
     '.apt-idx__grid{ display:grid; grid-template-columns:1fr; gap:8px; }',
@@ -95,7 +98,7 @@
     '.apt-idx__num{ flex:0 0 30px; height:30px; display:flex; align-items:center; justify-content:center;' +
       ' border-radius:8px; background:var(--chalk); color:#fff;' +
       ' font-family:var(--font-serif); font-weight:700; font-size:14px; }',
-    '.apt-idx__vacio{ text-align:center; font-family:var(--font-mono); font-size:13.5px;' +
+    '.apt-idx__vacio{ text-wrap:pretty; text-align:center; font-family:var(--font-mono); font-size:13.5px;' +
       ' color:var(--ink-soft); line-height:1.6; padding:18px 8px; }'
   ].join('\n');
 
