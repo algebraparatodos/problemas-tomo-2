@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · exam.js (v2.3)
+   ÁLGEBRA PARA TODOS · exam.js (v2.4)
    ------------------------------------------------------------
    Modo examen: independiente de engine.js a propósito (son dos
    cosas distintas que conviven, no una extensión de la otra).
@@ -23,7 +23,7 @@
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. La 2.0 es el salto de leer exercises.js a leer
      las actividades del repo, mas las preguntas compuestas. */
-  var VERSION = '2.3';
+  var VERSION = '2.4';
 
   var FONT_LINK_ID = 'apt-exam-fonts';
   var KATEX_CSS_ID = 'apt-exam-katex-css';
@@ -108,6 +108,13 @@
     '.apt-exam__space-row{ display:flex; align-items:center; justify-content:center; gap:8px;'
       + ' flex-wrap:wrap; width:100%; }',
     '.apt-exam__eq{ font-family:var(--font-mono); font-weight:700; font-size:15px; color:var(--ink); }',
+    '.apt-exam__abandonar-row{ display:flex; justify-content:center; padding:18px 0 4px; }',
+    '.apt-exam__abandonar-btn{ background:none; border:none; cursor:pointer; padding:6px 10px;'
+      + ' font-family:var(--font-mono); font-size:12px; color:var(--ink-soft); opacity:.7;'
+      + ' text-decoration:underline; -webkit-tap-highlight-color:transparent; }',
+    '.apt-exam__abandonar-btn:hover{ opacity:1; }',
+    '.apt-exam__abandonar-btn.is-confirmando{ color:#E86B6B; opacity:1; text-decoration:none; }',
+    '.apt-exam__abandonar-btn:focus-visible{ outline:2px solid var(--chalk-light); outline-offset:2px; border-radius:4px; }',
     '.apt-exam__versiones{ text-align:center; font-family:var(--font-mono); font-size:10.5px;'
       + ' color:var(--ink-soft); opacity:.55; margin:10px 0 0; letter-spacing:.03em; }',
     '.apt-exam__unit-toggle{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px;'
@@ -117,8 +124,14 @@
       + ' line-height:1; transition:transform .18s ease; }',
     '.apt-exam__unit-toggle.is-open::after{ transform:rotate(180deg); }',
     '.apt-exam__unit-toggle:focus-visible{ outline:2px solid var(--chalk-light); outline-offset:2px; border-radius:6px; }',
-    '.apt-exam__unit-name{ font-family:var(--font-serif); font-weight:700; font-size:14px; color:var(--ink); text-align:left; }',
-    '.apt-exam__unit-count{ font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); opacity:.75; white-space:nowrap; }',
+    /* flex:1 en el nombre: se queda con el espacio sobrante y empuja la
+       cuenta y la flecha contra el borde derecho. Con space-between solo,
+       la cuenta quedaba a distinta altura en cada unidad segun el largo
+       del nombre. */
+    '.apt-exam__unit-name{ flex:1 1 auto; font-family:var(--font-serif); font-weight:700; font-size:14px;'
+      + ' color:var(--ink); text-align:left; }',
+    '.apt-exam__unit-count{ flex:0 0 auto; text-align:right; font-family:var(--font-mono); font-size:11px;'
+      + ' color:var(--ink-soft); opacity:.75; white-space:nowrap; }',
     '.apt-exam__unit-count.is-active{ color:var(--chalk-light); opacity:1; }',
     '.apt-exam__unit-body--closed{ display:none; }',
     '.apt-exam__unit-title{ font-family:var(--font-serif); font-weight:700; font-size:14px; color:var(--ink); margin:0 0 8px; }',
@@ -526,6 +539,9 @@
           '<p class="apt-exam__prompt"></p>' +
           '<div class="apt-exam__card"><div class="apt-exam__content"></div></div>' +
           '<div class="apt-exam__answer"></div>' +
+          '<div class="apt-exam__abandonar-row">' +
+            '<button type="button" class="apt-exam__abandonar-btn">Armar otro examen</button>' +
+          '</div>' +
         '</div>' +
         '<div class="apt-exam__screen apt-exam__screen--results apt-exam__screen--hidden">' +
           '<div class="apt-exam__doc-header">' +
@@ -565,7 +581,8 @@
       scoreTopicsEl: root.querySelector('.apt-exam__score-topics'),
       resultsList: root.querySelector('.apt-exam__results-list'),
       pdfBtn: root.querySelector('.apt-exam__pdf-btn'),
-      restartBtn: root.querySelector('.apt-exam__restart-btn')
+      restartBtn: root.querySelector('.apt-exam__restart-btn'),
+        abandonarBtn: root.querySelector('.apt-exam__abandonar-btn')
     };
 
     /* ---------- pantalla 1: selección de temas ---------- */
@@ -1192,6 +1209,39 @@
       document.title = previousTitle;
     });
 
+    /* Volver a la pantalla de armado a mitad del examen. Va en DOS toques:
+       el primero pide confirmacion y el segundo abandona, para no perder un
+       examen empezado por un toque accidental. Si no se confirma en cinco
+       segundos, vuelve solo a su estado normal. */
+    var confirmandoAbandono = false;
+    var relojAbandono = null;
+    function resetAbandono() {
+      confirmandoAbandono = false;
+      if (relojAbandono) { clearTimeout(relojAbandono); relojAbandono = null; }
+      refs.abandonarBtn.textContent = 'Armar otro examen';
+      refs.abandonarBtn.classList.remove('is-confirmando');
+    }
+    refs.abandonarBtn.addEventListener('click', function () {
+      if (!confirmandoAbandono) {
+        confirmandoAbandono = true;
+        refs.abandonarBtn.textContent = 'Se pierde este examen — tocá de nuevo';
+        refs.abandonarBtn.classList.add('is-confirmando');
+        relojAbandono = setTimeout(resetAbandono, 5000);
+        return;
+      }
+      resetAbandono();
+      /* El cronometro sigue corriendo si no se lo para: es el unico
+         (timerInterval actualiza tanto el de la pregunta como el total). */
+      if (examState && examState.timerInterval) clearInterval(examState.timerInterval);
+      examState = null;
+      /* Se conservan los temas ya elegidos: el caso de uso es justamente
+         'me olvide de marcar uno', no 'quiero empezar de cero'. */
+      refs.runningScreen.classList.add('apt-exam__screen--hidden');
+      refs.resultsScreen.classList.add('apt-exam__screen--hidden');
+      refs.selectScreen.classList.remove('apt-exam__screen--hidden');
+      if (root.scrollIntoView) root.scrollIntoView({ block: 'start' });
+    });
+    
     refs.restartBtn.addEventListener('click', function () {
       Object.keys(selectedTopics).forEach(function (k) { selectedTopics[k] = false; });
       root.querySelectorAll('.apt-exam__topic-btn').forEach(function (b) { b.classList.remove('is-selected'); });
