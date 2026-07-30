@@ -97,6 +97,17 @@
       + ' font-size:13px; color:var(--ink-soft); line-height:1.6; margin:0; padding:14px 6px; }',
     '.apt-exam__unit-block{ margin-bottom:16px; }',
     '.apt-exam__unit-block:last-child{ margin-bottom:0; }',
+    '.apt-exam__unit-toggle{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px;'
+      + ' background:transparent; border:none; cursor:pointer; padding:8px 2px; margin:0 0 4px;'
+      + ' -webkit-tap-highlight-color:transparent; }',
+    '.apt-exam__unit-toggle::after{ content:"\\25BE"; flex:0 0 auto; color:var(--ink); font-size:18px;'
+      + ' line-height:1; transition:transform .18s ease; }',
+    '.apt-exam__unit-toggle.is-open::after{ transform:rotate(180deg); }',
+    '.apt-exam__unit-toggle:focus-visible{ outline:2px solid var(--chalk-light); outline-offset:2px; border-radius:6px; }',
+    '.apt-exam__unit-name{ font-family:var(--font-serif); font-weight:700; font-size:14px; color:var(--ink); text-align:left; }',
+    '.apt-exam__unit-count{ font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); opacity:.75; white-space:nowrap; }',
+    '.apt-exam__unit-count.is-active{ color:var(--chalk-light); opacity:1; }',
+    '.apt-exam__unit-body--closed{ display:none; }',
     '.apt-exam__unit-title{ font-family:var(--font-serif); font-weight:700; font-size:14px; color:var(--ink); margin:0 0 8px; }',
     '.apt-exam__topic-btn{ width:100%; display:flex; align-items:center; gap:10px; text-align:left; font-family:var(--font-mono); font-size:13.5px; color:var(--ink-soft); background:rgba(151,161,216,0.05); border:1.5px solid rgba(151,161,216,0.25); border-radius:10px; padding:12px 14px; margin-bottom:8px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .15s ease, border-color .15s ease, color .15s ease; }',
     '.apt-exam__topic-btn:last-child{ margin-bottom:0; }',
@@ -549,27 +560,67 @@
     });
     var selectedTopics = {};
 
-    Object.keys(units).forEach(function (unitName) {
-      var block = document.createElement('div');
-      block.className = 'apt-exam__unit-block';
-      var h = document.createElement('p');
-      h.className = 'apt-exam__unit-title';
-      h.textContent = unitName;
-      block.appendChild(h);
-      units[unitName].forEach(function (topic) {
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'apt-exam__topic-btn';
-        btn.textContent = topic;
-        btn.addEventListener('click', function () {
-          selectedTopics[topic] = !selectedTopics[topic];
-          btn.classList.toggle('is-selected', !!selectedTopics[topic]);
-          refs.startBtn.disabled = !Object.keys(selectedTopics).some(function (t) { return selectedTopics[t]; });
+      /* Un desplegable por unidad. Con 31 temas la lista de corrido era
+         larga de recorrer en un celular; asi la pantalla arranca compacta
+         y el alumno abre solo la unidad que le interesa.
+
+         Cuando la unidad esta cerrada, la etiqueta de la derecha muestra
+         cuantos temas eligio ahi dentro: sirve para no tener que abrirla
+         de nuevo solo para ver que marco. */
+      Object.keys(units).forEach(function (unitName) {
+        var block = document.createElement('div');
+        block.className = 'apt-exam__unit-block';
+
+        var cab = document.createElement('button');
+        cab.type = 'button';
+        cab.className = 'apt-exam__unit-toggle';
+        cab.setAttribute('aria-expanded', 'false');
+
+        var nombre = document.createElement('span');
+        nombre.className = 'apt-exam__unit-name';
+        nombre.textContent = unitName;
+
+        var cuenta = document.createElement('span');
+        cuenta.className = 'apt-exam__unit-count';
+
+        cab.appendChild(nombre);
+        cab.appendChild(cuenta);
+        block.appendChild(cab);
+
+        var cuerpo = document.createElement('div');
+        cuerpo.className = 'apt-exam__unit-body apt-exam__unit-body--closed';
+        block.appendChild(cuerpo);
+
+        var propios = units[unitName];
+        function refrescarCuenta() {
+          var n = propios.filter(function (t) { return selectedTopics[t]; }).length;
+          cuenta.textContent = n ? (n + ' de ' + propios.length) : (propios.length + ' temas');
+          cuenta.classList.toggle('is-active', n > 0);
+        }
+        refrescarCuenta();
+
+        cab.addEventListener('click', function () {
+          var cerrado = cuerpo.classList.toggle('apt-exam__unit-body--closed');
+          cab.setAttribute('aria-expanded', cerrado ? 'false' : 'true');
+          cab.classList.toggle('is-open', !cerrado);
         });
-        block.appendChild(btn);
+
+        propios.forEach(function (topic) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'apt-exam__topic-btn';
+          btn.textContent = topic;
+          btn.addEventListener('click', function () {
+            selectedTopics[topic] = !selectedTopics[topic];
+            btn.classList.toggle('is-selected', !!selectedTopics[topic]);
+            refrescarCuenta();
+            refs.startBtn.disabled = !Object.keys(selectedTopics).some(function (t) { return selectedTopics[t]; });
+          });
+          cuerpo.appendChild(btn);
+        });
+
+        refs.topicsWrap.appendChild(block);
       });
-      refs.topicsWrap.appendChild(block);
-    });
 
     /* Si no hay ni un tema, la pantalla quedaba con una tarjeta vacía y un
        botón muerto, sin decir nada. Pasa, por ejemplo, si la landing no
@@ -626,19 +677,93 @@
       startExam(topics);
     });
 
-    function startExam(topics) {
-      var questions = [];
-      topics.forEach(function (topic) {
-        var pool = registry.filter(function (e) {
-          return e.topic === topic && typeof e.generate === 'function';
-        });
-        if (!pool.length) return;
-        for (var i = 0; i < questionsPerTopic; i++) {
-          var ex = randChoice(pool);
-          questions.push({ exercise: ex, current: ex.generate(), topic: topic });
+      /* Convierte una fase en algo con la MISMA forma que un ejercicio
+         normal, para que el resto del examen no tenga que saber que esto
+         vino de una actividad multi-paso. La fase aporta su pregunta y su
+         forma de corregir; el contenido visual y el caso son los de la
+         actividad, compartidos por todas sus fases. */
+      function ejercicioDeFase(ex, fase, idx, total) {
+        var e = {
+          id: ex.id + '-f' + idx,
+          unit: ex.unit,
+          topic: ex.topic,
+          title: ex.title,
+          needsKatex: true,
+          prompt: fase.question || ex.prompt || '',
+          renderContent: ex.renderContent,
+          explain: fase.explain || ex.explain,
+          parte: total > 1 ? (idx + 1) + ' de ' + total : null
+        };
+        if (fase.mode === 'choices') {
+          e.type = 'choices';
+          e.choices = (typeof fase.choices === 'function') ? fase.choices : function () { return fase.choices; };
+          e.check = fase.check;
+        } else if (fase.mode === 'grid') {
+          e.type = 'grid';
+          e.grid = fase.grid;
+          e.checkGrid = fase.checkGrid;
+          e.getAnswerGrid = fase.getAnswerGrid;
+        } else if (fase.mode === 'multiselect') {
+          e.type = 'multiselect';
+          e.options = (typeof fase.options === 'function') ? fase.options : function () { return fase.options; };
+        } else if (fase.mode === 'vectors') {
+          e.type = 'vectors';
+          e.vectors = fase.vectors;
+          e.checkVectors = fase.checkVectors;
+          e.getAnswerVectors = fase.getAnswerVectors;
+        } else {
+          return null;
         }
-      });
-      questions = shuffle(questions);
+        return e;
+      }
+
+      /* Una actividad de fases da VARIAS preguntas sobre el MISMO caso.
+         Se devuelven como grupo para que despues queden juntas y en orden:
+         si se mezclaran con el resto, una pregunta pediria la dimension de
+         una matriz y otra, veinte preguntas mas tarde, su base — con la
+         matriz ya fuera de vista.
+
+         La cantidad de fases activas puede variar por caso (Determinante y
+         area hace una sola pregunta si el determinante es 0), asi que se
+         respeta activePhaseCount y no se asume un numero fijo. */
+      function grupoDeFases(ex, current, topic) {
+        var total = ex.activePhaseCount ? ex.activePhaseCount(current) : ex.phases.length;
+        if (!(total > 0)) total = ex.phases.length;
+        var activas = ex.phases.slice(0, total).filter(function (f) { return f.mode !== 'setup'; });
+        var grupo = [];
+        activas.forEach(function (fase, i) {
+          var e = ejercicioDeFase(ex, fase, i, activas.length);
+          if (e) grupo.push({ exercise: e, current: current, topic: topic });
+        });
+        return grupo;
+      }
+
+      function startExam(topics) {
+        /* Se arma por GRUPOS y no por preguntas: cada grupo es una consigna
+           completa, de una o varias partes. Se mezclan los grupos, no sus
+           partes. */
+        var grupos = [];
+        topics.forEach(function (topic) {
+          var pool = registry.filter(function (e) {
+            return e.topic === topic && typeof e.generate === 'function';
+          });
+          if (!pool.length) return;
+          for (var i = 0; i < questionsPerTopic; i++) {
+            var ex = randChoice(pool);
+            var caso = ex.generate();
+            if (!caso) continue;
+            if (ex.type === 'phases') {
+              var g = grupoDeFases(ex, caso, topic);
+              if (g.length) grupos.push(g);
+            } else {
+              grupos.push([{ exercise: ex, current: caso, topic: topic }]);
+            }
+          }
+        });
+        var questions = [];
+        shuffle(grupos).forEach(function (g) {
+          g.forEach(function (q) { questions.push(q); });
+        });
 
       examState = { questions: questions, index: 0, records: [], qStartTime: null, timerInterval: null, examStartTime: Date.now() };
 
@@ -653,7 +778,9 @@
 
     function renderQuestion() {
       var q = examState.questions[examState.index];
-      refs.progressLabel.textContent = 'Pregunta ' + (examState.index + 1) + ' de ' + examState.questions.length;
+      /* Si la consigna tiene varias partes, se avisa: el alumno tiene que
+         saber que las siguientes preguntas son sobre el mismo caso. */
+      refs.progressLabel.textContent = 'Pregunta ' + (examState.index + 1) + ' de ' + examState.questions.length + (q.exercise.parte ? ' \u00b7 parte ' + q.exercise.parte : '');
       refs.progressFill.style.width = (100 * examState.index / examState.questions.length) + '%';
 
       q.exercise.renderContent(refs.content, q.current);
