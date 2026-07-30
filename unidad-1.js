@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · Unidad 1 — índice y ruteo
+   ÁLGEBRA PARA TODOS · Unidad 1 · Matrices y SEL — índice y ruteo
    ------------------------------------------------------------
    UNA sola landing de Kajabi para TODAS las actividades de la
    unidad. El número de actividad viaja en el fragmento de la URL:
@@ -35,7 +35,7 @@
     { n: 1,  titulo: 'Clasificá el sistema',                      archivo: 'unidad-1-actividad-1-clasifica-el-sistema.js' },
     { n: 2,  titulo: 'Matriz ampliada',                           archivo: 'unidad-1-actividad-2-matriz-ampliada.js' },
     { n: 3,  titulo: '¿Es escalonada?',                           archivo: 'unidad-1-actividad-3-escalonada.js' },
-    { n: 4,  titulo: 'Aplicá el método de eliminación de Gauss',   archivo: 'unidad-1-actividad-4-metodo-de-gauss.js' },
+    { n: 4,  titulo: 'Aplicá el método de eliminación de Gauss',  archivo: 'unidad-1-actividad-4-metodo-de-gauss.js' },
     { n: 5,  titulo: '¿Es escalonada reducida?',                  archivo: 'unidad-1-actividad-5-escalonada-reducida.js' },
     { n: 6,  titulo: 'Encontrá la forma escalonada reducida',     archivo: 'unidad-1-actividad-6-encontrar-escalonada-reducida.js' },
     { n: 7,  titulo: 'Solución paramétrica',                      archivo: 'unidad-1-actividad-7-solucion-parametrica.js' },
@@ -74,10 +74,13 @@
     '.apt-idx__topbar{ text-align:center; }',
     '.apt-idx__eyebrow{ font-family:var(--font-serif); font-weight:700; font-size:12px; letter-spacing:.1em;' +
       ' text-transform:uppercase; color:var(--chalk-light); margin:0 0 8px; }',
-    '.apt-idx__title{ font-family:var(--font-mono); font-weight:700; font-size:clamp(22px,6.5vw,28px);' +
+    '.apt-idx__title{ text-wrap:balance; font-family:var(--font-mono); font-weight:700; font-size:clamp(22px,6.5vw,28px);' +
       ' margin:0; color:var(--ink); line-height:1.25; }',
-    '.apt-idx__subtitle{ font-family:var(--font-mono); font-size:13.5px; color:var(--ink-soft);' +
+    '.apt-idx__subtitle{ text-wrap:pretty; font-family:var(--font-mono); font-size:13.5px; color:var(--ink-soft);' +
       ' margin:8px 0 0; line-height:1.5; }',
+    /* text-wrap:balance iguala el largo de las lineas en titulos de
+       dos lineas; text-wrap:pretty evita que un parrafo termine con una
+       sola palabra colgada. Si el navegador no los soporta, los ignora. */
     /* Columnas fijas con media query, NO auto-fit/minmax: con títulos de
        largo muy distinto, auto-fit da columnas desparejas. */
     '.apt-idx__grid{ display:grid; grid-template-columns:1fr; gap:8px; }',
@@ -93,7 +96,9 @@
     '.apt-idx__item:focus-visible{ outline:3px solid var(--chalk-light); outline-offset:2px; }',
     '.apt-idx__num{ flex:0 0 30px; height:30px; display:flex; align-items:center; justify-content:center;' +
       ' border-radius:8px; background:var(--chalk); color:#fff;' +
-      ' font-family:var(--font-serif); font-weight:700; font-size:14px; }'
+      ' font-family:var(--font-serif); font-weight:700; font-size:14px; }',
+    '.apt-idx__vacio{ text-wrap:pretty; text-align:center; font-family:var(--font-mono); font-size:13.5px;' +
+      ' color:var(--ink-soft); line-height:1.6; padding:18px 8px; }'
   ].join('\n');
 
   function injectCSS() {
@@ -125,22 +130,29 @@
     root.className = 'apt-act';
     var wrap = document.createElement('div');
     wrap.className = 'apt-idx';
+    var hayActividades = ACTIVIDADES.length > 0;
     wrap.innerHTML =
       '<div class="apt-idx__topbar">' +
         '<p class="apt-idx__eyebrow">' + UNIDAD_TITULO + '</p>' +
-        '<h1 class="apt-idx__title">Elegí el QR</h1>' +
-        '<p class="apt-idx__subtitle">Tocá el número que aparece junto al QR en el libro.</p>' +
+        '<h1 class="apt-idx__title">' + (hayActividades ? 'Elegí el QR' : 'Próximamente') + '</h1>' +
+        '<p class="apt-idx__subtitle">' +
+          (hayActividades
+            ? 'Tocá el número que aparece junto al QR en el libro.'
+            : 'Todavía no hay ejercicios interactivos para esta unidad.') +
+        '</p>' +
       '</div>' +
-      '<div class="apt-idx__grid"></div>';
-    var grid = wrap.querySelector('.apt-idx__grid');
-    ACTIVIDADES.forEach(function (a) {
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'apt-idx__item';
-      btn.innerHTML = '<span class="apt-idx__num">' + a.n + '</span><span>' + a.titulo + '</span>';
-      btn.addEventListener('click', function () { window.location.hash = String(a.n); });
-      grid.appendChild(btn);
-    });
+      (hayActividades ? '<div class="apt-idx__grid"></div>' : '');
+    if (hayActividades) {
+      var grid = wrap.querySelector('.apt-idx__grid');
+      ACTIVIDADES.forEach(function (a) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'apt-idx__item';
+        btn.innerHTML = '<span class="apt-idx__num">' + a.n + '</span><span>' + a.titulo + '</span>';
+        btn.addEventListener('click', function () { window.location.hash = String(a.n); });
+        grid.appendChild(btn);
+      });
+    }
     root.appendChild(wrap);
     if (window.AptActivity && typeof window.AptActivity.mountFooter === 'function') {
       var pie = document.createElement('div');
