@@ -53,13 +53,13 @@
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
     { id: 'u1a6', unidad: 1, n: 6 , titulo: 'Encontrá la forma escalonada reducida',               modo: 'grid',         archivo: 'unidad-1-actividad-6-encontrar-escalonada-reducida.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
-    { id: 'u1a7', unidad: 1, n: 7 , titulo: 'Solución paramétrica',                                modo: 'phases',       archivo: 'unidad-1-actividad-7-solucion-parametrica.js',
+    { id: 'u1a7', unidad: 1, n: 7 , titulo: 'Solución paramétrica',                                modo: 'phases',       submodos: ['choices','vectors'], archivo: 'unidad-1-actividad-7-solucion-parametrica.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
-    { id: 'u1a8', unidad: 1, n: 8 , titulo: 'Rango por orlado',                                    modo: 'phases',       archivo: 'unidad-1-actividad-8-rango-orlado.js',
+    { id: 'u1a8', unidad: 1, n: 8 , titulo: 'Rango por orlado',                                    modo: 'phases',       submodos: ['choices'], archivo: 'unidad-1-actividad-8-rango-orlado.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
-    { id: 'u1a9', unidad: 1, n: 9 , titulo: 'Clasificá con Rouché-Frobenius',                      modo: 'phases',       archivo: 'unidad-1-actividad-9-rouche-frobenius.js',
+    { id: 'u1a9', unidad: 1, n: 9 , titulo: 'Clasificá con Rouché-Frobenius',                      modo: 'phases',       submodos: ['choices'], archivo: 'unidad-1-actividad-9-rouche-frobenius.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
-    { id: 'u1a10', unidad: 1, n: 10, titulo: 'Rouché-Frobenius con parámetros',                     modo: 'phases',       archivo: 'unidad-1-actividad-10-rouche-frobenius-parametro.js',
+    { id: 'u1a10', unidad: 1, n: 10, titulo: 'Rouché-Frobenius con parámetros',                     modo: 'phases',       submodos: ['setup','choices'], archivo: 'unidad-1-actividad-10-rouche-frobenius-parametro.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
     { id: 'u1a11', unidad: 1, n: 11, titulo: 'Tipos de matrices',                                   modo: 'multiselect',  archivo: 'unidad-1-actividad-11-tipos-de-matrices.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
@@ -89,35 +89,35 @@
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
     { id: 'u2a9', unidad: 2, n: 9 , titulo: 'Matriz de cambio de base',                            modo: 'choices',      archivo: 'unidad-2-actividad-9-matriz-cambio-base.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
-    { id: 'u2a10', unidad: 2, n: 10, titulo: 'Base de un SEV',                                      modo: 'phases',       archivo: 'unidad-2-actividad-10-base-sev.js',
+    { id: 'u2a10', unidad: 2, n: 10, titulo: 'Base de un SEV',                                      modo: 'phases',       submodos: ['choices','space-basis'], archivo: 'unidad-2-actividad-10-base-sev.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
     { id: 'u2a11', unidad: 2, n: 11, titulo: 'Ecuaciones implícitas desde un conjunto generador',   modo: 'choices',      archivo: 'unidad-2-actividad-11-ecuaciones-implicitas.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
     { id: 'u2a12', unidad: 2, n: 12, titulo: 'Cambio de base en un SEV',                            modo: 'choices',      archivo: 'unidad-2-actividad-12-cambio-base.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
-    { id: 'u2a13', unidad: 2, n: 13, titulo: 'Intersección de subespacios',                         modo: 'phases',       archivo: 'unidad-2-actividad-13-interseccion-sev.js',
+    { id: 'u2a13', unidad: 2, n: 13, titulo: 'Intersección de subespacios',                         modo: 'phases',       submodos: ['choices','space-basis'], archivo: 'unidad-2-actividad-13-interseccion-sev.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
-    { id: 'u2a14', unidad: 2, n: 14, titulo: 'Suma de subespacios / suma directa',                  modo: 'phases',       archivo: 'unidad-2-actividad-14-suma-sev.js',
+    { id: 'u2a14', unidad: 2, n: 14, titulo: 'Suma de subespacios / suma directa',                  modo: 'phases',       submodos: ['choices'], archivo: 'unidad-2-actividad-14-suma-sev.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
-    { id: 'u2a15', unidad: 2, n: 15, titulo: 'Complemento ortogonal',                               modo: 'phases',       archivo: 'unidad-2-actividad-15-complemento-ortogonal.js',
+    { id: 'u2a15', unidad: 2, n: 15, titulo: 'Complemento ortogonal',                               modo: 'phases',       submodos: ['choices','space-basis'], archivo: 'unidad-2-actividad-15-complemento-ortogonal.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
-    { id: 'u2a16', unidad: 2, n: 16, titulo: 'Proyección ortogonal',                                modo: 'phases',       archivo: 'unidad-2-actividad-16-proyeccion-ortogonal.js',
+    { id: 'u2a16', unidad: 2, n: 16, titulo: 'Proyección ortogonal',                                modo: 'phases',       submodos: ['space-basis'], archivo: 'unidad-2-actividad-16-proyeccion-ortogonal.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
-    { id: 'u2a17', unidad: 2, n: 17, titulo: 'Método de Gram-Schmidt',                              modo: 'phases',       archivo: 'unidad-2-actividad-17-metodo-de-gram.js',
+    { id: 'u2a17', unidad: 2, n: 17, titulo: 'Método de Gram-Schmidt',                              modo: 'phases',       submodos: ['space-basis'], archivo: 'unidad-2-actividad-17-metodo-de-gram.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
-    { id: 'u3a1', unidad: 3, n: 1 , titulo: '¿Es lineal?',                                         modo: 'phases',       archivo: 'unidad-3-actividad-1-es-lineal.js',
+    { id: 'u3a1', unidad: 3, n: 1 , titulo: '¿Es lineal?',                                         modo: 'phases',       submodos: ['choices'], archivo: 'unidad-3-actividad-1-es-lineal.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a2', unidad: 3, n: 2 , titulo: '¿Existe? ¿Es única?',                                 modo: 'choices',      archivo: 'unidad-3-actividad-2-existe-es-unica.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a3', unidad: 3, n: 3 , titulo: 'Armá la matriz asociada',                             modo: 'grid',         archivo: 'unidad-3-actividad-3-matriz-asociada.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
-    { id: 'u3a4', unidad: 3, n: 4 , titulo: 'Núcleo e imagen',                                     modo: 'phases',       archivo: 'unidad-3-actividad-4-dim-nucleo-e-imagen.js',
+    { id: 'u3a4', unidad: 3, n: 4 , titulo: 'Núcleo e imagen',                                     modo: 'phases',       submodos: ['choices'], archivo: 'unidad-3-actividad-4-dim-nucleo-e-imagen.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a5', unidad: 3, n: 5 , titulo: 'Clasificá la TL',                                     modo: 'choices',      archivo: 'unidad-3-actividad-5-clasificar-tl.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
-    { id: 'u3a6', unidad: 3, n: 6 , titulo: 'Determinante y área',                                 modo: 'phases',       archivo: 'unidad-3-actividad-6-determinante-area.js',
+    { id: 'u3a6', unidad: 3, n: 6 , titulo: 'Determinante y área',                                 modo: 'phases',       submodos: ['choices'], archivo: 'unidad-3-actividad-6-determinante-area.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
-    { id: 'u3a7', unidad: 3, n: 7 , titulo: 'Armá la base natural',                                modo: 'phases',       archivo: 'unidad-3-actividad-7-base-natural.js',
+    { id: 'u3a7', unidad: 3, n: 7 , titulo: 'Armá la base natural',                                modo: 'phases',       submodos: ['grid'], archivo: 'unidad-3-actividad-7-base-natural.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a8', unidad: 3, n: 8 , titulo: 'Matriz asociada en otras bases',                      modo: 'grid',         archivo: 'unidad-3-actividad-8-matriz-asociada.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
@@ -125,13 +125,13 @@
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a10', unidad: 3, n: 10, titulo: '¿Pertenece a la imagen o al núcleo?',                 modo: 'choices',      archivo: 'unidad-3-actividad-10-pertenece-im-nuc.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
-    { id: 'u3a11', unidad: 3, n: 11, titulo: 'Base de la imagen y del núcleo',                      modo: 'phases',       archivo: 'unidad-3-actividad-11-base-img-nuc.js',
+    { id: 'u3a11', unidad: 3, n: 11, titulo: 'Base de la imagen y del núcleo',                      modo: 'phases',       submodos: ['choices','space-basis'], archivo: 'unidad-3-actividad-11-base-img-nuc.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
-    { id: 'u3a12', unidad: 3, n: 12, titulo: 'Composición de TL',                                   modo: 'phases',       archivo: 'unidad-3-actividad-12-composicion-tl.js',
+    { id: 'u3a12', unidad: 3, n: 12, titulo: 'Composición de TL',                                   modo: 'phases',       submodos: ['choices'], archivo: 'unidad-3-actividad-12-composicion-tl.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a13', unidad: 3, n: 13, titulo: '¿Qué es posible?',                                    modo: 'multiselect',  archivo: 'unidad-3-actividad-13-es-posible-clasificacion.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
-    { id: 'u3a14', unidad: 3, n: 14, titulo: 'Hallá M(T⁻¹)',                                        modo: 'phases',       archivo: 'unidad-3-actividad-14-matriz-inversa-tl.js',
+    { id: 'u3a14', unidad: 3, n: 14, titulo: 'Hallá M(T⁻¹)',                                        modo: 'phases',       submodos: ['choices'], archivo: 'unidad-3-actividad-14-matriz-inversa-tl.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a15', unidad: 3, n: 15, titulo: 'Identificá la TL geométrica',                         modo: 'choices',      archivo: 'unidad-3-actividad-15-tl-geometrica.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
@@ -141,7 +141,16 @@
 
   /* Modos que el examen ya sabe presentar. Los de tipo 'phases'
      necesitan preguntas compuestas, que todavía no están. */
+  /* Modos que el examen sabe presentar. 'phases' se resuelve partiendo la
+     actividad en varias preguntas consecutivas, una por fase. Los
+     sub-modos que el examen todavia no sabe pintar quedan fuera. */
   var MODOS_SIMPLES = ['choices', 'grid', 'multiselect'];
+  var SUBMODOS_OK = ['choices', 'grid', 'multiselect', 'vectors', 'setup'];
+
+  function fasesSoportadas(cfg) {
+    if (!cfg.phases || !cfg.phases.length) return false;
+    return cfg.phases.every(function (f) { return SUBMODOS_OK.indexOf(f.mode) !== -1; });
+  }
 
   function jaula() {
     var j = document.getElementById(JAULA_ID);
@@ -163,7 +172,8 @@
         topic: m.titulo,
         titulo: m.titulo,
         archivo: m.archivo,
-        soportado: MODOS_SIMPLES.indexOf(m.modo) !== -1,
+        soportado: MODOS_SIMPLES.indexOf(m.modo) !== -1 ||
+                   (m.modo === 'phases' && (m.submodos || []).every(function (x) { return SUBMODOS_OK.indexOf(x) !== -1; })),
         modo: m.modo
       };
     });
@@ -204,8 +214,32 @@
     } else if (cfg.mode === 'multiselect') {
       ex.type = 'multiselect';
       ex.options = comoFuncion(cfg.options);
+    } else if (cfg.mode === 'phases' && fasesSoportadas(cfg)) {
+      ex.type = 'phases';
+      ex.phases = cfg.phases;
+      ex.activePhaseCount = cfg.activePhaseCount;
+
+      /* Si la actividad arranca con un paso de configuracion, el alumno
+         elegiria ahi cuantos parametros usar y donde. En un examen eso lo
+         decide el examen: se sortea una opcion de cada campo y se le pasa
+         a generate. Asi el paso de setup desaparece y no hace falta que el
+         examen sepa nada de el. */
+      var setup = cfg.phases[0] && cfg.phases[0].mode === 'setup' ? cfg.phases[0] : null;
+      if (setup) {
+        var generarOriginal = cfg.generate;
+        ex.generate = function () {
+          var sel = {};
+          (setup.fields || []).forEach(function (f) {
+            var ops = (typeof f.options === 'function') ? f.options() : f.options;
+            if (!ops || !ops.length) return;
+            var o = ops[Math.floor(Math.random() * ops.length)];
+            sel[f.key] = (o && o.value !== undefined) ? o.value : o;
+          });
+          return generarOriginal(sel);
+        };
+      }
     } else {
-      return null;   // 'phases': todavía no
+      return null;   // sub-modos que el examen todavia no sabe pintar
     }
     return ex;
   }
