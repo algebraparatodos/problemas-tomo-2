@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · exam.js (v2.2)
+   ÁLGEBRA PARA TODOS · exam.js (v2.3)
    ------------------------------------------------------------
    Modo examen: independiente de engine.js a propósito (son dos
    cosas distintas que conviven, no una extensión de la otra).
@@ -23,7 +23,7 @@
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. La 2.0 es el salto de leer exercises.js a leer
      las actividades del repo, mas las preguntas compuestas. */
-  var VERSION = '2.2';
+  var VERSION = '2.3';
 
   var FONT_LINK_ID = 'apt-exam-fonts';
   var KATEX_CSS_ID = 'apt-exam-katex-css';
@@ -826,11 +826,17 @@
          funcion del engine en vez de reimplementar el parseo; si el
          engine no esta, se cae a texto plano. */
       var textoPrompt = (typeof q.exercise.prompt === 'function' ? q.exercise.prompt(q.current) : q.exercise.prompt) || '';
+      /* SIEMPRE como HTML, igual que el engine con el subtitulo de una
+         actividad. Los enunciados pueden traer <br> o <small> —la
+         aclaracion de "la solucion no es unica" de Solucion parametrica, por
+         ejemplo— y pintarlos como texto plano mostraba las etiquetas
+         literales en pantalla. renderTextWithMath deja intacto lo que no es
+         matematica, asi que sirve para los dos casos. */
       var A_eng = engine();
-      if (A_eng && typeof A_eng.renderTextWithMath === 'function' && textoPrompt.indexOf('$') !== -1) {
+      if (A_eng && typeof A_eng.renderTextWithMath === 'function') {
         refs.promptEl.innerHTML = A_eng.renderTextWithMath(textoPrompt);
       } else {
-        refs.promptEl.textContent = textoPrompt;
+        refs.promptEl.innerHTML = textoPrompt;
       }
 
       refs.answer.innerHTML = '';
