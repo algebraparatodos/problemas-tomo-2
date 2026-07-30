@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v4.3)
+   ÁLGEBRA PARA TODOS · engine.js (v4.4)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -101,7 +101,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '4.3';
+  var ENGINE_VERSION = '4.4';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -2723,6 +2723,9 @@
     Frac: { Frac: Frac, fAdd: fAdd, fSub: fSub, fMul: fMul, fDiv: fDiv, fIsZero: fIsZero, fEquals: fEquals, fromInt: fromInt, intMatrixToFrac: intMatrixToFrac, rref: rref, rankOf: rankOf, rrefEqual: rrefEqual, fracRowToIntRow: fracRowToIntRow },
     checkSpanEquivalence: checkSpanEquivalence,
     normalizeMatrixDelims: normalizeMatrixDelims,
+    /* Lo usa el modo examen para pintar enunciados con $...$ sin tener
+       que reimplementar el parseo. */
+    renderTextWithMath: renderTextWithMath,
     SPACES: SPACES,
     randomSpace: randomSpace,
     buildSpaceInputWidget: buildSpaceInputWidget,
