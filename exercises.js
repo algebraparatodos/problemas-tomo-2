@@ -260,7 +260,7 @@
     }
 
     function plainLatex(rows) {
-      return '\\begin{bmatrix} ' + rows.map(function (r) { return r.join(' & '); }).join(' \\\\ ') + ' \\end{bmatrix}';
+      return '\\begin{pmatrix} ' + rows.map(function (r) { return r.join(' & '); }).join(' \\\\ ') + ' \\end{pmatrix}';
     }
 
     function explainVerdict(v) {
@@ -826,7 +826,7 @@
     }
 
     function matrixLatex(M) {
-      return '\\begin{bmatrix} ' + M.map(function (row) { return row.join(' & '); }).join(' \\\\ ') + ' \\end{bmatrix}';
+      return '\\begin{pmatrix} ' + M.map(function (row) { return row.join(' & '); }).join(' \\\\ ') + ' \\end{pmatrix}';
     }
     function shapeTxt(s) { return s.rows + '×' + s.cols; }
 
@@ -974,7 +974,7 @@
       return rows;
     }
     function plainLatex(rows) {
-      return '\\begin{bmatrix} ' + rows.map(function (r) { return r.join(' & '); }).join(' \\\\ ') + ' \\end{bmatrix}';
+      return '\\begin{pmatrix} ' + rows.map(function (r) { return r.join(' & '); }).join(' \\\\ ') + ' \\end{pmatrix}';
     }
     function explain(v) {
       if (v.ok) return 'Está en forma escalonada reducida: la matriz es escalonada, cada pivote vale 1, y es el único elemento no nulo de su columna.';
@@ -1651,7 +1651,7 @@ var CASES = [
   { k:'\\mathbb{R}', v:'\\{(x,y,z)\\in\\mathbb{R}^3 : x+y+z=1\\}', f:'\\lambda v', isLCE:false, cx:'Con λ=2 y v=(1,0,0) (que cumple x+y+z=1): el resultado (2,0,0) da x+y+z=2≠1.' },
   { k:'\\mathbb{R}', v:'\\mathbb{Z}^2\\ \\text{(coordenadas enteras)}', f:'(\\lambda x,\\ \\lambda y)', isLCE:false, cx:'Con λ=1/2 y v=(1,0): el resultado es (0,5, 0), que no tiene coordenadas enteras.' },
   { k:'\\mathbb{R}', v:'\\{(x,y)\\in\\mathbb{R}^2 : x>0\\}', f:'(\\lambda x,\\ \\lambda y)', isLCE:false, cx:'Con λ=0: el resultado es (0,y), y 0 no es >0.' },
-  { k:'\\mathbb{R}', v:'\\{A\\in M_{2\\times2}(\\mathbb{R}) : A^T=A\\}\\ \\text{(matrices simétricas)}', f:'A + \\begin{bmatrix}0 & \\lambda\\\\ 0 & 0\\end{bmatrix}', isLCE:false, cx:'Con λ=1: solo se suma en la entrada (1,2), rompiendo la simetría.' },
+  { k:'\\mathbb{R}', v:'\\{A\\in M_{2\\times2}(\\mathbb{R}) : A^T=A\\}\\ \\text{(matrices simétricas)}', f:'A + \\begin{pmatrix}0 & \\lambda\\\\ 0 & 0\\end{pmatrix}', isLCE:false, cx:'Con λ=1: solo se suma en la entrada (1,2), rompiendo la simetría.' },
   { k:'\\mathbb{R}', v:'\\{v\\in\\mathbb{R}^3 : \\|v\\|=1\\}\\ \\text{(vectores unitarios)}', f:'v + \\lambda(1,0,0)', isLCE:false, cx:'Con λ=1: la norma del resultado cambia y deja de ser 1.' },
   { k:'\\mathbb{R}', v:'\\{(x,y,z)\\in\\mathbb{R}^3 : z=0\\}', f:'(\\lambda x,\\ \\lambda y,\\ \\lambda z+1)', isLCE:false, cx:'Como z=0 en todo vector de V, la tercera coordenada del resultado es siempre 1, nunca 0.' },
 
@@ -2432,7 +2432,7 @@ var CASES = [
   }
 
   function matrixLatex(M){
-    return '\\begin{bmatrix} ' + M.map(function(row){ return row.join(' & '); }).join(' \\\\ ') + ' \\end{bmatrix}';
+    return '\\begin{pmatrix} ' + M.map(function(row){ return row.join(' & '); }).join(' \\\\ ') + ' \\end{pmatrix}';
   }
   function renderContent(container, current){
     container.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;"><div class="apt-row apt-row-k"></div><div class="apt-row apt-row-a"></div></div>';
@@ -2556,7 +2556,7 @@ var CASES = [
   }
 
   function matrixLatex(M){
-    return '\\begin{bmatrix} ' + M.map(function(row){ return row.join(' & '); }).join(' \\\\ ') + ' \\end{bmatrix}';
+    return '\\begin{pmatrix} ' + M.map(function(row){ return row.join(' & '); }).join(' \\\\ ') + ' \\end{pmatrix}';
   }
   function renderContent(container, current){
     window.katex.render('A = ' + matrixLatex(current.A), container, { throwOnError:false });
@@ -2724,7 +2724,7 @@ var CASES = [
   }
 
   function matrixLatex(M){
-    return '\\begin{bmatrix} ' + M.map(function(row){ return row.join(' & '); }).join(' \\\\ ') + ' \\end{bmatrix}';
+    return '\\begin{pmatrix} ' + M.map(function(row){ return row.join(' & '); }).join(' \\\\ ') + ' \\end{pmatrix}';
   }
   function shapeTxt(rows, cols){ return rows + '×' + cols; }
   function renderContent(container, current){
@@ -2982,7 +2982,7 @@ var CASES = [
     function matrixLatex(current){
       var colsSpec = new Array(current.n).fill('c').join('') + '|c';
       var rows = current.A.map(function(row,i){ return row.concat([current.b[i]]).join(' & '); });
-      return '[A \\mid B] = \\left[\\begin{array}{' + colsSpec + '} ' + rows.join(' \\\\ ') + ' \\end{array}\\right]';
+      return '(A \\mid B) = \\left[\\begin{array}{' + colsSpec + '} ' + rows.join(' \\\\ ') + ' \\end{array}\\right]';
     }
     function renderContent(container, current){
       window.katex.render(matrixLatex(current), container, { throwOnError:false });
@@ -3032,12 +3032,12 @@ var CASES = [
             : 'rango(A) = ' + current.rankA + ': orlando se llega a un menor de orden ' + current.rankA + ' no nulo, y cualquier menor de orden mayor dentro de A se anula.';
         } else if (current.subQuestion === 'rankAB') {
           msg = current.rankAB > current.rankA
-            ? 'rango([A|B]) = ' + current.rankAB + ': orlando con la columna B aparece un menor de orden ' + current.rankAB + ' no nulo que no se podía formar usando solo columnas de A.'
-            : 'rango([A|B]) = ' + current.rankAB + ' (igual que rango(A)): todo menor que incluya la columna B, de orden mayor a ' + current.rankA + ', se anula.';
+            ? 'rango((A|B)) = ' + current.rankAB + ': orlando con la columna B aparece un menor de orden ' + current.rankAB + ' no nulo que no se podía formar usando solo columnas de A.'
+            : 'rango((A|B)) = ' + current.rankAB + ' (igual que rango(A)): todo menor que incluya la columna B, de orden mayor a ' + current.rankA + ', se anula.';
         } else {
-          if (current.classification === 'SI') msg = 'rango([A|B]) = ' + current.rankAB + ' > rango(A) = ' + current.rankA + ', así que el sistema es incompatible (SI): no tiene solución.';
-          else if (current.classification === 'SCD') msg = 'rango(A) = rango([A|B]) = ' + current.rankA + ', igual al número de incógnitas (' + current.n + '), así que el sistema es compatible determinado (SCD): solución única.';
-          else msg = 'rango(A) = rango([A|B]) = ' + current.rankA + ', menor al número de incógnitas (' + current.n + '), así que el sistema es compatible indeterminado (SCI): infinitas soluciones.';
+          if (current.classification === 'SI') msg = 'rango((A|B)) = ' + current.rankAB + ' > rango(A) = ' + current.rankA + ', así que el sistema es incompatible (SI): no tiene solución.';
+          else if (current.classification === 'SCD') msg = 'rango(A) = rango((A|B)) = ' + current.rankA + ', igual al número de incógnitas (' + current.n + '), así que el sistema es compatible determinado (SCD): solución única.';
+          else msg = 'rango(A) = rango((A|B)) = ' + current.rankA + ', menor al número de incógnitas (' + current.n + '), así que el sistema es compatible indeterminado (SCI): infinitas soluciones.';
         }
         return (correct ? '' : 'No es correcto. ') + msg;
       }
@@ -3357,7 +3357,7 @@ var CASES = [
       var rows = current.matrix.map(function(row){
         return row.map(function(e){ return entryToLatex(e, current.paramNames); }).join(' & ');
       });
-      return '[A \\mid B] = \\left[\\begin{array}{' + colsSpec + '} ' + rows.join(' \\\\ ') + ' \\end{array}\\right]';
+      return '(A \\mid B) = \\left[\\begin{array}{' + colsSpec + '} ' + rows.join(' \\\\ ') + ' \\end{array}\\right]';
     }
     function renderContent(container, current){
       window.katex.render(matrixLatex(current), container, { throwOnError:false });
