@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · actividades-registro.js (v1.0)
+   ÁLGEBRA PARA TODOS · actividades-registro.js (v1.2)
    ------------------------------------------------------------
    Le da al modo examen los ejercicios LEYENDO los archivos de
    actividades/, en vez de tener una segunda copia de su lógica.
@@ -35,6 +35,11 @@
    ============================================================ */
 (function (global) {
   'use strict';
+
+  /* Subir esto en CADA cambio, aunque sea chico: menor para ajustes,
+     mayor para cambios de fondo. Y mantener sincronizado el numero del
+     comentario de arriba. */
+  var VERSION = '1.2';
 
   var BASE = 'https://algebraparatodos.github.io/problemas-tomo-2/actividades/';
   var JAULA_ID = 'apt-registro-jaula';
@@ -145,7 +150,7 @@
      actividad en varias preguntas consecutivas, una por fase. Los
      sub-modos que el examen todavia no sabe pintar quedan fuera. */
   var MODOS_SIMPLES = ['choices', 'grid', 'multiselect'];
-  var SUBMODOS_OK = ['choices', 'grid', 'multiselect', 'vectors', 'setup'];
+  var SUBMODOS_OK = ['choices', 'grid', 'multiselect', 'vectors', 'setup', 'space-basis'];
 
   function fasesSoportadas(cfg) {
     if (!cfg.phases || !cfg.phases.length) return false;
@@ -287,6 +292,7 @@
   }
 
   global.AptRegistro = {
+    version: VERSION,
     lista: lista,
     cargar: cargar,
     base: function () { return BASE; }
