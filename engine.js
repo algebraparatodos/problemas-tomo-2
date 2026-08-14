@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v4.6)
+   ÁLGEBRA PARA TODOS · engine.js (v4.7)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -101,7 +101,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '4.6';
+  var ENGINE_VERSION = '4.7';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -138,6 +138,11 @@
      aMFTW3eK). Vive acá, en una sola constante, para no tener que
      buscarla en dos lugares el día que cambie. */
   var EXAMEN_CHECKOUT_URL = 'https://www.algebraparatodos.com/offers/aMFTW3eK/checkout';
+
+  /* Destino directo para quien ya tiene cuenta (evita repetir el
+     checkout de una Offer que ya compró — Kajabi ahí muestra su
+     propia pantalla de "ya compraste esto", no nuestro flujo). */
+  var EXAMEN_URL = 'https://www.algebraparatodos.com/examen-algebra';
 
   /* ------------------------------------------------------------
      Catálogo de ejercicios — única fuente de verdad para el botón
@@ -476,7 +481,9 @@
     '.apt-registro-modal__title{ font-family:"Lora",Georgia,"Times New Roman",serif; font-weight:700; font-size:17px; color:#F5F5F7; margin:0; line-height:1.4; }',
     '.apt-registro-modal__text{ font-size:13px; color:#A7ACC0; margin:0; line-height:1.5; }',
     '.apt-registro-modal__cta{ font-family:"Lora",Georgia,"Times New Roman",serif; font-weight:700; font-size:14.5px; color:#fff; background:#48507D; border:none; border-radius:12px; padding:13px 22px; cursor:pointer; text-decoration:none; -webkit-tap-highlight-color:transparent; margin-top:4px; }',
-    '.apt-registro-modal__cta:hover{ background:#5A639A; }',
+    '.apt-registro-modal__cta:hover{ color:#A7ACC0; }',
+    '.apt-registro-modal__secondary{ background:none; border:none; color:var(--ink-soft, #A7ACC0); font-family:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace; font-size:12px; text-decoration:underline; text-underline-offset:3px; cursor:pointer; padding:2px 0; -webkit-tap-highlight-color:transparent; }',
+    '.apt-registro-modal__secondary:hover{ color:#97A1D8; }',
     /* -- modo compacto: se activa al responder -- */
     '.apt-act.is-answered .apt-act__subtitle{ display:none; }',
     '.apt-act.is-answered .apt-act__topbar{ padding-top:0; }',
@@ -976,17 +983,20 @@
         '<button type="button" class="apt-registro-modal__close-x" aria-label="Cerrar">✕</button>' +
         '<span class="apt-registro-modal__icon">📝</span>' +
         '<h2 class="apt-registro-modal__title">Para usar el modo examen tenés que estar registrado</h2>' +
-        '<p class="apt-registro-modal__text">Es gratis. Registrate una vez y te queda desbloqueado para siempre.</p>' +
+        '<p class="apt-registro-modal__text">Es gratis.</p>' +
         '<a class="apt-registro-modal__cta" href="' + EXAMEN_CHECKOUT_URL + '">Registrarme gratis →</a>' +
+        '<button type="button" class="apt-registro-modal__secondary">¿Ya tenés cuenta? Ir directo →</button>' +
       '</div>';
     document.body.appendChild(modal);
 
     var card = modal.querySelector('.apt-registro-modal__card');
     var closeBtn = modal.querySelector('.apt-registro-modal__close-x');
+    var secondaryBtn = modal.querySelector('.apt-registro-modal__secondary');
 
     function closeModal() { modal.classList.add('apt-registro-modal--hidden'); unlockBodyScroll(); }
 
     closeBtn.addEventListener('click', closeModal);
+    secondaryBtn.addEventListener('click', function () { window.location.href = EXAMEN_URL; });
     modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
     card.addEventListener('click', function (e) { e.stopPropagation(); });
     document.addEventListener('keydown', function (e) {
