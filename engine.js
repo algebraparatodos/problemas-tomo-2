@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v4.5)
+   ÁLGEBRA PARA TODOS · engine.js (v4.6)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -101,7 +101,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '4.5';
+  var ENGINE_VERSION = '4.6';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -131,6 +131,13 @@
   var REPORT_MODAL_ID = 'apt-report-modal';
 
   var CATALOG_MODAL_ID = 'apt-catalog-modal';
+
+  var REGISTRO_MODAL_ID = 'apt-registro-modal';
+
+  /* URL del checkout gratuito que da acceso al modo examen (Offer
+     aMFTW3eK). Vive acá, en una sola constante, para no tener que
+     buscarla en dos lugares el día que cambie. */
+  var EXAMEN_CHECKOUT_URL = 'https://www.algebraparatodos.com/offers/aMFTW3eK/checkout';
 
   /* ------------------------------------------------------------
      Catálogo de ejercicios — única fuente de verdad para el botón
@@ -456,6 +463,20 @@
     '.apt-catalog-modal__act-link{ display:block; font-family:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace; font-size:12.5px; color:#CFD3E8; text-decoration:none; padding:10px 14px 10px 26px; border-top:1px solid rgba(151,161,216,0.12); transition:background .15s ease, color .15s ease; }',
     '.apt-catalog-modal__act-link:hover{ background:rgba(151,161,216,0.08); color:#F5F5F7; }',
     '.apt-catalog-modal__act-link:focus-visible{ outline:2px solid #97A1D8; outline-offset:-2px; }',
+    /* -- Modal de "hace falta estar registrado" para el modo examen —
+       mismo patrón que el catalog-modal (vive fuera de .apt-act). -- */
+    '.apt-registro-modal{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:16px; z-index:2147483000; font-family:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace; touch-action:none; overscroll-behavior:none; }',
+    '.apt-registro-modal--hidden{ display:none; }',
+    '.apt-registro-modal__card{ width:100%; max-width:340px; background:#16161C; border:1px solid rgba(151,161,216,0.18); border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,.5); padding:26px 22px 22px; display:flex; flex-direction:column; align-items:center; gap:14px; box-sizing:border-box; text-align:center; }',
+    '.apt-registro-modal__close-x{ position:absolute; top:12px; right:12px; width:28px; height:28px; border-radius:50%; border:1px solid rgba(151,161,216,0.3); background:transparent; color:#97A1D8; font-size:14px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; }',
+    '.apt-registro-modal__close-x:hover{ background:rgba(151,161,216,0.12); }',
+    '.apt-registro-modal__close-x:focus-visible{ outline:2px solid #97A1D8; outline-offset:2px; }',
+    '.apt-registro-modal__card{ position:relative; }',
+    '.apt-registro-modal__icon{ font-size:32px; line-height:1; }',
+    '.apt-registro-modal__title{ font-family:"Lora",Georgia,"Times New Roman",serif; font-weight:700; font-size:17px; color:#F5F5F7; margin:0; line-height:1.4; }',
+    '.apt-registro-modal__text{ font-size:13px; color:#A7ACC0; margin:0; line-height:1.5; }',
+    '.apt-registro-modal__cta{ font-family:"Lora",Georgia,"Times New Roman",serif; font-weight:700; font-size:14.5px; color:#fff; background:#48507D; border:none; border-radius:12px; padding:13px 22px; cursor:pointer; text-decoration:none; -webkit-tap-highlight-color:transparent; margin-top:4px; }',
+    '.apt-registro-modal__cta:hover{ background:#5A639A; }',
     /* -- modo compacto: se activa al responder -- */
     '.apt-act.is-answered .apt-act__subtitle{ display:none; }',
     '.apt-act.is-answered .apt-act__topbar{ padding-top:0; }',
@@ -937,6 +958,50 @@
   }
 
   /* ------------------------------------------------------------
+     Modal de "hace falta estar registrado" — se muestra al tocar
+     el botón de Modo examen. El CTA manda al checkout gratuito
+     (Offer aMFTW3eK); Kajabi se encarga de registrar y del
+     redirect posterior al examen. Mismo patrón que los otros dos
+     modales (ensureX / _openX / cerrar por X, backdrop o Escape).
+     ------------------------------------------------------------ */
+  function ensureRegistroModal() {
+    var existing = document.getElementById(REGISTRO_MODAL_ID);
+    if (existing) return existing;
+
+    var modal = document.createElement('div');
+    modal.id = REGISTRO_MODAL_ID;
+    modal.className = 'apt-registro-modal apt-registro-modal--hidden';
+    modal.innerHTML =
+      '<div class="apt-registro-modal__card" role="dialog" aria-modal="true" aria-label="Registro requerido">' +
+        '<button type="button" class="apt-registro-modal__close-x" aria-label="Cerrar">✕</button>' +
+        '<span class="apt-registro-modal__icon">📝</span>' +
+        '<h2 class="apt-registro-modal__title">Para usar el modo examen tenés que estar registrado</h2>' +
+        '<p class="apt-registro-modal__text">Es gratis. Registrate una vez y te queda desbloqueado para siempre.</p>' +
+        '<a class="apt-registro-modal__cta" href="' + EXAMEN_CHECKOUT_URL + '">Registrarme gratis →</a>' +
+      '</div>';
+    document.body.appendChild(modal);
+
+    var card = modal.querySelector('.apt-registro-modal__card');
+    var closeBtn = modal.querySelector('.apt-registro-modal__close-x');
+
+    function closeModal() { modal.classList.add('apt-registro-modal--hidden'); unlockBodyScroll(); }
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+    card.addEventListener('click', function (e) { e.stopPropagation(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !modal.classList.contains('apt-registro-modal--hidden')) closeModal();
+    });
+
+    modal._openRegistro = function () { modal.classList.remove('apt-registro-modal--hidden'); lockBodyScroll(); };
+    return modal;
+  }
+
+  function openRegistroModal() {
+    ensureRegistroModal()._openRegistro();
+  }
+
+  /* ------------------------------------------------------------
      Footer compartido (marca + 🚩 reportar + 🔇/🔊 mute + racha).
      ÚNICA implementación: la usa tanto el modo genérico (buildSkeleton,
      abajo) como cualquier actividad custom vía AptActivity.mountFooter().
@@ -972,7 +1037,7 @@
         '<button type="button" class="apt-act__catalog-btn">📚 Todos los ejercicios</button>' +
         (nextEntry ? '<a class="apt-act__nav-btn apt-act__nav-btn--next" href="' + nextEntry.url + '">Siguiente →</a>' : '') +
       '</div>' +
-      '<a class="apt-act__exam-btn" href="https://www.algebraparatodos.com/examen-algebra">📝 Modo examen</a>' +
+      '<button type="button" class="apt-act__exam-btn">📝 Modo examen</button>' +
       '<div class="apt-act__footer-row">' +
         '<span class="apt-act__brand-group">' +
           '<a class="apt-act__brand-link" href="https://www.instagram.com/soyjuanisilva/" target="_blank" rel="noopener">Álgebra Para Todos</a>' +
@@ -986,11 +1051,13 @@
       '</div>';
 
     var catalogBtn = container.querySelector('.apt-act__catalog-btn');
+    var examBtn = container.querySelector('.apt-act__exam-btn');
     var reportBtn = container.querySelector('.apt-act__report-btn');
     var muteBtn = container.querySelector('.apt-act__mute-btn');
     var streakB = container.querySelector('.apt-act__streak b');
 
     catalogBtn.addEventListener('click', openCatalogModal);
+    examBtn.addEventListener('click', openRegistroModal);
     reportBtn.addEventListener('click', openReportModal);
 
     function updateMuteBtn() {
