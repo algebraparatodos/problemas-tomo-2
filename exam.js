@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · exam.js (v2.5)
+   ÁLGEBRA PARA TODOS · exam.js (v2.7)
    ------------------------------------------------------------
    Modo examen: independiente de engine.js a propósito (son dos
    cosas distintas que conviven, no una extensión de la otra).
@@ -23,7 +23,7 @@
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. La 2.0 es el salto de leer exercises.js a leer
      las actividades del repo, mas las preguntas compuestas. */
-  var VERSION = '2.5';
+  var VERSION = '2.7';
 
   var FONT_LINK_ID = 'apt-exam-fonts';
   var KATEX_CSS_ID = 'apt-exam-katex-css';
@@ -72,23 +72,33 @@
     }
   }
 
+  var _katexCssLoadedExam = false;
   function ensureKatex(callback) {
-    if (global.katex) { callback(); return; }
+    if (global.katex && _katexCssLoadedExam) { callback(); return; }
     if (!document.getElementById(KATEX_CSS_ID)) {
       var css = document.createElement('link');
       css.id = KATEX_CSS_ID; css.rel = 'stylesheet';
-      css.href = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css';
+      /* Auto-hospedado en el mismo GitHub Pages que engine.js — antes
+         dependía de cdnjs.cloudflare.com, y como acá tampoco se
+         esperaba confirmación del CSS (solo el onload del <script>),
+         un solo archivo de fuente que fallara en una red de celular
+         dejaba delimitadores grandes (\begin{cases}, matrices) armados
+         con métricas de una fuente de reemplazo. Mismo fix que en
+         engine.js: un solo origen confiable + esperar el CSS de verdad. */
+      css.href = 'https://algebraparatodos.github.io/problemas-tomo-2/katex/katex.min.css';
+      css.onload = function () { _katexCssLoadedExam = true; };
+      css.onerror = function () { _katexCssLoadedExam = true; };
       document.head.appendChild(css);
     }
     if (!document.getElementById(KATEX_JS_ID)) {
       var js = document.createElement('script');
       js.id = KATEX_JS_ID;
-      js.src = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js';
-      js.onload = callback;
+      js.src = 'https://algebraparatodos.github.io/problemas-tomo-2/katex/katex.min.js';
       document.head.appendChild(js);
-    } else {
-      var check = setInterval(function () { if (global.katex) { clearInterval(check); callback(); } }, 50);
     }
+    var check = setInterval(function () {
+      if (global.katex && _katexCssLoadedExam) { clearInterval(check); callback(); }
+    }, 50);
   }
 
   var CSS = [
@@ -96,7 +106,7 @@
     '.apt-exam *{ box-sizing:border-box; }',
     '.apt-exam__app{ width:100%; max-width:var(--max-w); display:flex; flex-direction:column; gap:clamp(12px,2.6vh,20px); }',
     '.apt-exam__eyebrow{ font-family:var(--font-serif); font-weight:700; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--chalk-light); margin:0 0 8px; text-align:center; }',
-    '.apt-exam__title{ font-family:var(--font-mono) !important; font-weight:700 !important; font-size:clamp(22px,6.5vw,28px); margin:0; color:var(--ink) !important; line-height:1.25; text-align:center !important; }',
+    '.apt-exam__title{ font-family:var(--font-mono); font-weight:700; font-size:clamp(22px,6.5vw,28px); margin:0; color:var(--ink) !important; line-height:1.25; text-align:center; }',
     '.apt-exam__subtitle{ font-family:var(--font-mono); font-size:13.5px; color:var(--ink-soft); margin:8px 0 0; line-height:1.5; text-align:center; }',
     '.apt-exam__card{ background:var(--bg-card); border:1px solid rgba(151,161,216,0.18); border-radius:var(--radius); box-shadow:0 1px 3px rgba(0,0,0,.4), 0 10px 24px rgba(0,0,0,.35); padding:18px; }',
     '.apt-exam__sin-temas{ text-wrap:pretty; text-align:center; font-family:var(--font-mono);'

@@ -669,23 +669,38 @@
     }, 25);
   }
 
+  var _katexCssLoaded = false;
   function ensureKatex(callback) {
-    if (window.katex) { patchKatexDelims(); callback(); return; }
+    if (window.katex && _katexCssLoaded) { patchKatexDelims(); callback(); return; }
     if (!document.getElementById(KATEX_CSS_ID)) {
       var link = document.createElement('link');
       link.id = KATEX_CSS_ID;
       link.rel = 'stylesheet';
-      link.href = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css';
+      /* Auto-hospedado en el mismo GitHub Pages que engine.js — antes
+         dependía de cdnjs.cloudflare.com para ~15 archivos de fuentes;
+         si UNO solo fallaba en una red de celular (típico en el público
+         de este proyecto), esa fuente puntual quedaba con un fallback
+         cuyas métricas no calzan, y delimitadores grandes tipo
+         \begin{cases} salían deformes/duplicados aunque el resto del
+         texto se viera bien. Un solo origen confiable resuelve eso. */
+      link.href = 'https://algebraparatodos.github.io/problemas-tomo-2/katex/katex.min.css';
+      /* No alcanza con que window.katex exista — hay que confirmar que
+         el CSS (y con él, las @font-face) ya terminó de cargar antes
+         de renderizar. Si no, el render puede pasar en un estado a
+         medio cargar y quedar mal armado. onerror también libera el
+         flag: mejor un render sin estilos que uno que nunca llega. */
+      link.onload = function () { _katexCssLoaded = true; };
+      link.onerror = function () { _katexCssLoaded = true; };
       document.head.appendChild(link);
     }
     if (!document.getElementById(KATEX_JS_ID)) {
       var script = document.createElement('script');
       script.id = KATEX_JS_ID;
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js';
+      script.src = 'https://algebraparatodos.github.io/problemas-tomo-2/katex/katex.min.js';
       document.head.appendChild(script);
     }
     var poll = setInterval(function () {
-      if (window.katex) { clearInterval(poll); patchKatexDelims(); callback(); }
+      if (window.katex && _katexCssLoaded) { clearInterval(poll); patchKatexDelims(); callback(); }
     }, 50);
   }
 
