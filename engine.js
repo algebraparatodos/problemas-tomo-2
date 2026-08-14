@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v4.7)
+   ÁLGEBRA PARA TODOS · engine.js (v4.8)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -101,7 +101,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '4.7';
+  var ENGINE_VERSION = '4.8';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -670,8 +670,42 @@
   }
 
   var _katexCssLoaded = false;
+  var _katexFontsReady = false;
+
+  /* Las 12 familias que usa katex.min.css (fijas para la v0.16.9, no
+     cambian salvo que se actualice la versión de KaTeX). Que el <link>
+     del CSS termine de cargar (onload) confirma que las REGLAS ya están
+     en el CSSOM, pero NO que los archivos .woff2 de cada fuente ya se
+     descargaron — eso el navegador lo hace recién, en background, la
+     primera vez que hace falta pintar un glifo con ella. Un delimitador
+     grande como \begin{cases} se arma apilando varias piezas de una
+     fuente con precisión de píxel; si la pieza llega un instante tarde,
+     no se reacomoda sola después — queda mal armado aunque el resto del
+     texto (que sí alcanzó a cargar a tiempo) se vea perfecto. Por eso
+     hace falta forzar la descarga real de la fuente ANTES de renderizar,
+     no alcanza con esperar el CSS. */
+  var KATEX_FONT_FAMILIES = [
+    'KaTeX_AMS', 'KaTeX_Caligraphic', 'KaTeX_Fraktur', 'KaTeX_Main',
+    'KaTeX_Math', 'KaTeX_SansSerif', 'KaTeX_Script', 'KaTeX_Size1',
+    'KaTeX_Size2', 'KaTeX_Size3', 'KaTeX_Size4', 'KaTeX_Typewriter'
+  ];
+
+  function forzarCargaDeFuentes(onDone) {
+    /* Feature-detection: la Font Loading API (document.fonts) es
+       estándar desde hace años, pero si por lo que sea no está
+       disponible, se sigue sin bloquear — mejor un render con el riesgo
+       viejo que uno que nunca llega. */
+    if (!document.fonts || typeof document.fonts.load !== 'function') { onDone(); return; }
+    var promesas = KATEX_FONT_FAMILIES.map(function (fam) {
+      // "1em" alcanza: lo que importa es que el archivo se descargue,
+      // no el tamaño con el que se pida.
+      return document.fonts.load('1em "' + fam + '"').catch(function () { /* si una fuente puntual falla, no bloquear el resto */ });
+    });
+    Promise.all(promesas).then(onDone).catch(onDone);
+  }
+
   function ensureKatex(callback) {
-    if (window.katex && _katexCssLoaded) { patchKatexDelims(); callback(); return; }
+    if (window.katex && _katexCssLoaded && _katexFontsReady) { patchKatexDelims(); callback(); return; }
     if (!document.getElementById(KATEX_CSS_ID)) {
       var link = document.createElement('link');
       link.id = KATEX_CSS_ID;
@@ -684,13 +718,13 @@
          \begin{cases} salían deformes/duplicados aunque el resto del
          texto se viera bien. Un solo origen confiable resuelve eso. */
       link.href = 'https://algebraparatodos.github.io/problemas-tomo-2/katex/katex.min.css';
-      /* No alcanza con que window.katex exista — hay que confirmar que
-         el CSS (y con él, las @font-face) ya terminó de cargar antes
-         de renderizar. Si no, el render puede pasar en un estado a
-         medio cargar y quedar mal armado. onerror también libera el
-         flag: mejor un render sin estilos que uno que nunca llega. */
-      link.onload = function () { _katexCssLoaded = true; };
-      link.onerror = function () { _katexCssLoaded = true; };
+      link.onload = function () {
+        _katexCssLoaded = true;
+        forzarCargaDeFuentes(function () { _katexFontsReady = true; });
+      };
+      /* onerror también libera los dos flags: mejor un render sin
+         estilos/fuentes que uno que nunca llega. */
+      link.onerror = function () { _katexCssLoaded = true; _katexFontsReady = true; };
       document.head.appendChild(link);
     }
     if (!document.getElementById(KATEX_JS_ID)) {
@@ -700,9 +734,10 @@
       document.head.appendChild(script);
     }
     var poll = setInterval(function () {
-      if (window.katex && _katexCssLoaded) { clearInterval(poll); patchKatexDelims(); callback(); }
+      if (window.katex && _katexCssLoaded && _katexFontsReady) { clearInterval(poll); patchKatexDelims(); callback(); }
     }, 50);
   }
+
 
   /* ------------------------------------------------------------
      Sonido sintetizado + confetti/globos + mute persistente
