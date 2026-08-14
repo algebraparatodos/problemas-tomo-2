@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · exam.js (v2.7)
+   ÁLGEBRA PARA TODOS · exam.js (v2.8)
    ------------------------------------------------------------
    Modo examen: independiente de engine.js a propósito (son dos
    cosas distintas que conviven, no una extensión de la otra).
@@ -23,7 +23,7 @@
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. La 2.0 es el salto de leer exercises.js a leer
      las actividades del repo, mas las preguntas compuestas. */
-  var VERSION = '2.7';
+  var VERSION = '2.8';
 
   var FONT_LINK_ID = 'apt-exam-fonts';
   var KATEX_CSS_ID = 'apt-exam-katex-css';
@@ -73,21 +73,40 @@
   }
 
   var _katexCssLoadedExam = false;
+  var _katexFontsReadyExam = false;
+  var KATEX_FONT_FAMILIES = [
+    'KaTeX_AMS', 'KaTeX_Caligraphic', 'KaTeX_Fraktur', 'KaTeX_Main',
+    'KaTeX_Math', 'KaTeX_SansSerif', 'KaTeX_Script', 'KaTeX_Size1',
+    'KaTeX_Size2', 'KaTeX_Size3', 'KaTeX_Size4', 'KaTeX_Typewriter'
+  ];
+  function forzarCargaDeFuentesExam(onDone) {
+    if (!document.fonts || typeof document.fonts.load !== 'function') { onDone(); return; }
+    var promesas = KATEX_FONT_FAMILIES.map(function (fam) {
+      return document.fonts.load('1em "' + fam + '"').catch(function () {});
+    });
+    Promise.all(promesas).then(onDone).catch(onDone);
+  }
   function ensureKatex(callback) {
-    if (global.katex && _katexCssLoadedExam) { callback(); return; }
+    if (global.katex && _katexCssLoadedExam && _katexFontsReadyExam) { callback(); return; }
     if (!document.getElementById(KATEX_CSS_ID)) {
       var css = document.createElement('link');
       css.id = KATEX_CSS_ID; css.rel = 'stylesheet';
       /* Auto-hospedado en el mismo GitHub Pages que engine.js — antes
-         dependía de cdnjs.cloudflare.com, y como acá tampoco se
-         esperaba confirmación del CSS (solo el onload del <script>),
-         un solo archivo de fuente que fallara en una red de celular
-         dejaba delimitadores grandes (\begin{cases}, matrices) armados
-         con métricas de una fuente de reemplazo. Mismo fix que en
-         engine.js: un solo origen confiable + esperar el CSS de verdad. */
+         dependía de cdnjs.cloudflare.com. El onload del CSS confirma
+         que las REGLAS ya están en el CSSOM, pero no que los .woff2 de
+         cada fuente ya se descargaron — eso lo hace el navegador recién
+         cuando hace falta pintar un glifo con ella. Un delimitador
+         grande (\begin{cases}, matrices) se arma apilando piezas de una
+         fuente con precisión de píxel: si una pieza llega un instante
+         tarde, no se reacomoda sola después. Por eso se fuerza la
+         descarga real de las 12 familias de KaTeX antes de renderizar,
+         no alcanza con esperar el CSS. Mismo fix que en engine.js. */
       css.href = 'https://algebraparatodos.github.io/problemas-tomo-2/katex/katex.min.css';
-      css.onload = function () { _katexCssLoadedExam = true; };
-      css.onerror = function () { _katexCssLoadedExam = true; };
+      css.onload = function () {
+        _katexCssLoadedExam = true;
+        forzarCargaDeFuentesExam(function () { _katexFontsReadyExam = true; });
+      };
+      css.onerror = function () { _katexCssLoadedExam = true; _katexFontsReadyExam = true; };
       document.head.appendChild(css);
     }
     if (!document.getElementById(KATEX_JS_ID)) {
@@ -97,9 +116,10 @@
       document.head.appendChild(js);
     }
     var check = setInterval(function () {
-      if (global.katex && _katexCssLoadedExam) { clearInterval(check); callback(); }
+      if (global.katex && _katexCssLoadedExam && _katexFontsReadyExam) { clearInterval(check); callback(); }
     }, 50);
   }
+
 
   var CSS = [
     '.apt-exam{ --bg:#0A0A0D; --bg-card:#16161C; --grid-line:rgba(151,161,216,0.14); --ink:#F5F5F7; --ink-soft:#A7ACC0; --chalk:#48507D; --chalk-hover:#5A639A; --chalk-light:#97A1D8; --correct:#5BCD9A; --correct-bg:rgba(91,205,154,0.12); --wrong:#D65252; --wrong-bg:rgba(214,82,82,0.12); --font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace; --font-serif:"Lora",Georgia,"Times New Roman",serif; --radius:14px; --max-w:520px; min-height:100vh; width:100%; box-sizing:border-box; background:linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0/100% 28px, linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0/28px 100%, var(--bg); color:var(--ink); font-family:var(--font-mono); padding:max(24px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom)); display:flex; align-items:center; justify-content:center; }',
