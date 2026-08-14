@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · exam.js (v2.4)
+   ÁLGEBRA PARA TODOS · exam.js (v2.5)
    ------------------------------------------------------------
    Modo examen: independiente de engine.js a propósito (son dos
    cosas distintas que conviven, no una extensión de la otra).
@@ -23,7 +23,7 @@
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. La 2.0 es el salto de leer exercises.js a leer
      las actividades del repo, mas las preguntas compuestas. */
-  var VERSION = '2.4';
+  var VERSION = '2.5';
 
   var FONT_LINK_ID = 'apt-exam-fonts';
   var KATEX_CSS_ID = 'apt-exam-katex-css';
@@ -96,7 +96,7 @@
     '.apt-exam *{ box-sizing:border-box; }',
     '.apt-exam__app{ width:100%; max-width:var(--max-w); display:flex; flex-direction:column; gap:clamp(12px,2.6vh,20px); }',
     '.apt-exam__eyebrow{ font-family:var(--font-serif); font-weight:700; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--chalk-light); margin:0 0 8px; text-align:center; }',
-    '.apt-exam__title{ font-family:var(--font-mono); font-weight:700; font-size:clamp(22px,6.5vw,28px); margin:0; color:var(--ink); line-height:1.25; text-align:center; }',
+    '.apt-exam__title{ font-family:var(--font-mono) !important; font-weight:700 !important; font-size:clamp(22px,6.5vw,28px); margin:0; color:var(--ink) !important; line-height:1.25; text-align:center !important; }',
     '.apt-exam__subtitle{ font-family:var(--font-mono); font-size:13.5px; color:var(--ink-soft); margin:8px 0 0; line-height:1.5; text-align:center; }',
     '.apt-exam__card{ background:var(--bg-card); border:1px solid rgba(151,161,216,0.18); border-radius:var(--radius); box-shadow:0 1px 3px rgba(0,0,0,.4), 0 10px 24px rgba(0,0,0,.35); padding:18px; }',
     '.apt-exam__sin-temas{ text-wrap:pretty; text-align:center; font-family:var(--font-mono);'
@@ -140,7 +140,7 @@
     '.apt-exam__topic-btn::before{ content:"☐"; flex:0 0 auto; font-size:16px; color:var(--chalk-light); }',
     '.apt-exam__topic-btn.is-selected{ background:rgba(151,161,216,0.14); border-color:var(--chalk-light); color:var(--ink); }',
     '.apt-exam__topic-btn.is-selected::before{ content:"☑"; }',
-    '.apt-exam__start-btn{ width:100%; font-family:var(--font-serif); font-weight:700; font-size:16px; color:#fff; background:var(--chalk); border:none; border-radius:12px; padding:16px; min-height:54px; cursor:pointer; transition:background .15s ease, opacity .15s ease; }',
+    '.apt-exam__start-btn{ width:100%; font-family:var(--font-serif); font-weight:700; font-size:16px; color:#fff; background:var(--chalk); border:none; border-radius:12px; padding:16px; min-height:54px; cursor:pointer; transition:background .15s ease, opacity .15s ease; margin-top:8px !important; }',
     '.apt-exam__start-btn:hover{ background:var(--chalk-hover); }',
     '.apt-exam__start-btn:disabled{ opacity:.4; cursor:default; }',
     '.apt-exam__progress-row{ display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:12.5px; color:var(--ink-soft); }',
