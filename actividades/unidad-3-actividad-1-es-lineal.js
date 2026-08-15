@@ -158,35 +158,44 @@
        hasta que entre. NO se usa overflow-x:auto acá a propósito: sobre
        un contenedor de KaTeX termina forzando también el scroll vertical. */
     function fitToWidth(rowEl) {
-      var k = rowEl.querySelector('.katex');
+      var k = rowEl.querySelector('.apt-act__system') || rowEl.querySelector('.katex');
       if (!k) return;
       rowEl.style.fontSize = '';
-      var avail = rowEl.clientWidth;
-      var w = k.getBoundingClientRect().width;
+      var avail = rowEl.clientWidth - 4; // margen de seguridad chico
+      var w = k.scrollWidth;
       if (!avail || !w || w <= avail) return;
-      var scale = Math.max(0.68, avail / w);
-      rowEl.style.fontSize = (scale * 100).toFixed(1) + '%';
+      var scale = 1;
+      /* Achicar la tipografía no reduce el ancho de forma exactamente
+         proporcional (gaps y bordes en píxeles fijos no escalan con el
+         font-size) — converge en unas pocas pasadas en vez de calcular
+         el factor exacto de una sola vez. */
+      for (var i = 0; i < 4; i++) {
+        var wNow = k.scrollWidth;
+        if (wNow <= avail) break;
+        scale = Math.max(0.62, scale * (avail / wNow));
+        rowEl.style.fontSize = (scale * 100).toFixed(1) + '%';
+        if (scale <= 0.62) break;
+      }
     }
 
     function renderContent(container, cur) {
       var head = 'T: ' + SPACES[cur.vKey].label + ' \\to ' + SPACES[cur.wKey].label;
-      var body;
-      if (cur.defect === 'piecewise') {
-        var firstVar = SPACES[cur.vKey].tex[0];
-        body = 'T\\left(' + domainElementLatex(cur.vKey) + '\\right) = \\begin{cases}' +
-          imageLatex(cur, cur.comps) + ' & \\text{si } ' + firstVar + ' > 0 \\\\[4pt]' +
-          imageLatex(cur, cur.branchB) + ' & \\text{si } ' + firstVar + ' \\leq 0' +
-          '\\end{cases}';
-      } else {
-        body = 'T\\left(' + domainElementLatex(cur.vKey) + '\\right) = ' + imageLatex(cur, cur.comps);
-      }
       container.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;">' +
         '<div class="apt-row-head" style="width:100%;text-align:center;"></div>' +
         '<div class="apt-row-body" style="width:100%;text-align:center;"></div></div>';
       var headEl = container.querySelector('.apt-row-head');
       var bodyEl = container.querySelector('.apt-row-body');
       window.katex.render(head, headEl, { throwOnError: false });
-      window.katex.render(body, bodyEl, { throwOnError: false });
+      if (cur.defect === 'piecewise') {
+        var firstVar = SPACES[cur.vKey].tex[0];
+        window.AptActivity.renderSystemOfEquations(bodyEl, [
+          { expr: imageLatex(cur, cur.comps), cond: '\\text{si } ' + firstVar + ' > 0' },
+          { expr: imageLatex(cur, cur.branchB), cond: '\\text{si } ' + firstVar + ' \\leq 0' }
+        ], 'T\\left(' + domainElementLatex(cur.vKey) + '\\right) =');
+      } else {
+        var body = 'T\\left(' + domainElementLatex(cur.vKey) + '\\right) = ' + imageLatex(cur, cur.comps);
+        window.katex.render(body, bodyEl, { throwOnError: false });
+      }
       fitToWidth(headEl);
       fitToWidth(bodyEl);
     }
