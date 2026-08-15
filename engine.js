@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v4.12)
+   ÁLGEBRA PARA TODOS · engine.js (v4.13)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -101,7 +101,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '4.12';
+  var ENGINE_VERSION = '4.13';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -352,6 +352,7 @@
     '.apt-act__hint:empty{ display:none; margin:0; }',
     '.apt-act__system{ display:flex; align-items:stretch; gap:8px; justify-content:center; }',
     '.apt-act__system-prefix{ display:flex; align-items:center; }',
+    '.apt-act__system-suffix{ display:flex; align-items:center; }',
     '.apt-act__system-brace{ flex:0 0 0.85em; width:0.85em; color:var(--ink); }',
     '.apt-act__system-brace svg{ width:100%; height:100%; display:block; }',
     '.apt-act__system-lines{ display:flex; flex-direction:column; justify-content:center; gap:8px; }',
@@ -2791,6 +2792,36 @@
   function renderBasisWrapped(container, space, vectors, basisName) {
     _renderWrappedList(container, vectors, space, basisName || 'B', '\\{', '\\}');
   }
+  var SYSTEM_BRACE_SVG = '<svg viewBox="0 0 10 100" preserveAspectRatio="none" aria-hidden="true">' +
+    '<path d="M9,1 C4,1 5,1 5,9 L5,44 C5,49 3,50 0.5,50 C3,50 5,51 5,56 L5,91 C5,99 4,99 9,99" ' +
+    'fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
+
+  /* Gemela de renderSystemOfEquations que devuelve un STRING de HTML ya
+     renderizado en vez de pintar en un contenedor — hace falta para los
+     casos donde el sistema va como texto de una opción de choices (el
+     engine arma esos botones con label:HTML, no con un contenedor vivo
+     para pintar adentro). Mismas clases CSS, mismo look. */
+  function renderSystemOfEquationsToString(latexLines, prefixLatex, suffixLatex) {
+    if (!latexLines || latexLines.length === 0) return '';
+    if (latexLines.length === 1 && !prefixLatex && !suffixLatex) {
+      return window.katex.renderToString(latexLines[0], { throwOnError: false });
+    }
+    var linesHtml = latexLines.map(function (tex) {
+      if (tex && typeof tex === 'object') {
+        var exprHtml = window.katex.renderToString(tex.expr, { throwOnError: false });
+        var condHtml = window.katex.renderToString(tex.cond, { throwOnError: false });
+        return '<div class="apt-act__system-line apt-act__system-line--split"><span>' + exprHtml + '</span><span class="apt-act__system-cond">' + condHtml + '</span></div>';
+      }
+      return '<div class="apt-act__system-line">' + window.katex.renderToString(tex, { throwOnError: false }) + '</div>';
+    }).join('');
+    var prefixHtml = prefixLatex ? '<div class="apt-act__system-prefix">' + window.katex.renderToString(prefixLatex, { throwOnError: false }) + '</div>' : '';
+    var suffixHtml = suffixLatex ? '<div class="apt-act__system-suffix">' + window.katex.renderToString(suffixLatex, { throwOnError: false }) + '</div>' : '';
+    return '<div class="apt-act__system">' + prefixHtml +
+      '<div class="apt-act__system-brace">' + SYSTEM_BRACE_SVG + '</div>' +
+      '<div class="apt-act__system-lines">' + linesHtml + '</div>' +
+      suffixHtml + '</div>';
+  }
+
   function renderSevAsEquations(space, equations, sevName, varNames) {
     var name = sevName || 'S';
     var n = space.dim;
@@ -2808,8 +2839,12 @@
       return (parts.length ? parts.join('') : '0') + ' = 0';
     }
     var rows = equations.map(rowToLatex);
-    var body = rows.length > 1 ? '\\begin{cases} ' + rows.join(' \\\\ ') + ' \\end{cases}' : rows[0];
-    return name + ' = \\left\\{ (' + names.join(',') + ') : ' + body + ' \\right\\}';
+    var prefix = (sevName === '' ? '' : name + ' = ') + '\\{ (' + names.join(',') + ') : ';
+    var suffix = ' \\}';
+    if (rows.length <= 1) {
+      return window.katex.renderToString(prefix + (rows[0] || '0=0') + suffix, { throwOnError: false });
+    }
+    return renderSystemOfEquationsToString(rows, prefix, suffix);
   }
 
   // Nombres de variable POR FAMILIA de espacio: x_1..x_n para Rn, a_{fc}
@@ -2864,8 +2899,12 @@
     var lines = [];
     if (singleVarIdx.length) lines.push(singleVarIdx.map(function (i) { return names[i]; }).join('=') + '=0');
     lines = lines.concat(otherLines);
-    var body = lines.length > 1 ? '\\begin{cases} ' + lines.join(' \\\\ ') + ' \\end{cases}' : lines[0];
-    return name + ' = \\left\\{ \\, ' + sym + ' \\in ' + space.labelTex + ' \\ / \\ ' + body + ' \\, \\right\\}';
+    var prefix = (sevName === '' ? '' : name + ' = ') + '\\{ \\, ' + sym + ' \\in ' + space.labelTex + ' \\ / \\ ';
+    var suffix = ' \\, \\}';
+    if (lines.length <= 1) {
+      return window.katex.renderToString(prefix + (lines[0] || '0=0') + suffix, { throwOnError: false });
+    }
+    return renderSystemOfEquationsToString(lines, prefix, suffix);
   }
 
   function isMuted() { return muted; }
@@ -2903,9 +2942,7 @@
     }
     var brace = document.createElement('div');
     brace.className = 'apt-act__system-brace';
-    brace.innerHTML = '<svg viewBox="0 0 10 100" preserveAspectRatio="none" aria-hidden="true">' +
-      '<path d="M9,1 C4,1 5,1 5,9 L5,44 C5,49 3,50 0.5,50 C3,50 5,51 5,56 L5,91 C5,99 4,99 9,99" ' +
-      'fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
+    brace.innerHTML = SYSTEM_BRACE_SVG;
     var lines = document.createElement('div');
     lines.className = 'apt-act__system-lines';
     latexLines.forEach(function (tex) {
