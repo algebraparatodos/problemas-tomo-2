@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v4.11)
+   ÁLGEBRA PARA TODOS · engine.js (v4.12)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -101,7 +101,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '4.11';
+  var ENGINE_VERSION = '4.12';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -350,6 +350,14 @@
     '.apt-act__cell:disabled{ opacity:1; }',
     '.apt-act__hint{ text-align:center; font-family:var(--font-mono); font-size:12px; color:var(--ink-soft); opacity:.8; margin:-6px 0 0; }',
     '.apt-act__hint:empty{ display:none; margin:0; }',
+    '.apt-act__system{ display:flex; align-items:stretch; gap:8px; justify-content:center; }',
+    '.apt-act__system-prefix{ display:flex; align-items:center; }',
+    '.apt-act__system-brace{ flex:0 0 0.85em; width:0.85em; color:var(--ink); }',
+    '.apt-act__system-brace svg{ width:100%; height:100%; display:block; }',
+    '.apt-act__system-lines{ display:flex; flex-direction:column; justify-content:center; gap:8px; }',
+    '.apt-act__system-line--split{ display:flex; flex-wrap:wrap; align-items:baseline; justify-content:center; column-gap:8px; row-gap:2px; }',
+    '.apt-act__system-line--split > span:first-child{ white-space:nowrap; }',
+    '.apt-act__system-cond{ font-size:0.82em; opacity:.85; white-space:nowrap; }',
     '.apt-act__check-btn{ font-family:var(--font-serif); font-weight:700; font-size:16px; padding:16px 18px; border-radius:12px; border:2px solid var(--chalk-light); background:transparent; color:var(--chalk-light); cursor:pointer; min-height:52px; transition:transform .08s ease, background .15s ease, color .15s ease; -webkit-tap-highlight-color:transparent; }',
     '.apt-act__check-btn:active{ transform:scale(.98); }',
     '.apt-act__check-btn:disabled{ opacity:.5; cursor:default; }',
@@ -2867,6 +2875,66 @@
     return muted;
   }
 
+  /* ------------------------------------------------------------
+     Sistema de ecuaciones con llave — reemplaza a \begin{cases} de
+     KaTeX. Esa construcción arma la llave apilando varias piezas de
+     una fuente (KaTeX_Size4) con precisión de píxel; en ciertos
+     navegadores/pantallas eso deja un artefacto de color permanente en
+     los bordes (no es un problema de carga — pasa siempre, en
+     cualquier dispositivo con esa combinación de renderizado). La
+     solución es la misma que ya se usa para los paréntesis de las
+     matrices: dibujar la llave nosotros mismos con un SVG que se
+     estira por CSS, así no depende de ninguna fuente para el trazo.
+     Cada ecuación se renderiza por separado con KaTeX (sin cases). */
+  function renderSystemOfEquations(container, latexLines, prefixLatex) {
+    container.innerHTML = '';
+    if (!latexLines || latexLines.length === 0) return;
+    if (latexLines.length === 1 && !prefixLatex) {
+      window.katex.render(latexLines[0], container, { throwOnError: false });
+      return;
+    }
+    var wrap = document.createElement('div');
+    wrap.className = 'apt-act__system';
+    if (prefixLatex) {
+      var prefixEl = document.createElement('div');
+      prefixEl.className = 'apt-act__system-prefix';
+      window.katex.render(prefixLatex, prefixEl, { throwOnError: false });
+      wrap.appendChild(prefixEl);
+    }
+    var brace = document.createElement('div');
+    brace.className = 'apt-act__system-brace';
+    brace.innerHTML = '<svg viewBox="0 0 10 100" preserveAspectRatio="none" aria-hidden="true">' +
+      '<path d="M9,1 C4,1 5,1 5,9 L5,44 C5,49 3,50 0.5,50 C3,50 5,51 5,56 L5,91 C5,99 4,99 9,99" ' +
+      'fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
+    var lines = document.createElement('div');
+    lines.className = 'apt-act__system-lines';
+    latexLines.forEach(function (tex) {
+      var lineEl = document.createElement('div');
+      lineEl.className = 'apt-act__system-line';
+      if (tex && typeof tex === 'object') {
+        /* Línea de dos partes (expresión + condición, ej. 'si x > 0').
+           Van en spans separados dentro de un flex-wrap: si no entran
+           en el ancho disponible, la condición pasa a su propia línea
+           en vez de depender de achicar la letra hasta un límite que
+           puede no alcanzar. */
+        lineEl.classList.add('apt-act__system-line--split');
+        var exprEl = document.createElement('span');
+        window.katex.render(tex.expr, exprEl, { throwOnError: false });
+        var condEl = document.createElement('span');
+        condEl.className = 'apt-act__system-cond';
+        window.katex.render(tex.cond, condEl, { throwOnError: false });
+        lineEl.appendChild(exprEl);
+        lineEl.appendChild(condEl);
+      } else {
+        window.katex.render(tex, lineEl, { throwOnError: false });
+      }
+      lines.appendChild(lineEl);
+    });
+    wrap.appendChild(brace);
+    wrap.appendChild(lines);
+    container.appendChild(wrap);
+  }
+
   global.AptActivity = {
     init: init,
     mountFooter: mountFooter,
@@ -2885,6 +2953,9 @@
     /* Lo usa el modo examen para pintar enunciados con $...$ sin tener
        que reimplementar el parseo. */
     renderTextWithMath: renderTextWithMath,
+    /* Sistema de ecuaciones con llave dibujada en SVG (no font-stacking
+       de KaTeX) — ver el comentario largo junto a la función. */
+    renderSystemOfEquations: renderSystemOfEquations,
     /* La version, para que el modo examen pueda mostrarla junto a la suya.
        Una version en un comentario no se puede verificar desde el
        navegador, y confirmar que un archivo propago es justo lo que mas
