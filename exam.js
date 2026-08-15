@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · exam.js (v2.11)
+   ÁLGEBRA PARA TODOS · exam.js (v2.12)
    ------------------------------------------------------------
    Modo examen: independiente de engine.js a propósito (son dos
    cosas distintas que conviven, no una extensión de la otra).
@@ -23,7 +23,7 @@
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. La 2.0 es el salto de leer exercises.js a leer
      las actividades del repo, mas las preguntas compuestas. */
-  var VERSION = '2.11';
+  var VERSION = '2.12';
 
   var FONT_LINK_ID = 'apt-exam-fonts';
   var KATEX_CSS_ID = 'apt-exam-katex-css';
@@ -170,6 +170,11 @@
     '.apt-exam__topic-btn::before{ content:"☐"; flex:0 0 auto; font-size:16px; color:var(--chalk-light); }',
     '.apt-exam__topic-btn.is-selected{ background:rgba(151,161,216,0.14); border-color:var(--chalk-light); color:var(--ink); }',
     '.apt-exam__topic-btn.is-selected::before{ content:"☑"; }',
+    '.apt-exam__topic-btn.is-locked{ opacity:.5; }',
+    '.apt-exam__topic-btn.is-locked::before{ content:"🔒"; font-size:13px; }',
+    '.apt-exam__topic-btn.is-locked:hover{ opacity:.7; }',
+    '.apt-exam__trial-banner{ display:block; text-align:center; text-decoration:none; font-family:var(--font-mono); font-size:12.5px; line-height:1.5; color:var(--chalk-light); background:rgba(151,161,216,0.08); border:1.5px dashed rgba(151,161,216,0.35); border-radius:12px; padding:12px 16px; margin-top:10px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .15s ease; }',
+    '.apt-exam__trial-banner:hover{ background:rgba(151,161,216,0.16); }',
     '.apt-exam__start-btn{ width:100%; font-family:var(--font-serif); font-weight:700; font-size:16px; color:#fff; background:var(--chalk); border:none; border-radius:12px; padding:16px; min-height:54px; cursor:pointer; transition:background .15s ease, opacity .15s ease; margin-top:8px !important; }',
     '.apt-exam__start-btn:hover{ background:var(--chalk-hover); }',
     '.apt-exam__start-btn:disabled{ opacity:.4; cursor:default; }',
@@ -648,6 +653,21 @@
     });
     var selectedTopics = {};
 
+    /* Modo trial: cfg.trial = { ctaUrl, freeRatio? }. Se bloquea por
+       UNIDAD (no de corrido sobre el total), para que cada unidad
+       muestre una muestra propia en vez de que la primera unidad
+       quede toda libre y las últimas todas bloqueadas. freeRatio
+       default 0.5 — "la mitad de los temas escogibles". */
+    var trialLocked = {};
+    if (cfg.trial) {
+      var freeRatio = cfg.trial.freeRatio != null ? cfg.trial.freeRatio : 0.5;
+      Object.keys(units).forEach(function (u) {
+        var topics = units[u];
+        var freeCount = Math.max(1, Math.round(topics.length * freeRatio));
+        topics.forEach(function (t, i) { if (i >= freeCount) trialLocked[t] = true; });
+      });
+    }
+
       /* Un desplegable por unidad. Con 31 temas la lista de corrido era
          larga de recorrer en un celular; asi la pantalla arranca compacta
          y el alumno abre solo la unidad que le interesa.
@@ -698,12 +718,18 @@
           btn.type = 'button';
           btn.className = 'apt-exam__topic-btn';
           btn.textContent = topic;
-          btn.addEventListener('click', function () {
-            selectedTopics[topic] = !selectedTopics[topic];
-            btn.classList.toggle('is-selected', !!selectedTopics[topic]);
-            refrescarCuenta();
-            refs.startBtn.disabled = !Object.keys(selectedTopics).some(function (t) { return selectedTopics[t]; });
-          });
+          if (trialLocked[topic]) {
+            btn.classList.add('is-locked');
+            btn.setAttribute('aria-label', topic + ' (bloqueado — registrate para desbloquear)');
+            btn.addEventListener('click', function () { window.location.href = cfg.trial.ctaUrl; });
+          } else {
+            btn.addEventListener('click', function () {
+              selectedTopics[topic] = !selectedTopics[topic];
+              btn.classList.toggle('is-selected', !!selectedTopics[topic]);
+              refrescarCuenta();
+              refs.startBtn.disabled = !Object.keys(selectedTopics).some(function (t) { return selectedTopics[t]; });
+            });
+          }
           cuerpo.appendChild(btn);
         });
 
@@ -726,6 +752,17 @@
       var el = root.querySelector('.apt-exam__versiones');
       if (el) el.textContent = partes.join(' \u00b7 ');
     })();
+
+    /* Modo trial: banner clickeable entero (no solo un botón chico
+       adentro) — todo el aviso lleva al checkout de la Offer gratuita. */
+    if (cfg.trial) {
+      var trialBanner = document.createElement('a');
+      trialBanner.className = 'apt-exam__trial-banner';
+      trialBanner.href = cfg.trial.ctaUrl;
+      trialBanner.textContent = cfg.trial.text ||
+        'Esta es una versión limitada. Para la versión full, tenés que registrarte. Es gratis.';
+      refs.startBtn.insertAdjacentElement('afterend', trialBanner);
+    }
 
     if (!registry.length) {
       var aviso = document.createElement('p');
