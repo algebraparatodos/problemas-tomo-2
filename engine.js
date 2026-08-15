@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v4.7)
+   ÁLGEBRA PARA TODOS · engine.js (v4.11)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -101,7 +101,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '4.7';
+  var ENGINE_VERSION = '4.11';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -349,6 +349,7 @@
     '.apt-act__cellwrap.is-wrong .apt-act__signseg-btn.is-active{ background:var(--wrong); color:#0A0A0D; }',
     '.apt-act__cell:disabled{ opacity:1; }',
     '.apt-act__hint{ text-align:center; font-family:var(--font-mono); font-size:12px; color:var(--ink-soft); opacity:.8; margin:-6px 0 0; }',
+    '.apt-act__hint:empty{ display:none; margin:0; }',
     '.apt-act__check-btn{ font-family:var(--font-serif); font-weight:700; font-size:16px; padding:16px 18px; border-radius:12px; border:2px solid var(--chalk-light); background:transparent; color:var(--chalk-light); cursor:pointer; min-height:52px; transition:transform .08s ease, background .15s ease, color .15s ease; -webkit-tap-highlight-color:transparent; }',
     '.apt-act__check-btn:active{ transform:scale(.98); }',
     '.apt-act__check-btn:disabled{ opacity:.5; cursor:default; }',
@@ -670,8 +671,42 @@
   }
 
   var _katexCssLoaded = false;
+  var _katexFontsReady = false;
+
+  /* Las 12 familias que usa katex.min.css (fijas para la v0.16.9, no
+     cambian salvo que se actualice la versión de KaTeX). Que el <link>
+     del CSS termine de cargar (onload) confirma que las REGLAS ya están
+     en el CSSOM, pero NO que los archivos .woff2 de cada fuente ya se
+     descargaron — eso el navegador lo hace recién, en background, la
+     primera vez que hace falta pintar un glifo con ella. Un delimitador
+     grande como \begin{cases} se arma apilando varias piezas de una
+     fuente con precisión de píxel; si la pieza llega un instante tarde,
+     no se reacomoda sola después — queda mal armado aunque el resto del
+     texto (que sí alcanzó a cargar a tiempo) se vea perfecto. Por eso
+     hace falta forzar la descarga real de la fuente ANTES de renderizar,
+     no alcanza con esperar el CSS. */
+  var KATEX_FONT_FAMILIES = [
+    'KaTeX_AMS', 'KaTeX_Caligraphic', 'KaTeX_Fraktur', 'KaTeX_Main',
+    'KaTeX_Math', 'KaTeX_SansSerif', 'KaTeX_Script', 'KaTeX_Size1',
+    'KaTeX_Size2', 'KaTeX_Size3', 'KaTeX_Size4', 'KaTeX_Typewriter'
+  ];
+
+  function forzarCargaDeFuentes(onDone) {
+    /* Feature-detection: la Font Loading API (document.fonts) es
+       estándar desde hace años, pero si por lo que sea no está
+       disponible, se sigue sin bloquear — mejor un render con el riesgo
+       viejo que uno que nunca llega. */
+    if (!document.fonts || typeof document.fonts.load !== 'function') { onDone(); return; }
+    var promesas = KATEX_FONT_FAMILIES.map(function (fam) {
+      // "1em" alcanza: lo que importa es que el archivo se descargue,
+      // no el tamaño con el que se pida.
+      return document.fonts.load('1em "' + fam + '"').catch(function () { /* si una fuente puntual falla, no bloquear el resto */ });
+    });
+    Promise.all(promesas).then(onDone).catch(onDone);
+  }
+
   function ensureKatex(callback) {
-    if (window.katex && _katexCssLoaded) { patchKatexDelims(); callback(); return; }
+    if (window.katex && _katexCssLoaded && _katexFontsReady) { patchKatexDelims(); callback(); return; }
     if (!document.getElementById(KATEX_CSS_ID)) {
       var link = document.createElement('link');
       link.id = KATEX_CSS_ID;
@@ -684,13 +719,13 @@
          \begin{cases} salían deformes/duplicados aunque el resto del
          texto se viera bien. Un solo origen confiable resuelve eso. */
       link.href = 'https://algebraparatodos.github.io/problemas-tomo-2/katex/katex.min.css';
-      /* No alcanza con que window.katex exista — hay que confirmar que
-         el CSS (y con él, las @font-face) ya terminó de cargar antes
-         de renderizar. Si no, el render puede pasar en un estado a
-         medio cargar y quedar mal armado. onerror también libera el
-         flag: mejor un render sin estilos que uno que nunca llega. */
-      link.onload = function () { _katexCssLoaded = true; };
-      link.onerror = function () { _katexCssLoaded = true; };
+      link.onload = function () {
+        _katexCssLoaded = true;
+        forzarCargaDeFuentes(function () { _katexFontsReady = true; });
+      };
+      /* onerror también libera los dos flags: mejor un render sin
+         estilos/fuentes que uno que nunca llega. */
+      link.onerror = function () { _katexCssLoaded = true; _katexFontsReady = true; };
       document.head.appendChild(link);
     }
     if (!document.getElementById(KATEX_JS_ID)) {
@@ -700,9 +735,10 @@
       document.head.appendChild(script);
     }
     var poll = setInterval(function () {
-      if (window.katex && _katexCssLoaded) { clearInterval(poll); patchKatexDelims(); callback(); }
+      if (window.katex && _katexCssLoaded && _katexFontsReady) { clearInterval(poll); patchKatexDelims(); callback(); }
     }, 50);
   }
+
 
   /* ------------------------------------------------------------
      Sonido sintetizado + confetti/globos + mute persistente
@@ -1104,6 +1140,16 @@
   /* ------------------------------------------------------------
      Helpers de la grilla con control de signo −/+
      ------------------------------------------------------------ */
+  /* Escritorio de verdad (mouse/trackpad de precisión) vs táctil: se usa
+     esto, y no un ancho de pantalla, porque lo que importa es si hay
+     forma cómoda de escribir '-' con el teclado — no cuán ancha está la
+     ventana. Una notebook con la ventana angosta sigue siendo desktop;
+     una tablet grande sin mouse sigue sin tecla de menos accesible. */
+  function isDesktopPointer() {
+    try { return !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches); }
+    catch (e) { return false; }
+  }
+
   function buildSignSeg() {
     var seg = document.createElement('div');
     seg.className = 'apt-act__signseg';
@@ -1125,6 +1171,73 @@
     });
     return seg;
   }
+
+  /* Punto único donde se arma una celda con signo, para los 3 lugares que
+     la usan (grid, vectors, space). En desktop NO se crea el signSeg: el
+     input mismo acepta un '-' opcional al principio, como cualquier campo
+     numérico con teclado. En táctil, queda exactamente como antes. */
+  function buildSignedCellInto(wrap, ariaLabel) {
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.autocomplete = 'off';
+    input.className = 'apt-act__cell';
+    if (ariaLabel) input.setAttribute('aria-label', ariaLabel);
+
+    if (isDesktopPointer()) {
+      wrap.classList.add('apt-act__cellwrap--nosign');
+      input.inputMode = 'text';
+      input.addEventListener('input', function () {
+        var neg = this.value.charAt(0) === '-';
+        var digits = this.value.replace(/[^0-9]/g, '').slice(0, 2);
+        this.value = (neg ? '-' : '') + digits;
+      });
+      wrap.appendChild(input);
+    } else {
+      var signSeg = buildSignSeg();
+      input.inputMode = 'numeric';
+      input.addEventListener('input', function () {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 2);
+      });
+      wrap.appendChild(signSeg);
+      wrap.appendChild(input);
+    }
+    return input;
+  }
+
+  /* Lee el valor con signo de una celda ya armada, sin importar si es la
+     versión con signSeg (táctil) o la de tipeo directo (desktop). */
+  function readSignedCell(wrap) {
+    var input = wrap.querySelector('.apt-act__cell');
+    var raw = input.value.trim();
+    if (raw === '' || raw === '-') return { value: 0, hasEmpty: true };
+    var seg = wrap.querySelector('.apt-act__signseg');
+    if (seg) {
+      var n = parseInt(raw, 10);
+      return { value: seg.dataset.sign === '-' ? -n : n, hasEmpty: false };
+    }
+    return { value: parseInt(raw, 10), hasEmpty: false };
+  }
+
+  /* Contraparte de readSignedCell para los flujos de "ver respuesta" /
+     completar con un valor conocido — funciona igual en los dos modos. */
+  function fillSignedCell(wrap, val) {
+    var input = wrap.querySelector('.apt-act__cell');
+    var seg = wrap.querySelector('.apt-act__signseg');
+    if (seg) {
+      setSign(wrap, val < 0 ? '-' : '+');
+      input.value = String(Math.abs(val));
+    } else {
+      input.value = (val < 0 ? '-' : '') + Math.abs(val);
+    }
+  }
+
+  /* Texto de ayuda debajo de la grilla/vectores/base — cambia según haya
+     o no botón +/- (ver isDesktopPointer más arriba). */
+  function signHintText(suffix) {
+    if (isDesktopPointer()) return ''; // obvio con teclado, no hace falta explicarlo
+    return 'Tocá − o + para cambiar el signo' + (suffix || '.');
+  }
+
   function getSign(wrap) { return wrap.querySelector('.apt-act__signseg').dataset.sign; }
   function setSign(wrap, sign) {
     var seg = wrap.querySelector('.apt-act__signseg');
@@ -1174,19 +1287,7 @@
         wrap.style.gridRow = String(r + 1);
         wrap.style.gridColumn = String(gridCol);
 
-        var signSeg = buildSignSeg();
-        var input = document.createElement('input');
-        input.type = 'text';
-        input.inputMode = 'numeric';
-        input.autocomplete = 'off';
-        input.className = 'apt-act__cell';
-        input.setAttribute('aria-label', cfg.cellAriaLabel ? cfg.cellAriaLabel(current, r, c) : ('Fila ' + (r + 1) + ', columna ' + (c + 1)));
-        input.addEventListener('input', function () {
-          this.value = this.value.replace(/[^0-9]/g, '').slice(0, 2);
-        });
-
-        wrap.appendChild(signSeg);
-        wrap.appendChild(input);
+        buildSignedCellInto(wrap, cfg.cellAriaLabel ? cfg.cellAriaLabel(current, r, c) : ('Fila ' + (r + 1) + ', columna ' + (c + 1)));
         gridEl.appendChild(wrap);
       }
     }
@@ -1212,12 +1313,9 @@
     }
     gridEl.querySelectorAll('.apt-act__cellwrap').forEach(function (wrap) {
       var r3 = +wrap.dataset.row, c3 = +wrap.dataset.col;
-      var input = wrap.querySelector('.apt-act__cell');
-      var raw = input.value.trim();
-      if (raw === '') { hasEmpty = true; M[r3][c3] = null; return; }
-      var n = parseInt(raw, 10);
-      var sign = getSign(wrap);
-      M[r3][c3] = sign === '-' ? -n : n;
+      var read = readSignedCell(wrap);
+      if (read.hasEmpty) { hasEmpty = true; M[r3][c3] = null; return; }
+      M[r3][c3] = read.value;
     });
     return { matrix: M, hasEmpty: hasEmpty };
   }
@@ -1239,18 +1337,7 @@
       wrap.className = 'apt-act__cellwrap';
       wrap.dataset.key = key;
       wrap.dataset.row = r;
-      var signSeg = buildSignSeg();
-      var input = document.createElement('input');
-      input.type = 'text';
-      input.inputMode = 'numeric';
-      input.autocomplete = 'off';
-      input.className = 'apt-act__cell';
-      input.setAttribute('aria-label', 'Componente ' + (r + 1));
-      input.addEventListener('input', function () {
-        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 2);
-      });
-      wrap.appendChild(signSeg);
-      wrap.appendChild(input);
+      buildSignedCellInto(wrap, 'Componente ' + (r + 1));
       col.appendChild(wrap);
     }
     vec.appendChild(left);
@@ -1293,12 +1380,9 @@
     var hasEmpty = false;
     for (var r = 0; r < rows; r++) {
       var wrap = container.querySelector('.apt-act__cellwrap[data-key="' + key + '"][data-row="' + r + '"]');
-      var input = wrap.querySelector('.apt-act__cell');
-      var raw = input.value.trim();
-      var v;
-      if (raw === '') { hasEmpty = true; v = 0; } else v = parseInt(raw, 10);
-      var sign = getSign(wrap);
-      vals.push(sign === '-' ? -v : v);
+      var read = readSignedCell(wrap);
+      if (read.hasEmpty) hasEmpty = true;
+      vals.push(read.value);
     }
     return { vals: vals, hasEmpty: hasEmpty };
   }
@@ -1316,13 +1400,11 @@
   function fillVectorBlock(container, key, vals) {
     vals.forEach(function (val, r) {
       var wrap = container.querySelector('.apt-act__cellwrap[data-key="' + key + '"][data-row="' + r + '"]');
-      setSign(wrap, val < 0 ? '-' : '+');
-      var input = wrap.querySelector('.apt-act__cell');
-      input.value = String(Math.abs(val));
+      fillSignedCell(wrap, val);
       wrap.classList.remove('is-wrong');
       wrap.classList.add('is-correct');
       setSignDisabled(wrap, true);
-      input.disabled = true;
+      wrap.querySelector('.apt-act__cell').disabled = true;
     });
   }
 
@@ -1352,7 +1434,7 @@
             (hideBrackets ? '' : '<span class="apt-act__bracket apt-act__bracket--right"></span>') +
           '</div>' +
         '</div>' +
-        '<p class="apt-act__hint">Tocá − o + para cambiar el signo' + (hideBrackets ? '' : ' de cada número') + '.</p>' +
+        '<p class="apt-act__hint">' + signHintText(hideBrackets ? '.' : ' de cada número.') + '</p>' +
         '<button type="button" class="apt-act__check-btn">Comprobar</button>';
     } else if (cfg.mode === 'multiselect') {
       // Varias opciones tildables a la vez (0, 1 o más pueden ser correctas)
@@ -1477,17 +1559,17 @@
               (phaseHideBrackets ? '' : '<span class="apt-act__bracket apt-act__bracket--right"></span>') +
             '</div>' +
           '</div>' +
-          '<p class="apt-act__hint">' + (phase.hint || 'Tocá − o + para cambiar el signo de cada número.') + '</p>' +
+          '<p class="apt-act__hint">' + (phase.hint || signHintText(' de cada número.')) + '</p>' +
           '<button type="button" class="apt-act__check-btn">Comprobar</button>';
       } else if (phase.mode === 'vectors') {
         interactionHTML =
           '<div class="apt-act__solution"></div>' +
-          '<p class="apt-act__hint">' + (phase.hint || 'Tocá − o + para cambiar el signo de cada número.') + '</p>' +
+          '<p class="apt-act__hint">' + (phase.hint || signHintText(' de cada número.')) + '</p>' +
           '<button type="button" class="apt-act__check-btn">Comprobar</button>';
       } else if (phase.mode === 'space-basis') {
         interactionHTML =
           '<div class="apt-act__space-answer"></div>' +
-          '<p class="apt-act__hint">' + (phase.hint || 'Tocá − o + para cambiar el signo de cada número.') + '</p>' +
+          '<p class="apt-act__hint">' + (phase.hint || signHintText(' de cada número.')) + '</p>' +
           '<button type="button" class="apt-act__check-btn">Comprobar</button>';
       } else if (phase.mode === 'setup') {
         // Paso de configuración PREVIO a generar el caso: uno o más
@@ -1809,8 +1891,7 @@
         var r = +wrap.dataset.row, c = +wrap.dataset.col;
         var val = answerMatrix[r][c];
         var input = wrap.querySelector('.apt-act__cell');
-        setSign(wrap, val < 0 ? '-' : '+');
-        input.value = String(Math.abs(val));
+        fillSignedCell(wrap, val);
         wrap.classList.remove('is-wrong');
         wrap.classList.add('is-correct');
         setSignDisabled(wrap, true);
@@ -2225,8 +2306,7 @@
           var r = +wrap.dataset.row, c = +wrap.dataset.col;
           var val = answerMatrix[r][c];
           var input = wrap.querySelector('.apt-act__cell');
-          setSign(wrap, val < 0 ? '-' : '+');
-          input.value = String(Math.abs(val));
+          fillSignedCell(wrap, val);
           wrap.classList.remove('is-wrong');
           wrap.classList.add('is-correct');
           setSignDisabled(wrap, true);
@@ -2546,15 +2626,7 @@
     wrap.className = 'apt-act__cellwrap';
     wrap.dataset.key = key;
     wrap.dataset.index = index;
-    var signSeg = buildSignSeg();
-    var input = document.createElement('input');
-    input.type = 'text';
-    input.inputMode = 'numeric';
-    input.autocomplete = 'off';
-    input.className = 'apt-act__cell';
-    input.addEventListener('input', function () { this.value = this.value.replace(/[^0-9]/g, '').slice(0, 2); });
-    wrap.appendChild(signSeg);
-    wrap.appendChild(input);
+    buildSignedCellInto(wrap);
     return wrap;
   }
   function buildSpaceInputWidget(container, space, key) {
@@ -2615,12 +2687,9 @@
     var hasEmpty = false;
     for (var i = 0; i < space.dim; i++) {
       var wrap = container.querySelector('.apt-act__cellwrap[data-key="' + key + '"][data-index="' + i + '"]');
-      var input = wrap.querySelector('.apt-act__cell');
-      var raw = input.value.trim();
-      var v;
-      if (raw === '') { hasEmpty = true; v = 0; } else v = parseInt(raw, 10);
-      var sign = getSign(wrap);
-      coords.push(sign === '-' ? -v : v);
+      var read = readSignedCell(wrap);
+      if (read.hasEmpty) hasEmpty = true;
+      coords.push(read.value);
     }
     return { coords: coords, hasEmpty: hasEmpty };
   }
@@ -2637,13 +2706,11 @@
     var coords = space.toCoords(nativeVal);
     coords.forEach(function (val, i) {
       var wrap = container.querySelector('.apt-act__cellwrap[data-key="' + key + '"][data-index="' + i + '"]');
-      var input = wrap.querySelector('.apt-act__cell');
-      setSign(wrap, val < 0 ? '-' : '+');
-      input.value = String(Math.abs(val));
+      fillSignedCell(wrap, val);
       wrap.classList.remove('is-wrong');
       wrap.classList.add('is-correct');
       setSignDisabled(wrap, true);
-      input.disabled = true;
+      wrap.querySelector('.apt-act__cell').disabled = true;
     });
   }
 

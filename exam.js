@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · exam.js (v2.7)
+   ÁLGEBRA PARA TODOS · exam.js (v2.11)
    ------------------------------------------------------------
    Modo examen: independiente de engine.js a propósito (son dos
    cosas distintas que conviven, no una extensión de la otra).
@@ -23,7 +23,7 @@
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. La 2.0 es el salto de leer exercises.js a leer
      las actividades del repo, mas las preguntas compuestas. */
-  var VERSION = '2.7';
+  var VERSION = '2.11';
 
   var FONT_LINK_ID = 'apt-exam-fonts';
   var KATEX_CSS_ID = 'apt-exam-katex-css';
@@ -73,21 +73,40 @@
   }
 
   var _katexCssLoadedExam = false;
+  var _katexFontsReadyExam = false;
+  var KATEX_FONT_FAMILIES = [
+    'KaTeX_AMS', 'KaTeX_Caligraphic', 'KaTeX_Fraktur', 'KaTeX_Main',
+    'KaTeX_Math', 'KaTeX_SansSerif', 'KaTeX_Script', 'KaTeX_Size1',
+    'KaTeX_Size2', 'KaTeX_Size3', 'KaTeX_Size4', 'KaTeX_Typewriter'
+  ];
+  function forzarCargaDeFuentesExam(onDone) {
+    if (!document.fonts || typeof document.fonts.load !== 'function') { onDone(); return; }
+    var promesas = KATEX_FONT_FAMILIES.map(function (fam) {
+      return document.fonts.load('1em "' + fam + '"').catch(function () {});
+    });
+    Promise.all(promesas).then(onDone).catch(onDone);
+  }
   function ensureKatex(callback) {
-    if (global.katex && _katexCssLoadedExam) { callback(); return; }
+    if (global.katex && _katexCssLoadedExam && _katexFontsReadyExam) { callback(); return; }
     if (!document.getElementById(KATEX_CSS_ID)) {
       var css = document.createElement('link');
       css.id = KATEX_CSS_ID; css.rel = 'stylesheet';
       /* Auto-hospedado en el mismo GitHub Pages que engine.js — antes
-         dependía de cdnjs.cloudflare.com, y como acá tampoco se
-         esperaba confirmación del CSS (solo el onload del <script>),
-         un solo archivo de fuente que fallara en una red de celular
-         dejaba delimitadores grandes (\begin{cases}, matrices) armados
-         con métricas de una fuente de reemplazo. Mismo fix que en
-         engine.js: un solo origen confiable + esperar el CSS de verdad. */
+         dependía de cdnjs.cloudflare.com. El onload del CSS confirma
+         que las REGLAS ya están en el CSSOM, pero no que los .woff2 de
+         cada fuente ya se descargaron — eso lo hace el navegador recién
+         cuando hace falta pintar un glifo con ella. Un delimitador
+         grande (\begin{cases}, matrices) se arma apilando piezas de una
+         fuente con precisión de píxel: si una pieza llega un instante
+         tarde, no se reacomoda sola después. Por eso se fuerza la
+         descarga real de las 12 familias de KaTeX antes de renderizar,
+         no alcanza con esperar el CSS. Mismo fix que en engine.js. */
       css.href = 'https://algebraparatodos.github.io/problemas-tomo-2/katex/katex.min.css';
-      css.onload = function () { _katexCssLoadedExam = true; };
-      css.onerror = function () { _katexCssLoadedExam = true; };
+      css.onload = function () {
+        _katexCssLoadedExam = true;
+        forzarCargaDeFuentesExam(function () { _katexFontsReadyExam = true; });
+      };
+      css.onerror = function () { _katexCssLoadedExam = true; _katexFontsReadyExam = true; };
       document.head.appendChild(css);
     }
     if (!document.getElementById(KATEX_JS_ID)) {
@@ -97,9 +116,10 @@
       document.head.appendChild(js);
     }
     var check = setInterval(function () {
-      if (global.katex && _katexCssLoadedExam) { clearInterval(check); callback(); }
+      if (global.katex && _katexCssLoadedExam && _katexFontsReadyExam) { clearInterval(check); callback(); }
     }, 50);
   }
+
 
   var CSS = [
     '.apt-exam{ --bg:#0A0A0D; --bg-card:#16161C; --grid-line:rgba(151,161,216,0.14); --ink:#F5F5F7; --ink-soft:#A7ACC0; --chalk:#48507D; --chalk-hover:#5A639A; --chalk-light:#97A1D8; --correct:#5BCD9A; --correct-bg:rgba(91,205,154,0.12); --wrong:#D65252; --wrong-bg:rgba(214,82,82,0.12); --font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace; --font-serif:"Lora",Georgia,"Times New Roman",serif; --radius:14px; --max-w:520px; min-height:100vh; width:100%; box-sizing:border-box; background:linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0/100% 28px, linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0/28px 100%, var(--bg); color:var(--ink); font-family:var(--font-mono); padding:max(24px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom)); display:flex; align-items:center; justify-content:center; }',
@@ -195,6 +215,7 @@
     '.apt-exam__check-btn{ width:100%; font-family:var(--font-serif); font-weight:700; font-size:16px; padding:16px; border-radius:12px; border:2px solid var(--chalk-light); background:transparent; color:var(--chalk-light); cursor:pointer; min-height:52px; }',
     '.apt-exam__check-btn:hover{ background:rgba(151,161,216,0.1); }',
     '.apt-exam__hint{ text-align:center; font-family:var(--font-mono); font-size:12px; color:var(--ink-soft); opacity:.8; margin:0; }',
+    '.apt-exam__hint:empty{ display:none; margin:0; }',
     '.apt-exam__multiselect{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }',
     '.apt-exam__ms-btn{ display:flex; align-items:center; gap:8px; text-align:left; font-family:var(--font-mono); font-size:12.5px; color:var(--ink-soft); background:var(--bg-card); border:1.5px solid rgba(151,161,216,0.25); border-radius:10px; padding:12px 10px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .15s ease, border-color .15s ease, color .15s ease; }',
     '.apt-exam__ms-btn::before{ content:"☐"; flex:0 0 auto; }',
@@ -272,6 +293,74 @@
     return typeof spec === 'function' ? spec(current) : spec;
   }
 
+  /* Mismo criterio que engine.js: en desktop (mouse/trackpad de
+     precisión) no tiene sentido el botón −/+ — se escribe el signo
+     directo con el teclado, como cualquier campo numérico. En táctil
+     queda igual que siempre. Ver el comentario largo en engine.js para
+     el porqué de matchMedia en vez de un ancho de pantalla fijo. */
+  function isDesktopPointerExam() {
+    try { return !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches); }
+    catch (e) { return false; }
+  }
+
+  /* Punto único donde se arma una celda con signo para exam.js (grid y
+     vectors). Devuelve el <input> ya armado y agregado a wrap. */
+  function buildSignedCellIntoExam(wrap) {
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.autocomplete = 'off';
+    input.className = 'apt-exam__cell';
+
+    if (isDesktopPointerExam()) {
+      wrap.classList.add('apt-exam__cellwrap--nosign');
+      input.inputMode = 'text';
+      input.addEventListener('input', function () {
+        var neg = this.value.charAt(0) === '-';
+        var digits = this.value.replace(/[^0-9]/g, '').slice(0, 2);
+        this.value = (neg ? '-' : '') + digits;
+      });
+      wrap.appendChild(input);
+    } else {
+      var signSeg = document.createElement('div');
+      signSeg.className = 'apt-exam__signseg';
+      signSeg.dataset.sign = '+';
+      ['-', '+'].forEach(function (s) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'apt-exam__signseg-btn' + (s === '+' ? ' is-active' : '');
+        btn.textContent = s; btn.dataset.sign = s;
+        btn.addEventListener('click', function () {
+          signSeg.dataset.sign = s;
+          signSeg.querySelectorAll('.apt-exam__signseg-btn').forEach(function (b) { b.classList.toggle('is-active', b.dataset.sign === s); });
+        });
+        signSeg.appendChild(btn);
+      });
+      input.inputMode = 'numeric';
+      input.addEventListener('input', function () { this.value = this.value.replace(/[^0-9]/g, '').slice(0, 2); });
+      wrap.appendChild(signSeg);
+      wrap.appendChild(input);
+    }
+    return input;
+  }
+
+  /* Lee el valor con signo de una celda, sin importar el modo. */
+  function readSignedCellExam(wrap) {
+    var input = wrap.querySelector('.apt-exam__cell');
+    var raw = input.value.trim();
+    if (raw === '' || raw === '-') return { value: 0, hasEmpty: true };
+    var seg = wrap.querySelector('.apt-exam__signseg');
+    if (seg) {
+      var n = parseInt(raw, 10);
+      return { value: seg.dataset.sign === '-' ? -n : n, hasEmpty: false };
+    }
+    return { value: parseInt(raw, 10), hasEmpty: false };
+  }
+
+  function signHintTextExam() {
+    if (isDesktopPointerExam()) return ''; // obvio con teclado, no hace falta explicarlo
+    return 'Tocá − o + para cambiar el signo de cada número.';
+  }
+
   function buildGridInput(container, gridCfg, current) {
     container.innerHTML = '';
     var rows = resolveNum(gridCfg.rows, current), cols = resolveNum(gridCfg.cols, current), dividerAfterCol = gridCfg.dividerAfterCol;
@@ -304,28 +393,7 @@
         cellwrap.style.gridRow = String(r + 1);
         cellwrap.style.gridColumn = String(dividerAfterCol && c >= dividerAfterCol ? c + 2 : c + 1);
 
-        let signSeg = document.createElement('div');
-        signSeg.className = 'apt-exam__signseg';
-        signSeg.dataset.sign = '+';
-        ['-', '+'].forEach(function (s) {
-          var btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'apt-exam__signseg-btn' + (s === '+' ? ' is-active' : '');
-          btn.textContent = s; btn.dataset.sign = s;
-          btn.addEventListener('click', function () {
-            signSeg.dataset.sign = s;
-            signSeg.querySelectorAll('.apt-exam__signseg-btn').forEach(function (b) { b.classList.toggle('is-active', b.dataset.sign === s); });
-          });
-          signSeg.appendChild(btn);
-        });
-
-        var input = document.createElement('input');
-        input.type = 'text'; input.inputMode = 'numeric'; input.autocomplete = 'off';
-        input.className = 'apt-exam__cell';
-        input.addEventListener('input', function () { this.value = this.value.replace(/[^0-9]/g, '').slice(0, 2); });
-
-        cellwrap.appendChild(signSeg);
-        cellwrap.appendChild(input);
+        buildSignedCellIntoExam(cellwrap);
         grid.appendChild(cellwrap);
       }
     }
@@ -347,11 +415,9 @@
         M.push([]);
         for (var c = 0; c < cols; c++) {
           var cw = grid.querySelector('.apt-exam__cellwrap[data-row="' + r + '"][data-col="' + c + '"]');
-          var raw = cw.querySelector('.apt-exam__cell').value.trim();
-          if (raw === '') { hasEmpty = true; M[r].push(0); continue; }
-          var n = parseInt(raw, 10);
-          var sign = cw.querySelector('.apt-exam__signseg').dataset.sign;
-          M[r].push(sign === '-' ? -n : n);
+          var read = readSignedCellExam(cw);
+          if (read.hasEmpty) hasEmpty = true;
+          M[r].push(read.value);
         }
       }
       return { matrix: M, hasEmpty: hasEmpty };
@@ -363,25 +429,7 @@
     var wrap = document.createElement('div');
     wrap.className = 'apt-exam__cellwrap';
     wrap.dataset.key = key; wrap.dataset.row = row;
-    var signSeg = document.createElement('div');
-    signSeg.className = 'apt-exam__signseg';
-    signSeg.dataset.sign = '+';
-    ['-', '+'].forEach(function (s) {
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'apt-exam__signseg-btn' + (s === '+' ? ' is-active' : '');
-      btn.textContent = s; btn.dataset.sign = s;
-      btn.addEventListener('click', function () {
-        signSeg.dataset.sign = s;
-        signSeg.querySelectorAll('.apt-exam__signseg-btn').forEach(function (b) { b.classList.toggle('is-active', b.dataset.sign === s); });
-      });
-      signSeg.appendChild(btn);
-    });
-    var input = document.createElement('input');
-    input.type = 'text'; input.inputMode = 'numeric'; input.autocomplete = 'off';
-    input.className = 'apt-exam__cell';
-    input.addEventListener('input', function () { this.value = this.value.replace(/[^0-9]/g, '').slice(0, 2); });
-    wrap.appendChild(signSeg); wrap.appendChild(input);
+    buildSignedCellIntoExam(wrap);
     return wrap;
   }
 
@@ -401,12 +449,9 @@
     var vals = []; var hasEmpty = false;
     for (var r = 0; r < rows; r++) {
       var wrap = container.querySelector('.apt-exam__cellwrap[data-key="' + key + '"][data-row="' + r + '"]');
-      var input = wrap.querySelector('.apt-exam__cell');
-      var raw = input.value.trim();
-      var v;
-      if (raw === '') { hasEmpty = true; v = 0; } else v = parseInt(raw, 10);
-      var sign = wrap.querySelector('.apt-exam__signseg').dataset.sign;
-      vals.push(sign === '-' ? -v : v);
+      var read = readSignedCellExam(wrap);
+      if (read.hasEmpty) hasEmpty = true;
+      vals.push(read.value);
     }
     return { vals: vals, hasEmpty: hasEmpty };
   }
@@ -887,7 +932,7 @@
         readMatrix = buildGridInput(gridContainer, q.exercise.grid, q.current);
         var hint = document.createElement('p');
         hint.className = 'apt-exam__hint';
-        hint.textContent = 'Tocá − o + para cambiar el signo de cada número.';
+        hint.textContent = signHintTextExam();
         refs.answer.appendChild(hint);
         var checkBtn = document.createElement('button');
         checkBtn.type = 'button';
@@ -904,7 +949,7 @@
         var readVectors = buildVectorsInput(vecContainer, q.exercise.vectors, q.current);
         var vhint = document.createElement('p');
         vhint.className = 'apt-exam__hint';
-        vhint.textContent = 'Tocá − o + para cambiar el signo de cada número.';
+        vhint.textContent = signHintTextExam();
         refs.answer.appendChild(vhint);
         var vCheckBtn = document.createElement('button');
         vCheckBtn.type = 'button';
@@ -938,7 +983,7 @@
         refs.answer.appendChild(sbWrap);
         var sbHint = document.createElement('p');
         sbHint.className = 'apt-exam__hint';
-        sbHint.textContent = 'Toc\u00e1 \u2212 o + para cambiar el signo de cada n\u00famero.';
+        sbHint.textContent = signHintTextExam();
         refs.answer.appendChild(sbHint);
         var sbBtn = document.createElement('button');
         sbBtn.type = 'button';
