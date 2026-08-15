@@ -186,8 +186,7 @@
       },
       choices: function (current) {
         return current.options.map(function (eqs, idx) {
-          var latex = AptActivity.renderSevAsEquationsGrouped(current.space, eqs, 'S');
-          var html = window.katex.renderToString(latex, { throwOnError: false });
+          var html = AptActivity.renderSevAsEquationsGrouped(current.space, eqs, 'S');
           return { value: String(idx), label: html };
         });
       },

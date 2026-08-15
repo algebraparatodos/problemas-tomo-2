@@ -213,10 +213,7 @@
 
     function equationChoices(current, eqOptions) {
       return eqOptions.options.map(function (eqs, idx) {
-        var latex = AptActivity.renderSevAsEquationsGrouped(current.space, eqs, '');
-        // renderSevAsEquationsGrouped devuelve "= { ... }" con nombre vacío;
-        // se lo recortamos para no repetir "S =" o "T =" fuera de contexto acá.
-        var html = window.katex.renderToString(latex.replace(/^\s*=\s*/, ''), { throwOnError: false });
+        var html = AptActivity.renderSevAsEquationsGrouped(current.space, eqs, '');
         return { value: String(idx), label: html };
       });
     }
