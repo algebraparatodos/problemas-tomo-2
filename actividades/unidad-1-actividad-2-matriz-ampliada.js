@@ -62,9 +62,8 @@
       return parts.length ? parts.join('') : '0';
     }
 
-    function systemLatex(A,b){
-      var rows = A.map(function(row,i){ return termsToLatex(row) + ' = ' + b[i]; });
-      return '\\begin{cases} ' + rows.join(' \\\\ ') + ' \\end{cases}';
+    function systemLines(A,b){
+      return A.map(function(row,i){ return termsToLatex(row) + ' = ' + b[i]; });
     }
 
     function explainResults(results){
@@ -95,7 +94,7 @@
         return generateSystem();
       },
       renderContent: function(container, current){
-        window.katex.render(systemLatex(current.A, current.b), container, { throwOnError:false });
+        window.AptActivity.renderSystemOfEquations(container, systemLines(current.A, current.b));
       },
       cellAriaLabel: function(current, r, c){
         return 'Fila ' + (r+1) + (c<3 ? ', valor absoluto del coeficiente de ' + VARS[c] : ', valor absoluto del término independiente');
