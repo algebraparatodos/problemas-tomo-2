@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · exam.js (v2.12)
+   ÁLGEBRA PARA TODOS · exam.js (v2.15)
    ------------------------------------------------------------
    Modo examen: independiente de engine.js a propósito (son dos
    cosas distintas que conviven, no una extensión de la otra).
@@ -15,6 +15,27 @@
          questionsPerTopic: 3
        });
      </script>
+
+   Botón "Reportar un problema" (agregado en v2.13): NO reimplementa
+   el modal — llama a AptActivity.openReportModal(), el mismo modal
+   y el mismo Google Form que usan las landings de actividades. Está
+   feature-detectado igual que el resto de lo que toma del engine
+   (ver engine()): si por algún motivo la landing no cargó engine.js
+   antes que este archivo, el botón simplemente no se muestra en vez
+   de quedar muerto. En la práctica siempre está disponible, porque
+   actividades-registro.js ya depende de que AptActivity exista.
+   Desde v2.14 le pasa un contextLabel (unidad/tema/pregunta actual)
+   a openReportModal(), porque a diferencia de una landing de
+   actividad, en modo examen todas las preguntas comparten la misma
+   URL — requiere engine v4.14+ para que ese detalle se adjunte.
+
+   Modo trial (cfg.trial = {ctaUrl, freeRatio?, text?}), desde v2.15:
+   tocar un tema bloqueado o el banner de trial abre el modal "hace
+   falta estar registrado" (AptActivity.openRegistroModal(), engine
+   v4.15+) en vez de mandar directo al checkout — así alguien que ya
+   está registrado puede saltarlo con "¿Ya tenés cuenta? Ir directo →".
+   cfg.trial.ctaUrl se conserva como fallback si el engine cargado es
+   viejo o no está.
    ============================================================ */
 (function (global) {
   'use strict';
@@ -23,7 +44,7 @@
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. La 2.0 es el salto de leer exercises.js a leer
      las actividades del repo, mas las preguntas compuestas. */
-  var VERSION = '2.12';
+  var VERSION = '2.15';
 
   var FONT_LINK_ID = 'apt-exam-fonts';
   var KATEX_CSS_ID = 'apt-exam-katex-css';
@@ -179,6 +200,15 @@
     '.apt-exam__start-btn:hover{ background:var(--chalk-hover); }',
     '.apt-exam__start-btn:disabled{ opacity:.4; cursor:default; }',
     '.apt-exam__progress-row{ display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:12.5px; color:var(--ink-soft); }',
+    '.apt-exam__progress-right{ display:flex; align-items:center; gap:10px; }',
+    /* Mismo ícono y misma función que el 🚩 del footer de las
+       landings de actividades (engine.js) — ver comentario de
+       cabecera. Circular y chico para no competir con el timer. */
+    '.apt-exam__report-btn{ flex:0 0 auto; width:24px; height:24px; display:flex; align-items:center; justify-content:center; border-radius:50%; border:1px solid rgba(151,161,216,0.3); background:transparent; font-size:11.5px; line-height:1; cursor:pointer; padding:0; transition:background .15s ease, border-color .15s ease, transform .08s ease; -webkit-tap-highlight-color:transparent; }',
+    '.apt-exam__report-btn:hover{ background:rgba(151,161,216,0.12); }',
+    '.apt-exam__report-btn:active{ transform:scale(.9); }',
+    '.apt-exam__report-btn:focus-visible{ outline:2px solid var(--chalk-light); outline-offset:2px; }',
+    '.apt-exam__report-btn--hidden{ display:none; }',
     '.apt-exam__timers{ display:flex; align-items:baseline; gap:10px; }',
     '.apt-exam__timer-total{ font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); opacity:.75; font-variant-numeric:tabular-nums; }',
     '.apt-exam__timer-total::before{ content:"total "; }',
@@ -594,7 +624,7 @@
           '<p class="apt-exam__versiones"></p>' +
         '</div>' +
         '<div class="apt-exam__screen apt-exam__screen--running apt-exam__screen--hidden">' +
-          '<div class="apt-exam__progress-row"><span class="apt-exam__progress-label"></span><span class="apt-exam__timers"><span class="apt-exam__timer-total"></span><span class="apt-exam__timer">0:00</span></span></div>' +
+          '<div class="apt-exam__progress-row"><span class="apt-exam__progress-label"></span><span class="apt-exam__progress-right"><button type="button" class="apt-exam__report-btn" aria-label="Reportar un problema">🚩</button><span class="apt-exam__timers"><span class="apt-exam__timer-total"></span><span class="apt-exam__timer">0:00</span></span></span></div>' +
           '<div class="apt-exam__progress-bar"><div class="apt-exam__progress-fill"></div></div>' +
           '<p class="apt-exam__prompt"></p>' +
           '<div class="apt-exam__card"><div class="apt-exam__content"></div></div>' +
@@ -632,6 +662,7 @@
       progressLabel: root.querySelector('.apt-exam__progress-label'),
       timerEl: root.querySelector('.apt-exam__timer'),
       timerTotalEl: root.querySelector('.apt-exam__timer-total'),
+      reportBtn: root.querySelector('.apt-exam__report-btn'),
       promptEl: root.querySelector('.apt-exam__prompt'),
       progressFill: root.querySelector('.apt-exam__progress-fill'),
       content: root.querySelector('.apt-exam__content'),
@@ -666,6 +697,26 @@
         var freeCount = Math.max(1, Math.round(topics.length * freeRatio));
         topics.forEach(function (t, i) { if (i >= freeCount) trialLocked[t] = true; });
       });
+    }
+
+    /* Aviso de "hace falta estar registrado" — al tocar un tema
+       bloqueado o el banner de trial, en vez de mandar directo al
+       checkout (cfg.trial.ctaUrl) se abre el MISMO modal que usa el
+       botón "📝 Modo examen" de las landings de actividades: así,
+       quien ya está registrado puede tocar "¿Ya tenés cuenta? Ir
+       directo →" y saltar el checkout entero. Requiere engine v4.15+
+       (openRegistroModal recién se expuso ahí); si la landing trial
+       tiene un engine.js viejo o no lo cargó, se cae de vuelta al
+       comportamiento anterior — ir directo al checkout — en vez de
+       quedar como un botón muerto. */
+    function abrirAvisoRegistro() {
+      var E = engine();
+      if (E && typeof E.openRegistroModal === 'function') {
+        E.openRegistroModal();
+        return true;
+      }
+      if (cfg.trial && cfg.trial.ctaUrl) window.location.href = cfg.trial.ctaUrl;
+      return false;
     }
 
       /* Un desplegable por unidad. Con 31 temas la lista de corrido era
@@ -721,7 +772,7 @@
           if (trialLocked[topic]) {
             btn.classList.add('is-locked');
             btn.setAttribute('aria-label', topic + ' (bloqueado — registrate para desbloquear)');
-            btn.addEventListener('click', function () { window.location.href = cfg.trial.ctaUrl; });
+            btn.addEventListener('click', function () { abrirAvisoRegistro(); });
           } else {
             btn.addEventListener('click', function () {
               selectedTopics[topic] = !selectedTopics[topic];
@@ -753,14 +804,60 @@
       if (el) el.textContent = partes.join(' \u00b7 ');
     })();
 
+    /* Botón "Reportar un problema" — reusa el modal del engine (mismo
+       Google Form anónimo que las landings de actividades) en vez de
+       duplicarlo acá. Si por algún motivo engine.js no está cargado,
+       se oculta en vez de quedar como un botón muerto.
+
+       A diferencia de una landing de actividad (una URL por ejercicio),
+       en modo examen TODAS las preguntas comparten la misma URL — asi
+       que la URL sola no alcanza para saber sobre qué pregunta se
+       reportó algo. Por eso se arma un contextLabel con unidad, tema,
+       enunciado y número de pregunta, y se pasa a openReportModal()
+       (requiere engine v4.14+; en versiones viejas del engine el
+       reporte se manda igual, solo que sin ese detalle extra). Se
+       calcula recién al tocar el botón, no al armar la pantalla, para
+       que siempre refleje la pregunta que se está viendo en ese momento. */
+    function currentQuestionLabel() {
+      if (!examState || !examState.questions) return null;
+      var q = examState.questions[examState.index];
+      if (!q || !q.exercise) return null;
+      var partes = [];
+      if (q.exercise.unit) partes.push(q.exercise.unit);
+      if (q.exercise.topic) partes.push(q.exercise.topic);
+      if (q.exercise.title) partes.push(q.exercise.title);
+      var label = partes.join(' \u00b7 ');
+      if (q.exercise.parte) label += ' (parte ' + q.exercise.parte + ')';
+      label += ' \u2014 pregunta ' + (examState.index + 1) + ' de ' + examState.questions.length;
+      return label;
+    }
+    (function () {
+      var E = engine();
+      if (refs.reportBtn) {
+        if (E && typeof E.openReportModal === 'function') {
+          refs.reportBtn.addEventListener('click', function () {
+            E.openReportModal(currentQuestionLabel());
+          });
+        } else {
+          refs.reportBtn.classList.add('apt-exam__report-btn--hidden');
+        }
+      }
+    })();
+
     /* Modo trial: banner clickeable entero (no solo un botón chico
-       adentro) — todo el aviso lleva al checkout de la Offer gratuita. */
+       adentro) — abre el mismo aviso de registro que un tema
+       bloqueado (ver abrirAvisoRegistro). Se deja el href apuntando
+       al checkout como fallback: si por algún motivo el modal no
+       está disponible, el click igual navega en vez de no hacer nada. */
     if (cfg.trial) {
       var trialBanner = document.createElement('a');
       trialBanner.className = 'apt-exam__trial-banner';
       trialBanner.href = cfg.trial.ctaUrl;
       trialBanner.textContent = cfg.trial.text ||
         'Esta es una versión limitada. Para la versión full, tenés que registrarte. Es gratis.';
+      trialBanner.addEventListener('click', function (e) {
+        if (abrirAvisoRegistro()) e.preventDefault();
+      });
       refs.startBtn.insertAdjacentElement('afterend', trialBanner);
     }
 
