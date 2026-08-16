@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v4.15)
+   ÁLGEBRA PARA TODOS · engine.js (v4.16)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -104,7 +104,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '4.15';
+  var ENGINE_VERSION = '4.16';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -1168,7 +1168,13 @@
 
     catalogBtn.addEventListener('click', openCatalogModal);
     examBtn.addEventListener('click', openRegistroModal);
-    reportBtn.addEventListener('click', openReportModal);
+    /* Envuelto en función (no pasado directo): addEventListener manda
+       el evento de click como primer argumento, y desde que
+       openReportModal acepta un contextLabel opcional (v4.14+) eso
+       se filtraba como contexto — el reporte llegaba con
+       "[object PointerEvent]" pegado a la URL. Bug real, encontrado
+       en la batería de pruebas post-merge de v4.14/v4.15. */
+    reportBtn.addEventListener('click', function () { openReportModal(); });
 
     function updateMuteBtn() {
       muteBtn.textContent = muted ? '🔇' : '🔊';
