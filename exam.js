@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · exam.js (v2.15)
+   ÁLGEBRA PARA TODOS · exam.js (v2.16)
    ------------------------------------------------------------
    Modo examen: independiente de engine.js a propósito (son dos
    cosas distintas que conviven, no una extensión de la otra).
@@ -36,6 +36,16 @@
    está registrado puede saltarlo con "¿Ya tenés cuenta? Ir directo →".
    cfg.trial.ctaUrl se conserva como fallback si el engine cargado es
    viejo o no está.
+
+   Contador de examenes generados (desde v2.16): CONTADOR_URL apunta a
+   un Cloudflare Worker propio (KV) que solo expone ?action=read y
+   ?action=increment. Se lee al cargar la pantalla de seleccion, se
+   incrementa al arrancar el examen, y se re-lee con polling mientras
+   la pagina esta abierta (asi el numero sigue subiendo en pantalla
+   aunque el alumno se quede haciendo el examen y otra gente arranque
+   el suyo en simultaneo). Todo el modulo esta en try/catch y nunca
+   bloquea el examen: si el Worker no responde, el contador
+   simplemente no aparece.
    ============================================================ */
 (function (global) {
   'use strict';
@@ -44,12 +54,15 @@
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. La 2.0 es el salto de leer exercises.js a leer
      las actividades del repo, mas las preguntas compuestas. */
-  var VERSION = '2.15';
+  var VERSION = '2.16';
 
   var FONT_LINK_ID = 'apt-exam-fonts';
   var KATEX_CSS_ID = 'apt-exam-katex-css';
   var KATEX_JS_ID = 'apt-exam-katex-js';
   var STYLE_ID = 'apt-exam-style';
+
+  var CONTADOR_URL = 'https://apt-contador-examenes.agaparatodos.workers.dev/';
+  var CONTADOR_POLL_MS = 15000;
 
   /* Devuelve el engine si esta cargado. Feature detection a proposito:
      si la landing no lo incluyo, el examen sigue funcionando igual,
@@ -147,6 +160,9 @@
     '.apt-exam *{ box-sizing:border-box; }',
     '.apt-exam__app{ width:100%; max-width:var(--max-w); display:flex; flex-direction:column; gap:clamp(12px,2.6vh,20px); }',
     '.apt-exam__eyebrow{ font-family:var(--font-serif); font-weight:700; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--chalk-light); margin:0 0 8px; text-align:center; }',
+    '.apt-exam__contador{ font-family:var(--font-mono); font-size:12px; color:var(--ink-soft); text-align:center; margin:0 0 6px; opacity:0; transition:opacity .3s ease; }',
+    '.apt-exam__contador.is-visible{ opacity:1; }',
+    '.apt-exam__contador b{ color:var(--chalk-light); font-family:var(--font-serif); font-weight:700; }',
     '.apt-exam__title{ font-family:var(--font-mono); font-weight:700; font-size:clamp(22px,6.5vw,28px); margin:0; color:var(--ink) !important; line-height:1.25; text-align:center; }',
     '.apt-exam__subtitle{ font-family:var(--font-mono); font-size:13.5px; color:var(--ink-soft); margin:8px 0 0; line-height:1.5; text-align:center; }',
     '.apt-exam__card{ background:var(--bg-card); border:1px solid rgba(151,161,216,0.18); border-radius:var(--radius); box-shadow:0 1px 3px rgba(0,0,0,.4), 0 10px 24px rgba(0,0,0,.35); padding:18px; }',
@@ -616,6 +632,7 @@
     root.innerHTML =
       '<div class="apt-exam__app">' +
         '<div class="apt-exam__screen apt-exam__screen--select">' +
+          '<p class="apt-exam__contador"></p>' +
           '<p class="apt-exam__eyebrow">' + (cfg.eyebrow || 'Álgebra Para Todos') + '</p>' +
           '<h1 class="apt-exam__title">' + (cfg.title || 'Ejercicios de Álgebra Lineal') + '</h1>' +
           '<p class="apt-exam__subtitle">' + (cfg.subtitle || 'Elegí los temas que querés practicar. Se arma un examen cronometrado, sin volver atrás.') + '</p>' +
@@ -655,6 +672,7 @@
 
     var refs = {
       selectScreen: root.querySelector('.apt-exam__screen--select'),
+      contadorEl: root.querySelector('.apt-exam__contador'),
       runningScreen: root.querySelector('.apt-exam__screen--running'),
       resultsScreen: root.querySelector('.apt-exam__screen--results'),
       topicsWrap: root.querySelector('.apt-exam__topics'),
@@ -675,6 +693,43 @@
       restartBtn: root.querySelector('.apt-exam__restart-btn'),
         abandonarBtn: root.querySelector('.apt-exam__abandonar-btn')
     };
+
+    /* ---------- contador de examenes generados (Cloudflare Worker + KV) ----------
+       Todo envuelto en try/catch y con fetch opcional: si el Worker no
+       responde o no existe fetch (navegador viejísimo), el contador
+       simplemente no aparece — nunca bloquea ni rompe el examen. */
+    (function contador() {
+      if (!refs.contadorEl || typeof fetch !== 'function') return;
+
+      function pintar(n) {
+        try {
+          refs.contadorEl.innerHTML = 'Exámenes generados hasta ahora: <b>' + n + '</b>';
+          refs.contadorEl.classList.add('is-visible');
+        } catch (e) { /* noop */ }
+      }
+
+      function leer() {
+        fetch(CONTADOR_URL + '?action=read')
+          .then(function (r) { return r.json(); })
+          .then(function (data) { if (data && typeof data.count === 'number') pintar(data.count); })
+          .catch(function () { /* silencioso: sin contador no pasa nada */ });
+      }
+
+      function incrementar() {
+        fetch(CONTADOR_URL + '?action=increment')
+          .then(function (r) { return r.json(); })
+          .then(function (data) { if (data && typeof data.count === 'number') pintar(data.count); })
+          .catch(function () { /* silencioso */ });
+      }
+
+      leer();
+      // Polling: sigue actualizando el número mientras la página esté
+      // abierta (aunque el alumno esté en medio del examen), para que
+      // si otra gente arranca el suyo en simultáneo se vea subir.
+      setInterval(leer, CONTADOR_POLL_MS);
+
+      refs._contadorIncrementar = incrementar;
+    })();
 
     /* ---------- pantalla 1: selección de temas ---------- */
     var units = {};
@@ -873,6 +928,7 @@
     var examState = null;
 
     refs.startBtn.addEventListener('click', function () {
+      if (typeof refs._contadorIncrementar === 'function') refs._contadorIncrementar();
       var topics = Object.keys(selectedTopics).filter(function (t) { return selectedTopics[t]; });
       /* Con AptRegistro los generadores todavia no estan en memoria: se
          descargan solo los de los temas elegidos. Las 48 actividades
