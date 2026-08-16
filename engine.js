@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · engine.js (v4.13)
+   ÁLGEBRA PARA TODOS · engine.js (v4.15)
    ------------------------------------------------------------
    Motor compartido por TODAS las actividades. Este es el único
    archivo que se edita para cambiar algo común a las 50 landings
@@ -76,7 +76,10 @@
    sintetizado + confetti/globos + mute persistente compartido +
    botón "Reportar un problema" en el footer (abre un modal,
    manda mensaje + URL de la landing a un Google Form compartido,
-   totalmente anónimo — sin nombre ni email).
+   totalmente anónimo — sin nombre ni email). openReportModal()
+   acepta un contextLabel opcional (desde v4.14) para cuando la URL
+   sola no identifica dónde surgió el reporte — lo usa exam.js,
+   donde todas las preguntas comparten una misma landing.
    ============================================================ */
 (function (global) {
   'use strict';
@@ -101,7 +104,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '4.13';
+  var ENGINE_VERSION = '4.15';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -437,6 +440,10 @@
     '.apt-report-modal__card{ width:100%; max-width:360px; background:#16161C; border:1px solid rgba(151,161,216,0.18); border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,.5); padding:22px 20px; display:flex; flex-direction:column; gap:12px; box-sizing:border-box; }',
     '.apt-report-modal__title{ font-family:"Lora",Georgia,"Times New Roman",serif; font-weight:700; font-size:18px; color:#F5F5F7; margin:0; }',
     '.apt-report-modal__desc{ font-size:12.5px; color:#A7ACC0; line-height:1.5; margin:0; }',
+    /* Solo aparece cuando openReportModal recibe un contextLabel (hoy,
+       el modo examen) — ver comentario junto a openReportModal(). */
+    '.apt-report-modal__context{ font-size:11px; color:#97A1D8; opacity:.85; line-height:1.4; margin:-2px 0 0; }',
+    '.apt-report-modal__context--hidden{ display:none; }',
     '.apt-report-modal__form{ display:flex; flex-direction:column; gap:10px; }',
     '.apt-report-modal__form--hidden{ display:none; }',
     '.apt-report-modal__textarea{ width:100%; min-height:100px; resize:vertical; font-family:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace; font-size:14px; color:#F5F5F7; background:rgba(151,161,216,0.07); border:2px solid rgba(151,161,216,0.3); border-radius:10px; padding:10px; box-sizing:border-box; }',
@@ -877,6 +884,7 @@
         '<h2 class="apt-report-modal__title">Reportar un problema</h2>' +
         '<div class="apt-report-modal__form">' +
           '<p class="apt-report-modal__desc">Contanos qué encontraste raro en este ejercicio: un enunciado que no cierra, un botón que no responde, algo que se ve mal. Es anónimo — guardamos automáticamente en qué ejercicio estás para poder revisarlo.</p>' +
+          '<p class="apt-report-modal__context apt-report-modal__context--hidden"></p>' +
           '<textarea class="apt-report-modal__textarea" maxlength="500" placeholder="Escribí acá tu mensaje..."></textarea>' +
           '<p class="apt-report-modal__error apt-report-modal__error--hidden">No se pudo enviar. Revisá tu conexión e intentá de nuevo.</p>' +
           '<div class="apt-report-modal__actions">' +
@@ -921,7 +929,17 @@
 
       var params = new URLSearchParams();
       params.set(REPORT_ENTRY_MESSAGE, msg);
-      params.set(REPORT_ENTRY_URL, window.location.href);
+      /* En landings normales window.location.href YA identifica el
+         ejercicio (una URL por actividad). En modo examen todas las
+         preguntas comparten la misma URL ("modo examen" en general),
+         así que ahí hace falta el contexto extra: qué unidad/tema/
+         pregunta estaba viendo el alumno. modal._reportContext lo
+         pone quien haya llamado a openReportModal(contextLabel); si
+         no se pasó nada (caso normal de una landing de actividad),
+         queda tal cual estaba antes. */
+      var urlValue = window.location.href;
+      if (modal._reportContext) urlValue += '  \u2014 ' + modal._reportContext;
+      params.set(REPORT_ENTRY_URL, urlValue);
 
       fetch(REPORT_FORM_ACTION, {
         method: 'POST',
@@ -947,8 +965,18 @@
       if (e.key === 'Escape' && !modal.classList.contains('apt-report-modal--hidden')) closeModal();
     });
 
-    modal._openReport = function () {
+    modal._openReport = function (contextLabel) {
       resetModal();
+      modal._reportContext = contextLabel || null;
+      var contextEl = modal.querySelector('.apt-report-modal__context');
+      if (contextEl) {
+        if (contextLabel) {
+          contextEl.textContent = 'Se va a adjuntar: ' + contextLabel;
+          contextEl.classList.remove('apt-report-modal__context--hidden');
+        } else {
+          contextEl.classList.add('apt-report-modal__context--hidden');
+        }
+      }
       modal.classList.remove('apt-report-modal--hidden');
       lockBodyScroll();
       textarea.focus();
@@ -956,8 +984,13 @@
     return modal;
   }
 
-  function openReportModal() {
-    ensureReportModal()._openReport();
+  /* contextLabel (opcional): texto extra para identificar DÓNDE surgió
+     el reporte cuando la URL sola no alcanza — hoy lo usa el modo
+     examen (ver exam.js), donde todas las preguntas comparten la
+     misma landing. Las landings de actividades pueden seguir llamando
+     a openReportModal() sin argumentos, como siempre. */
+  function openReportModal(contextLabel) {
+    ensureReportModal()._openReport(contextLabel);
   }
 
   /* ------------------------------------------------------------
@@ -1030,6 +1063,13 @@
      (Offer aMFTW3eK); Kajabi se encarga de registrar y del
      redirect posterior al examen. Mismo patrón que los otros dos
      modales (ensureX / _openX / cerrar por X, backdrop o Escape).
+
+     Desde v4.15 también se usa desde la landing TRIAL del examen
+     (exam.js, cfg.trial): antes, tocar un tema bloqueado o el banner
+     mandaba directo a este mismo checkout SIN pasar por el modal —
+     lo cual forzaba a cualquiera que ya estuviera registrado a
+     re-registrarse. Con el modal de por medio, esa persona puede
+     tocar "¿Ya tenés cuenta? Ir directo →" y saltar el checkout.
      ------------------------------------------------------------ */
   function ensureRegistroModal() {
     var existing = document.getElementById(REGISTRO_MODAL_ID);
@@ -2978,6 +3018,10 @@
     ensureAssets: ensureAssets,
     openReportModal: openReportModal,
     openCatalogModal: openCatalogModal,
+    /* Modal "para usar el modo examen tenés que estar registrado" —
+       expuesto desde v4.15 para que exam.js lo reuse en la landing
+       trial (ver comentario junto a ensureRegistroModal). */
+    openRegistroModal: openRegistroModal,
     playCorrectSound: playCorrectSound,
     playWrongSound: playWrongSound,
     celebrate: celebrate,
