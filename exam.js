@@ -61,7 +61,7 @@
   var KATEX_JS_ID = 'apt-exam-katex-js';
   var STYLE_ID = 'apt-exam-style';
 
-  var CONTADOR_URL = 'https://apt-contador-examenes.agaparatodos.workers.dev/';
+  var CONTADOR_URL = 'https://examenes.algebraparatodos.com/';
   var CONTADOR_POLL_MS = 15000;
 
   /* Devuelve el engine si esta cargado. Feature detection a proposito:
