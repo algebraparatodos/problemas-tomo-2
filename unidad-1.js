@@ -50,6 +50,9 @@
     { n: 16, titulo: 'Calculá la inversa por Gauss-Jordan',      archivo: 'unidad-1-actividad-16-inversa-gauss-jordan.js' },
     { n: 17, titulo: '¿Vale esta igualdad?',                     archivo: 'unidad-1-actividad-17-vale-esta-igualdad.js' },
     { n: 18, titulo: 'Clasificá la matriz especial',             archivo: 'unidad-1-actividad-18-matrices-especiales.js' },
+    { n: 19, titulo: '¿Qué operación hace esta elemental?',         archivo: 'unidad-1-actividad-19-matrices-elementales.js' },
+    { n: 20, titulo: 'Calculá el determinante',                    archivo: 'unidad-1-actividad-20-determinante-sarrus.js' },
+    { n: 21, titulo: 'Desarrollo por cofactores',                  archivo: 'unidad-1-actividad-21-desarrollo-cofactores.js' },
     { n: 26, titulo: 'Factorización LU',                          archivo: 'unidad-1-actividad-26-factorizacion-lu.js' }
   ];
 
