@@ -42,7 +42,8 @@
     { n: 8,  titulo: 'Diagonalización ortogonal',                  archivo: 'unidad-4-actividad-8-diagonalizacion-ortogonal.js' },
     { n: 9,  titulo: 'Calculá una potencia alta',                   archivo: 'unidad-4-actividad-9-potencias.js' },
     { n: 10, titulo: 'Cadenas de Markov: el estado a largo plazo',  archivo: 'unidad-4-actividad-10-markov.js' },
-    { n: 11, titulo: 'Verificá Cayley-Hamilton',                    archivo: 'unidad-4-actividad-11-cayley-hamilton.js' }
+    { n: 11, titulo: 'Verificá Cayley-Hamilton',                    archivo: 'unidad-4-actividad-11-cayley-hamilton.js' },
+    { n: 12, titulo: 'Índice de nilpotencia',                       archivo: 'unidad-4-actividad-12-indice-nilpotencia.js' }
   ];
 
   var UNIDAD_TITULO = 'Unidad 4 · Diagonalización';
