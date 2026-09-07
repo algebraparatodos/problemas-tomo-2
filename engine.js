@@ -172,7 +172,11 @@
         { title: 'Suma de matrices', url: 'https://www.algebraparatodos.com/qrt2u1#12' },
         { title: 'Producto de una matriz por un escalar', url: 'https://www.algebraparatodos.com/qrt2u1#13' },
         { title: 'Trasposición de matrices', url: 'https://www.algebraparatodos.com/qrt2u1#14' },
-        { title: 'Producto de matrices', url: 'https://www.algebraparatodos.com/qrt2u1#15' }
+        { title: 'Producto de matrices', url: 'https://www.algebraparatodos.com/qrt2u1#15' },
+        { title: 'Calculá la inversa por Gauss-Jordan', url: 'https://www.algebraparatodos.com/qrt2u1#16' },
+        { title: '¿Vale esta igualdad?', url: 'https://www.algebraparatodos.com/qrt2u1#17' },
+        { title: 'Clasificá la matriz especial', url: 'https://www.algebraparatodos.com/qrt2u1#18' },
+        { title: 'Factorización LU', url: 'https://www.algebraparatodos.com/qrt2u1#26' }
       ]
     },
     { title: 'Unidad 2: Subespacios vectoriales', activities: [

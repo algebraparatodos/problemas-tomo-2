@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · actividades-registro.js (v2.0)
+   ÁLGEBRA PARA TODOS · actividades-registro.js (v2.1)
    ------------------------------------------------------------
    Le da al modo examen los ejercicios LEYENDO los archivos de
    actividades/, en vez de tener una segunda copia de su lógica.
@@ -39,7 +39,7 @@
   /* Subir esto en CADA cambio, aunque sea chico: menor para ajustes,
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. */
-  var VERSION = '2.0';
+  var VERSION = '2.1';
 
   var BASE = 'https://algebraparatodos.github.io/problemas-tomo-2/actividades/';
   var JAULA_ID = 'apt-registro-jaula';
@@ -75,6 +75,14 @@
     { id: 'u1a14', unidad: 1, n: 14, titulo: 'Trasposición de matrices',                            modo: 'choices',      grupo: 'Operaciones con matrices', archivo: 'unidad-1-actividad-14-trasposicion.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
     { id: 'u1a15', unidad: 1, n: 15, titulo: 'Producto de matrices',                                modo: 'choices',      grupo: 'Operaciones con matrices', archivo: 'unidad-1-actividad-15-producto-de-matrices.js',
+      unidadTitulo: 'Unidad 1: Matrices y SEL' },
+    { id: 'u1a16', unidad: 1, n: 16, titulo: 'Calculá la inversa por Gauss-Jordan',            modo: 'grid',         grupo: 'Operaciones con matrices', archivo: 'unidad-1-actividad-16-inversa-gauss-jordan.js',
+      unidadTitulo: 'Unidad 1: Matrices y SEL' },
+    { id: 'u1a17', unidad: 1, n: 17, titulo: '¿Vale esta igualdad?',                            modo: 'choices',      grupo: 'Operaciones con matrices', archivo: 'unidad-1-actividad-17-vale-esta-igualdad.js',
+      unidadTitulo: 'Unidad 1: Matrices y SEL' },
+    { id: 'u1a18', unidad: 1, n: 18, titulo: 'Clasificá la matriz especial',                    modo: 'multiselect',  grupo: 'Matrices especiales', archivo: 'unidad-1-actividad-18-matrices-especiales.js',
+      unidadTitulo: 'Unidad 1: Matrices y SEL' },
+    { id: 'u1a26', unidad: 1, n: 26, titulo: 'Factorización LU',                                modo: 'phases',       grupo: 'Factorización LU', archivo: 'unidad-1-actividad-26-factorizacion-lu.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
     { id: 'u2a1', unidad: 2, n: 1 , titulo: 'Operaciones con conjuntos',                           modo: 'choices',      grupo: 'Topología', archivo: 'unidad-2-actividad-1-operaciones-con-conjuntos.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },
