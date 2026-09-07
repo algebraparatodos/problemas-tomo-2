@@ -46,7 +46,8 @@
     { n: 12, titulo: 'Suma de matrices',                          archivo: 'unidad-1-actividad-12-suma-de-matrices.js' },
     { n: 13, titulo: 'Producto de una matriz por un escalar',     archivo: 'unidad-1-actividad-13-producto-por-escalar.js' },
     { n: 14, titulo: 'Trasposición de matrices',                  archivo: 'unidad-1-actividad-14-trasposicion.js' },
-    { n: 15, titulo: 'Producto de matrices',                      archivo: 'unidad-1-actividad-15-producto-de-matrices.js' }
+    { n: 15, titulo: 'Producto de matrices',                      archivo: 'unidad-1-actividad-15-producto-de-matrices.js' },
+    { n: 26, titulo: 'Factorización LU',                          archivo: 'unidad-1-actividad-26-factorizacion-lu.js' }
   ];
 
   var UNIDAD_TITULO = 'Unidad 1 · Matrices y SEL';
