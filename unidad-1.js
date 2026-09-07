@@ -47,6 +47,9 @@
     { n: 13, titulo: 'Producto de una matriz por un escalar',     archivo: 'unidad-1-actividad-13-producto-por-escalar.js' },
     { n: 14, titulo: 'Trasposición de matrices',                  archivo: 'unidad-1-actividad-14-trasposicion.js' },
     { n: 15, titulo: 'Producto de matrices',                      archivo: 'unidad-1-actividad-15-producto-de-matrices.js' },
+    { n: 16, titulo: 'Calculá la inversa por Gauss-Jordan',      archivo: 'unidad-1-actividad-16-inversa-gauss-jordan.js' },
+    { n: 17, titulo: '¿Vale esta igualdad?',                     archivo: 'unidad-1-actividad-17-vale-esta-igualdad.js' },
+    { n: 18, titulo: 'Clasificá la matriz especial',             archivo: 'unidad-1-actividad-18-matrices-especiales.js' },
     { n: 26, titulo: 'Factorización LU',                          archivo: 'unidad-1-actividad-26-factorizacion-lu.js' }
   ];
 
