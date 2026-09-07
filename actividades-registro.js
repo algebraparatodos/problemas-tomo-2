@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · actividades-registro.js (v2.2)
+   ÁLGEBRA PARA TODOS · actividades-registro.js (v2.3)
    ------------------------------------------------------------
    Le da al modo examen los ejercicios LEYENDO los archivos de
    actividades/, en vez de tener una segunda copia de su lógica.
@@ -39,7 +39,7 @@
   /* Subir esto en CADA cambio, aunque sea chico: menor para ajustes,
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. */
-  var VERSION = '2.2';
+  var VERSION = '2.3';
 
   var BASE = 'https://algebraparatodos.github.io/problemas-tomo-2/actividades/';
   var JAULA_ID = 'apt-registro-jaula';
@@ -88,7 +88,17 @@
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
     { id: 'u1a21', unidad: 1, n: 21, titulo: 'Desarrollo por cofactores',                  modo: 'phases',       grupo: 'Determinantes', archivo: 'unidad-1-actividad-21-desarrollo-cofactores.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
+    { id: 'u1a22', unidad: 1, n: 22, titulo: 'Calculá el determinante usando propiedades', modo: 'phases',       grupo: 'Determinantes', archivo: 'unidad-1-actividad-22-determinante-por-propiedades.js',
+      unidadTitulo: 'Unidad 1: Matrices y SEL' },
+    { id: 'u1a23', unidad: 1, n: 23, titulo: 'Calculá la matriz adjunta',                  modo: 'grid',         grupo: 'Determinantes', archivo: 'unidad-1-actividad-23-matriz-adjunta.js',
+      unidadTitulo: 'Unidad 1: Matrices y SEL' },
+    { id: 'u1a24', unidad: 1, n: 24, titulo: '¿Es invertible?',                            modo: 'choices',      grupo: 'Determinantes', archivo: 'unidad-1-actividad-24-es-invertible.js',
+      unidadTitulo: 'Unidad 1: Matrices y SEL' },
+    { id: 'u1a25', unidad: 1, n: 25, titulo: 'Resolvé la ecuación matricial',                 modo: 'phases',       grupo: 'Operaciones con matrices', archivo: 'unidad-1-actividad-25-ecuaciones-matriciales.js',
+      unidadTitulo: 'Unidad 1: Matrices y SEL' },
     { id: 'u1a26', unidad: 1, n: 26, titulo: 'Factorización LU',                                modo: 'phases',       grupo: 'Factorización LU', archivo: 'unidad-1-actividad-26-factorizacion-lu.js',
+      unidadTitulo: 'Unidad 1: Matrices y SEL' },
+    { id: 'u1a27', unidad: 1, n: 27, titulo: 'Elegí el pivote',                            modo: 'phases',       grupo: 'Factorización LU', archivo: 'unidad-1-actividad-27-pivotaje.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
     { id: 'u2a1', unidad: 2, n: 1 , titulo: 'Operaciones con conjuntos',                           modo: 'choices',      grupo: 'Topología', archivo: 'unidad-2-actividad-1-operaciones-con-conjuntos.js',
       unidadTitulo: 'Unidad 2: Subespacios vectoriales' },

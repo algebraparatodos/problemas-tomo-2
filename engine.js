@@ -179,7 +179,12 @@
         { title: '¿Qué operación hace esta elemental?', url: 'https://www.algebraparatodos.com/qrt2u1#19' },
         { title: 'Calculá el determinante', url: 'https://www.algebraparatodos.com/qrt2u1#20' },
         { title: 'Desarrollo por cofactores', url: 'https://www.algebraparatodos.com/qrt2u1#21' },
-        { title: 'Factorización LU', url: 'https://www.algebraparatodos.com/qrt2u1#26' }
+        { title: 'Calculá el determinante usando propiedades', url: 'https://www.algebraparatodos.com/qrt2u1#22' },
+        { title: 'Calculá la matriz adjunta', url: 'https://www.algebraparatodos.com/qrt2u1#23' },
+        { title: '¿Es invertible?', url: 'https://www.algebraparatodos.com/qrt2u1#24' },
+        { title: 'Resolvé la ecuación matricial', url: 'https://www.algebraparatodos.com/qrt2u1#25' },
+        { title: 'Factorización LU', url: 'https://www.algebraparatodos.com/qrt2u1#26' },
+        { title: 'Elegí el pivote', url: 'https://www.algebraparatodos.com/qrt2u1#27' }
       ]
     },
     { title: 'Unidad 2: Subespacios vectoriales', activities: [
