@@ -224,7 +224,23 @@
         { title: 'Identificá la TL geométrica', url: 'https://www.algebraparatodos.com/qrt2u3#15' },
         { title: 'Componé geométricas', url: 'https://www.algebraparatodos.com/qrt2u3#16' }
       ] },
-    { title: 'Unidad 4: Diagonalización', activities: [] }
+    {
+      title: 'Unidad 4: Diagonalización',
+      activities: [
+        { title: 'Polinomio característico y autovalores', url: 'https://www.algebraparatodos.com/qrt2u4#1' },
+        { title: 'Hallá los autovectores', url: 'https://www.algebraparatodos.com/qrt2u4#2' },
+        { title: 'Multiplicidad algebraica y geométrica', url: 'https://www.algebraparatodos.com/qrt2u4#3' },
+        { title: '¿Son semejantes?', url: 'https://www.algebraparatodos.com/qrt2u4#4' },
+        { title: '¿Qué se conserva al cambiar de base?', url: 'https://www.algebraparatodos.com/qrt2u4#5' },
+        { title: '¿Es diagonalizable?', url: 'https://www.algebraparatodos.com/qrt2u4#6' },
+        { title: 'Armá D a partir de P', url: 'https://www.algebraparatodos.com/qrt2u4#7' },
+        { title: 'Diagonalización ortogonal', url: 'https://www.algebraparatodos.com/qrt2u4#8' },
+        { title: 'Calculá una potencia alta', url: 'https://www.algebraparatodos.com/qrt2u4#9' },
+        { title: 'Cadenas de Markov: el estado a largo plazo', url: 'https://www.algebraparatodos.com/qrt2u4#10' },
+        { title: 'Verificá Cayley-Hamilton', url: 'https://www.algebraparatodos.com/qrt2u4#11' },
+        { title: 'Índice de nilpotencia', url: 'https://www.algebraparatodos.com/qrt2u4#12' }
+      ]
+    }
   ];
 
   /* ------------------------------------------------------------

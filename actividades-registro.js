@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · actividades-registro.js (v2.3)
+   ÁLGEBRA PARA TODOS · actividades-registro.js (v3.0)
    ------------------------------------------------------------
    Le da al modo examen los ejercicios LEYENDO los archivos de
    actividades/, en vez de tener una segunda copia de su lógica.
@@ -39,7 +39,7 @@
   /* Subir esto en CADA cambio, aunque sea chico: menor para ajustes,
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. */
-  var VERSION = '2.3';
+  var VERSION = '3.0';
 
   var BASE = 'https://algebraparatodos.github.io/problemas-tomo-2/actividades/';
   var JAULA_ID = 'apt-registro-jaula';
@@ -165,7 +165,31 @@
     { id: 'u3a15', unidad: 3, n: 15, titulo: 'Identificá la TL geométrica',                         modo: 'choices',      archivo: 'unidad-3-actividad-15-tl-geometrica.js',
       unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
     { id: 'u3a16', unidad: 3, n: 16, titulo: 'Componé geométricas',                                 modo: 'choices',      grupo: 'Composición e inversa de TL', archivo: 'unidad-3-actividad-16-composicion-geometricas.js',
-      unidadTitulo: 'Unidad 3: Transformaciones Lineales' }
+      unidadTitulo: 'Unidad 3: Transformaciones Lineales' },
+    { id: 'u4a1', unidad: 4, n: 1 , titulo: 'Polinomio característico y autovalores',          modo: 'choices',       grupo: 'Autovalores y autovectores', archivo: 'unidad-4-actividad-1-polinomio-caracteristico.js',
+      unidadTitulo: 'Unidad 4: Diagonalización' },
+    { id: 'u4a2', unidad: 4, n: 2 , titulo: 'Hallá los autovectores',                          modo: 'choices',       grupo: 'Autovalores y autovectores', archivo: 'unidad-4-actividad-2-autovectores.js',
+      unidadTitulo: 'Unidad 4: Diagonalización' },
+    { id: 'u4a3', unidad: 4, n: 3 , titulo: 'Multiplicidad algebraica y geométrica',           modo: 'choices',       grupo: 'Autovalores y autovectores', archivo: 'unidad-4-actividad-3-multiplicidades.js',
+      unidadTitulo: 'Unidad 4: Diagonalización' },
+    { id: 'u4a4', unidad: 4, n: 4 , titulo: '¿Son semejantes?',                                modo: 'choices',       grupo: 'Semejanza e invariantes', archivo: 'unidad-4-actividad-4-son-semejantes.js',
+      unidadTitulo: 'Unidad 4: Diagonalización' },
+    { id: 'u4a5', unidad: 4, n: 5 , titulo: '¿Qué se conserva al cambiar de base?',            modo: 'multiselect',   grupo: 'Semejanza e invariantes', archivo: 'unidad-4-actividad-5-invariantes.js',
+      unidadTitulo: 'Unidad 4: Diagonalización' },
+    { id: 'u4a6', unidad: 4, n: 6 , titulo: '¿Es diagonalizable?',                             modo: 'choices',       grupo: 'Diagonalización', archivo: 'unidad-4-actividad-6-es-diagonalizable.js',
+      unidadTitulo: 'Unidad 4: Diagonalización' },
+    { id: 'u4a7', unidad: 4, n: 7 , titulo: 'Armá D a partir de P',                            modo: 'grid',          grupo: 'Diagonalización', archivo: 'unidad-4-actividad-7-arma-p-y-d.js',
+      unidadTitulo: 'Unidad 4: Diagonalización' },
+    { id: 'u4a8', unidad: 4, n: 8 , titulo: 'Diagonalización ortogonal',                       modo: 'choices',       grupo: 'Diagonalización', archivo: 'unidad-4-actividad-8-diagonalizacion-ortogonal.js',
+      unidadTitulo: 'Unidad 4: Diagonalización' },
+    { id: 'u4a9', unidad: 4, n: 9 , titulo: 'Calculá una potencia alta',                       modo: 'grid',          grupo: 'Aplicaciones de la diagonalización', archivo: 'unidad-4-actividad-9-potencias.js',
+      unidadTitulo: 'Unidad 4: Diagonalización' },
+    { id: 'u4a10', unidad: 4, n: 10, titulo: 'Cadenas de Markov: el estado a largo plazo',      modo: 'choices',       grupo: 'Aplicaciones de la diagonalización', archivo: 'unidad-4-actividad-10-markov.js',
+      unidadTitulo: 'Unidad 4: Diagonalización' },
+    { id: 'u4a11', unidad: 4, n: 11, titulo: 'Verificá Cayley-Hamilton',                        modo: 'choices',       grupo: 'Cayley-Hamilton', archivo: 'unidad-4-actividad-11-cayley-hamilton.js',
+      unidadTitulo: 'Unidad 4: Diagonalización' },
+    { id: 'u4a12', unidad: 4, n: 12, titulo: 'Índice de nilpotencia',                           modo: 'choices',       grupo: 'Cayley-Hamilton', archivo: 'unidad-4-actividad-12-indice-nilpotencia.js',
+      unidadTitulo: 'Unidad 4: Diagonalización' }
   ];
 
   /* Modos que el examen ya sabe presentar. Los de tipo 'phases'
