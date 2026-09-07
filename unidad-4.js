@@ -34,7 +34,11 @@
   var ACTIVIDADES = [
     { n: 1,  titulo: 'Polinomio característico y autovalores',     archivo: 'unidad-4-actividad-1-polinomio-caracteristico.js' },
     { n: 2,  titulo: 'Hallá los autovectores',                     archivo: 'unidad-4-actividad-2-autovectores.js' },
-    { n: 3,  titulo: 'Multiplicidad algebraica y geométrica',        archivo: 'unidad-4-actividad-3-multiplicidades.js' }
+    { n: 3,  titulo: 'Multiplicidad algebraica y geométrica',        archivo: 'unidad-4-actividad-3-multiplicidades.js' },
+    { n: 4,  titulo: '¿Son semejantes?',                            archivo: 'unidad-4-actividad-4-son-semejantes.js' },
+    { n: 5,  titulo: '¿Qué se conserva al cambiar de base?',          archivo: 'unidad-4-actividad-5-invariantes.js' },
+    { n: 6,  titulo: '¿Es diagonalizable?',                         archivo: 'unidad-4-actividad-6-es-diagonalizable.js' },
+    { n: 7,  titulo: 'Armá D a partir de P',                        archivo: 'unidad-4-actividad-7-arma-p-y-d.js' }
   ];
 
   var UNIDAD_TITULO = 'Unidad 4 · Diagonalización';
