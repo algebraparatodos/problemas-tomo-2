@@ -53,6 +53,9 @@
     { n: 19, titulo: '¿Qué operación hace esta elemental?',         archivo: 'unidad-1-actividad-19-matrices-elementales.js' },
     { n: 20, titulo: 'Calculá el determinante',                    archivo: 'unidad-1-actividad-20-determinante-sarrus.js' },
     { n: 21, titulo: 'Desarrollo por cofactores',                  archivo: 'unidad-1-actividad-21-desarrollo-cofactores.js' },
+    { n: 22, titulo: 'Calculá el determinante usando propiedades', archivo: 'unidad-1-actividad-22-determinante-por-propiedades.js' },
+    { n: 23, titulo: 'Calculá la matriz adjunta',                  archivo: 'unidad-1-actividad-23-matriz-adjunta.js' },
+    { n: 24, titulo: '¿Es invertible?',                            archivo: 'unidad-1-actividad-24-es-invertible.js' },
     { n: 26, titulo: 'Factorización LU',                          archivo: 'unidad-1-actividad-26-factorizacion-lu.js' }
   ];
 
