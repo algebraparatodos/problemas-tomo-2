@@ -56,7 +56,9 @@
     { n: 22, titulo: 'Calculá el determinante usando propiedades', archivo: 'unidad-1-actividad-22-determinante-por-propiedades.js' },
     { n: 23, titulo: 'Calculá la matriz adjunta',                  archivo: 'unidad-1-actividad-23-matriz-adjunta.js' },
     { n: 24, titulo: '¿Es invertible?',                            archivo: 'unidad-1-actividad-24-es-invertible.js' },
-    { n: 26, titulo: 'Factorización LU',                          archivo: 'unidad-1-actividad-26-factorizacion-lu.js' }
+    { n: 25, titulo: 'Resolvé la ecuación matricial',                 archivo: 'unidad-1-actividad-25-ecuaciones-matriciales.js' },
+    { n: 26, titulo: 'Factorización LU',                          archivo: 'unidad-1-actividad-26-factorizacion-lu.js' },
+    { n: 27, titulo: 'Elegí el pivote',                            archivo: 'unidad-1-actividad-27-pivotaje.js' }
   ];
 
   var UNIDAD_TITULO = 'Unidad 1 · Matrices y SEL';
