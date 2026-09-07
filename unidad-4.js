@@ -32,7 +32,7 @@
      expone, esta lista se puede derivar de ahí y dejan de poder
      desincronizarse. */
   var ACTIVIDADES = [
-
+    { n: 1,  titulo: 'Polinomio característico y autovalores',     archivo: 'unidad-4-actividad-1-polinomio-caracteristico.js' }
   ];
 
   var UNIDAD_TITULO = 'Unidad 4 · Diagonalización';
