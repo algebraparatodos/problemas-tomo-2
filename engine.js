@@ -176,6 +176,9 @@
         { title: 'Calculá la inversa por Gauss-Jordan', url: 'https://www.algebraparatodos.com/qrt2u1#16' },
         { title: '¿Vale esta igualdad?', url: 'https://www.algebraparatodos.com/qrt2u1#17' },
         { title: 'Clasificá la matriz especial', url: 'https://www.algebraparatodos.com/qrt2u1#18' },
+        { title: '¿Qué operación hace esta elemental?', url: 'https://www.algebraparatodos.com/qrt2u1#19' },
+        { title: 'Calculá el determinante', url: 'https://www.algebraparatodos.com/qrt2u1#20' },
+        { title: 'Desarrollo por cofactores', url: 'https://www.algebraparatodos.com/qrt2u1#21' },
         { title: 'Factorización LU', url: 'https://www.algebraparatodos.com/qrt2u1#26' }
       ]
     },
