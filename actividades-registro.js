@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · actividades-registro.js (v2.1)
+   ÁLGEBRA PARA TODOS · actividades-registro.js (v2.2)
    ------------------------------------------------------------
    Le da al modo examen los ejercicios LEYENDO los archivos de
    actividades/, en vez de tener una segunda copia de su lógica.
@@ -39,7 +39,7 @@
   /* Subir esto en CADA cambio, aunque sea chico: menor para ajustes,
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. */
-  var VERSION = '2.1';
+  var VERSION = '2.2';
 
   var BASE = 'https://algebraparatodos.github.io/problemas-tomo-2/actividades/';
   var JAULA_ID = 'apt-registro-jaula';
@@ -81,6 +81,12 @@
     { id: 'u1a17', unidad: 1, n: 17, titulo: '¿Vale esta igualdad?',                            modo: 'choices',      grupo: 'Operaciones con matrices', archivo: 'unidad-1-actividad-17-vale-esta-igualdad.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
     { id: 'u1a18', unidad: 1, n: 18, titulo: 'Clasificá la matriz especial',                    modo: 'multiselect',  grupo: 'Matrices especiales', archivo: 'unidad-1-actividad-18-matrices-especiales.js',
+      unidadTitulo: 'Unidad 1: Matrices y SEL' },
+    { id: 'u1a19', unidad: 1, n: 19, titulo: '¿Qué operación hace esta elemental?',         modo: 'choices',      grupo: 'Matrices especiales', archivo: 'unidad-1-actividad-19-matrices-elementales.js',
+      unidadTitulo: 'Unidad 1: Matrices y SEL' },
+    { id: 'u1a20', unidad: 1, n: 20, titulo: 'Calculá el determinante',                    modo: 'choices',      grupo: 'Determinantes', archivo: 'unidad-1-actividad-20-determinante-sarrus.js',
+      unidadTitulo: 'Unidad 1: Matrices y SEL' },
+    { id: 'u1a21', unidad: 1, n: 21, titulo: 'Desarrollo por cofactores',                  modo: 'phases',       grupo: 'Determinantes', archivo: 'unidad-1-actividad-21-desarrollo-cofactores.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
     { id: 'u1a26', unidad: 1, n: 26, titulo: 'Factorización LU',                                modo: 'phases',       grupo: 'Factorización LU', archivo: 'unidad-1-actividad-26-factorizacion-lu.js',
       unidadTitulo: 'Unidad 1: Matrices y SEL' },
