@@ -37,10 +37,6 @@
       return a;
     }
 
-    function det2(M) {
-      return M[0][0] * M[1][1] - M[0][1] * M[1][0];
-    }
-
     /* Los seis productos de Sarrus, en el orden en que los arma el libro:
        primero las tres diagonales que bajan hacia la derecha, que suman, y
        después las tres que bajan hacia la izquierda, que restan. */
@@ -71,15 +67,7 @@
        alumno se equivoca, lo más probable es que su número esté entre las
        opciones, y entonces la explicación puede decirle exactamente qué
        hizo mal en vez de limitarse a corregirlo. */
-    function erroresTipicos(M, n) {
-      if (n === 2) {
-        var a = M[0][0], b = M[0][1], c = M[1][0], d = M[1][1];
-        return [
-          { valor: a * d + b * c, motivo: 'sumaste los dos productos en vez de restarlos' },
-          { valor: b * c - a * d, motivo: 'restaste al revés: es el producto de la diagonal principal menos el de la secundaria, no al revés' },
-          { valor: a * b - c * d, motivo: 'multiplicaste por filas en vez de por diagonales' }
-        ];
-      }
+    function erroresTipicos(M) {
       var p = productosSarrus(M);
       var todos = p.suman.concat(p.restan);
       return [
@@ -110,14 +98,19 @@
     function generarCaso() {
       var intentos = 0;
       while (intentos++ < 400) {
-        var n = Math.random() < 0.4 ? 2 : 3;
+        /* Siempre de orden 3: la Regla de Sarrus sólo vale para ese orden,
+           y el propio libro lo dice dos renglones antes de este QR —«la
+           Regla de Sarrus solo funciona para matrices de orden 3»—. Antes
+           salía un 40 % de matrices de 2×2, que se resolvían con la
+           diagonal principal menos la secundaria y no con Sarrus. */
+        var n = 3;
         var M = [], r, c;
         for (r = 0; r < n; r++) {
           M.push([]);
           for (c = 0; c < n; c++) M[r].push(randInt(-4, 5));
         }
 
-        var det = n === 2 ? det2(M) : det3(M);
+        var det = det3(M);
 
         // Un determinante enorme no enseña nada y se vuelve incómodo de
         // comprobar mentalmente.
@@ -135,7 +128,7 @@
            errores dan cero también— se descarta la matriz y se prueba
            con otra, en vez de rellenar con números inventados. Un
            distractor sin motivo no le dice nada al que se equivoca. */
-        var errores = erroresTipicos(M, n);
+        var errores = erroresTipicos(M);
         var valores = errores.map(function (e) { return e.valor; });
 
         var repetido = false, k;
@@ -155,12 +148,15 @@
           })
         };
       }
-      var I2 = [[1, 0], [0, 1]];
+      /* Si en 400 intentos no sale ninguna matriz que cumpla las
+         condiciones, se devuelve la identidad de orden 3, que es del orden
+         que toca y tiene determinante 1. */
+      var I3 = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
       return {
-        n: 2, M: I2, det: 1, errores: [],
+        n: 3, M: I3, det: 1, errores: [],
         opciones: [
           { value: '1', label: '1' }, { value: '0', label: '0' },
-          { value: '-1', label: '-1' }, { value: '2', label: '2' }
+          { value: '-1', label: '-1' }, { value: '3', label: '3' }
         ]
       };
     }
@@ -172,21 +168,12 @@
     }
 
     function explicar(current, correcto, elegido) {
-      var n = current.n;
-      var cuenta;
-
-      if (n === 2) {
-        var a = current.M[0][0], b = current.M[0][1], c = current.M[1][0], d = current.M[1][1];
-        cuenta = 'El determinante de una matriz de 2×2 es el producto de la diagonal principal menos el de la secundaria: (' +
-          a + ')·(' + d + ') − (' + b + ')·(' + c + ') = ' + (a * d) + ' − ' + (b * c) + ' = ' + current.det + '.';
-      } else {
-        var p = productosSarrus(current.M);
-        cuenta = 'Con la Regla de Sarrus, las tres diagonales que bajan hacia la derecha suman ' +
-          p.suman.join(' + ') + ' = ' + (p.suman[0] + p.suman[1] + p.suman[2]) +
-          ', y las tres que bajan hacia la izquierda restan ' +
-          p.restan.join(' + ') + ' = ' + (p.restan[0] + p.restan[1] + p.restan[2]) +
-          '. El determinante es la diferencia: ' + current.det + '.';
-      }
+      var p = productosSarrus(current.M);
+      var cuenta = 'Con la Regla de Sarrus, las tres diagonales que bajan hacia la derecha suman ' +
+        p.suman.join(' + ') + ' = ' + (p.suman[0] + p.suman[1] + p.suman[2]) +
+        ', y las tres que bajan hacia la izquierda restan ' +
+        p.restan.join(' + ') + ' = ' + (p.restan[0] + p.restan[1] + p.restan[2]) +
+        '. El determinante es la diferencia: ' + current.det + '.';
 
       if (correcto) return '¡Correcto! ' + cuenta;
 
@@ -207,7 +194,7 @@
       mount: '#apt-u1a20',
       eyebrow: 'Unidad 1 · Matrices y SEL',
       title: 'Calculá el determinante',
-      subtitle: 'Para las de 2×2, la diagonal principal menos la secundaria. Para las de 3×3, la Regla de Sarrus.',
+      subtitle: 'Calculá el determinante de cada matriz de 3×3 con la Regla de Sarrus.',
       nextLabel: 'Probar con otra matriz →',
       needsKatex: true,
       mode: 'choices',
