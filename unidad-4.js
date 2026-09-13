@@ -40,9 +40,9 @@
     { n: 6,  titulo: '¿Es diagonalizable?',                         archivo: 'unidad-4-actividad-6-es-diagonalizable.js' },
     { n: 7,  titulo: 'Armá D a partir de P',                        archivo: 'unidad-4-actividad-7-arma-p-y-d.js' },
     { n: 8,  titulo: 'Diagonalización ortogonal',                  archivo: 'unidad-4-actividad-8-diagonalizacion-ortogonal.js' },
-    { n: 9,  titulo: 'Calculá una potencia alta',                   archivo: 'unidad-4-actividad-9-potencias.js' },
-    { n: 10, titulo: 'Cadenas de Markov: el estado a largo plazo',  archivo: 'unidad-4-actividad-10-markov.js' },
-    { n: 11, titulo: 'Verificá Cayley-Hamilton',                    archivo: 'unidad-4-actividad-11-cayley-hamilton.js' },
+    { n: 9, titulo: 'Verificá Cayley-Hamilton',                    archivo: 'unidad-4-actividad-9-cayley-hamilton.js' },
+    { n: 10,  titulo: 'Calculá una potencia alta',                   archivo: 'unidad-4-actividad-10-potencias.js' },
+    { n: 11, titulo: 'Cadenas de Markov: el estado a largo plazo',  archivo: 'unidad-4-actividad-11-markov.js' },
     { n: 12, titulo: 'Índice de nilpotencia',                       archivo: 'unidad-4-actividad-12-indice-nilpotencia.js' }
   ];
 

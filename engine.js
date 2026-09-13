@@ -235,9 +235,9 @@
         { title: '¿Es diagonalizable?', url: 'https://www.algebraparatodos.com/qrt2u4#6' },
         { title: 'Armá D a partir de P', url: 'https://www.algebraparatodos.com/qrt2u4#7' },
         { title: 'Diagonalización ortogonal', url: 'https://www.algebraparatodos.com/qrt2u4#8' },
-        { title: 'Calculá una potencia alta', url: 'https://www.algebraparatodos.com/qrt2u4#9' },
-        { title: 'Cadenas de Markov: el estado a largo plazo', url: 'https://www.algebraparatodos.com/qrt2u4#10' },
-        { title: 'Verificá Cayley-Hamilton', url: 'https://www.algebraparatodos.com/qrt2u4#11' },
+        { title: 'Verificá Cayley-Hamilton', url: 'https://www.algebraparatodos.com/qrt2u4#9' },
+        { title: 'Calculá una potencia alta', url: 'https://www.algebraparatodos.com/qrt2u4#10' },
+        { title: 'Cadenas de Markov: el estado a largo plazo', url: 'https://www.algebraparatodos.com/qrt2u4#11' },
         { title: 'Índice de nilpotencia', url: 'https://www.algebraparatodos.com/qrt2u4#12' }
       ]
     }
