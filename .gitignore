@@ -1,0 +1,22 @@
+# Secretos y entorno — NUNCA subir (repo público)
+.env
+.env.*
+!.env.example
+.claves.env
+.claves*
+*.pem
+*.key
+credentials*.json
+service-account*.json
+.dev.vars
+.wrangler/
+
+# Dependencias y build
+node_modules/
+dist/
+build/
+.cache/
+
+# Sistema
+.DS_Store
+Thumbs.db
