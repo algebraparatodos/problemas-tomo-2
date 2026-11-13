@@ -571,7 +571,8 @@
     /* encabezado alineado a la izquierda, como una hoja de ejercicios */
     '.apt-act .apt-act__topbar{ text-align:left; border-bottom:1px solid var(--line); padding-bottom:16px; }',
     '.apt-act .apt-act__eyebrow{ font-family:var(--font-ui); font-weight:600; font-size:11px; letter-spacing:.1em; color:var(--chalk); }',
-    '.apt-act .apt-act__title{ font-weight:600; font-size:clamp(23px,6.4vw,27px); }',
+    /* font-family explícita: la web de APT pone su letra de títulos con .web-clara h1, que le gana a .apt-act__title */
+    '.apt-act .apt-act__title{ font-family:var(--font-serif); font-weight:600; font-size:clamp(23px,6.4vw,27px); }',
     '.apt-act .apt-act__subtitle{ font-size:16px; line-height:1.55; color:#44403C; text-wrap:pretty; }',
     /* la fórmula sin caja: flota sobre la hoja */
     '.apt-act .apt-act__card{ background:transparent; border:none; box-shadow:none; padding:6px 0; }',
@@ -636,7 +637,7 @@
     /* índice de cada unidad (unidad-N.js usa estas mismas variables) */
     '.apt-act .apt-idx__topbar{ text-align:left; border-bottom:1px solid var(--line); padding-bottom:16px; }',
     '.apt-act .apt-idx__eyebrow{ font-family:var(--font-ui); font-weight:600; font-size:11px; color:var(--chalk); }',
-    '.apt-act .apt-idx__title{ font-weight:600; }',
+    '.apt-act .apt-idx__title{ font-family:var(--font-serif); font-weight:600; }',
     '.apt-act .apt-idx__subtitle{ font-size:16px; color:#44403C; }',
     '.apt-act .apt-idx__item{ background:#fff; border:1px solid var(--line); border-radius:8px; font-family:var(--font-serif); font-size:15px; }',
     '.apt-act .apt-idx__item:hover{ border-color:var(--chalk); background:#FFFBF6; }',
