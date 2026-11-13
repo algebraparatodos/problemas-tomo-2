@@ -291,7 +291,9 @@
     '.apt-act__content svg{ width:100%; max-width:300px; aspect-ratio:1/1; display:block; }',
     '.apt-act__content .katex{ color:var(--ink); }',
     '.apt-act__eqrow{ display:flex; flex-direction:row; flex-wrap:wrap; align-items:center; justify-content:center; column-gap:2em; row-gap:12px; width:100%; max-width:100%; }',
-    '.apt-act__eqpart{ display:inline-block; max-width:100%; }',
+    /* 3px a los lados: KaTeX dibuja un par de píxeles fuera de su caja (el paréntesis de cierre);
+       sin este margen, dos fórmulas que entran justo dejaban una barra de desplazamiento */
+    '.apt-act__eqpart{ display:inline-block; max-width:100%; padding:0 3px; }',
     '.apt-act__eqbreak{ flex-basis:100%; height:0; }',
     '.apt-act__choices{ display:flex; gap:8px; }',
     '.apt-act__choices--stacked{ flex-direction:column; }',
