@@ -104,7 +104,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '4.16';
+  var ENGINE_VERSION = '5.0';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -248,16 +248,24 @@
      actividad en la página, así que una clase genérica alcanza.
      Cero selectores globales salvo el fix de body{background}.
      ------------------------------------------------------------ */
+  /* Tema «Hoja del libro» (v5.0, 13/11/2026): blanco, sin cuadrícula,
+     serif para leer, sin serifa para los botones, y el naranja de las
+     definiciones del libro impreso como único color propio. Los nombres
+     de variable vienen del tema pizarrón y se conservan para no tocar
+     cientos de reglas: --font-mono ya no es monoespaciada, es la letra
+     del texto; --chalk es el acento. Las reglas que el tema cambia de
+     forma (no sólo de color) están juntas al final del CSS. */
   var CSS = [
     '.apt-act{',
-    '  --bg:#0A0A0D; --bg-card:#16161C; --grid-line:rgba(151,161,216,0.14);',
-    '  --ink:#F5F5F7; --ink-soft:#A7ACC0;',
-    '  --chalk:#48507D; --chalk-hover:#5A639A; --chalk-light:#97A1D8;',
-    '  --correct:#5BCD9A; --correct-bg:rgba(91,205,154,0.12);',
-    '  --wrong:#D65252; --wrong-bg:rgba(214,82,82,0.12);',
-    '  --font-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;',
-    '  --font-serif:"Lora", Georgia, "Times New Roman", serif;',
-    '  --radius:14px; --max-w:460px;',
+    '  --bg:#FFFFFF; --bg-card:#FFFFFF; --grid-line:transparent; --line:#EAE7E4;',
+    '  --ink:#1C1917; --ink-soft:#78716C;',
+    '  --chalk:#ED7E00; --chalk-hover:#D46F00; --chalk-light:#ED7E00;',
+    '  --correct:#15803D; --correct-bg:#F0F8F2;',
+    '  --wrong:#B91C1C; --wrong-bg:#FCF0F0;',
+    '  --font-mono:"Source Serif 4", Georgia, "Times New Roman", serif;',
+    '  --font-serif:"Source Serif 4", Georgia, "Times New Roman", serif;',
+    '  --font-ui:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif;',
+    '  --radius:8px; --max-w:460px;',
     '  min-height:100vh; width:100%; box-sizing:border-box;',
     '  background:',
     '    linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0/100% 28px,',
@@ -282,6 +290,9 @@
     '.apt-act__content-ambient{ font-size:clamp(11px,3vw,13px); color:var(--ink-soft); }',
     '.apt-act__content svg{ width:100%; max-width:300px; aspect-ratio:1/1; display:block; }',
     '.apt-act__content .katex{ color:var(--ink); }',
+    '.apt-act__eqrow{ display:flex; flex-direction:row; flex-wrap:wrap; align-items:center; justify-content:center; column-gap:2em; row-gap:12px; width:100%; max-width:100%; }',
+    '.apt-act__eqpart{ display:inline-block; max-width:100%; }',
+    '.apt-act__eqbreak{ flex-basis:100%; height:0; }',
     '.apt-act__choices{ display:flex; gap:8px; }',
     '.apt-act__choices--stacked{ flex-direction:column; }',
     '.apt-act__phase--hidden{ display:none; }',
@@ -549,7 +560,112 @@
     '.apt-act.is-answered .apt-act__feedback-text strong{ font-size:14px; }',
     '.apt-act.is-answered .apt-act__feedback-head{ margin-bottom:3px; }',
     '.apt-act.is-answered .apt-act__next-btn{ padding:11px; min-height:42px; font-size:14px; }',
-    '.apt-act.is-answered .apt-act__retry-btn{ padding:11px; min-height:42px; font-size:13px; }'
+    '.apt-act.is-answered .apt-act__retry-btn{ padding:11px; min-height:42px; font-size:13px; }',
+
+    /* ================================================================
+       Tema «Hoja del libro» (v5.0) — lo que cambia de FORMA, no sólo
+       de color. Va al final para ganarle a las reglas de arriba con la
+       misma especificidad; los estados (.is-selected, .is-correct…)
+       llevan una clase más para ganarles a las del pizarrón.
+       ================================================================ */
+    /* encabezado alineado a la izquierda, como una hoja de ejercicios */
+    '.apt-act .apt-act__topbar{ text-align:left; border-bottom:1px solid var(--line); padding-bottom:16px; }',
+    '.apt-act .apt-act__eyebrow{ font-family:var(--font-ui); font-weight:600; font-size:11px; letter-spacing:.1em; color:var(--chalk); }',
+    '.apt-act .apt-act__title{ font-weight:600; font-size:clamp(23px,6.4vw,27px); }',
+    '.apt-act .apt-act__subtitle{ font-size:16px; line-height:1.55; color:#44403C; text-wrap:pretty; }',
+    /* la fórmula sin caja: flota sobre la hoja */
+    '.apt-act .apt-act__card{ background:transparent; border:none; box-shadow:none; padding:6px 0; }',
+    '.apt-act .apt-act__question{ font-size:15px; }',
+    /* opciones: una lista a) b) c) d) separada por filetes, no botones */
+    '.apt-act .apt-act__choices{ flex-direction:column; gap:0; counter-reset:apt-op; border-top:1px solid var(--line); }',
+    '.apt-act .apt-act__choice-btn{ counter-increment:apt-op; flex:none; flex-direction:row; justify-content:flex-start; align-items:center; gap:14px; text-align:left;' +
+      ' border:none; border-bottom:1px solid var(--line); border-radius:0; background:transparent; color:var(--ink);' +
+      ' font-family:var(--font-serif); font-weight:400; font-size:17px; padding:12px 4px; min-height:50px; }',
+    '.apt-act .apt-act__choice-btn > *{ text-align:left; }',
+    '.apt-act .apt-act__choice-btn::before{ content:counter(apt-op, lower-alpha) ")"; flex:0 0 16px; font-family:var(--font-ui); font-size:13px; font-weight:600; color:var(--ink-soft); }',
+    '.apt-act .apt-act__choice-btn:hover{ background:#FBF8F5; }',
+    '.apt-act .apt-act__choice-btn.is-selected{ background:#FFF6EC; border-color:var(--line); color:var(--ink); box-shadow:inset 3px 0 0 var(--chalk); }',
+    '.apt-act .apt-act__choice-btn.is-selected::before{ color:var(--chalk); }',
+    '.apt-act .apt-act__choice-btn.is-correct::before{ color:var(--correct); }',
+    '.apt-act .apt-act__choice-btn.is-wrong::before{ color:var(--wrong); }',
+    '.apt-act .apt-act__choice-btn.is-correct{ background:var(--correct-bg); border-color:var(--line); color:var(--correct); box-shadow:inset 3px 0 0 var(--correct); }',
+    '.apt-act .apt-act__choice-btn.is-wrong{ background:var(--wrong-bg); border-color:var(--line); color:var(--wrong); box-shadow:inset 3px 0 0 var(--wrong); }',
+    '.apt-act .apt-act__choice-sub{ font-family:var(--font-ui); }',
+    /* «marcá todas»: dos columnas de casilleros con filete */
+    '.apt-act .apt-act__choices--grid .apt-act__choice-btn{ background:transparent; border:1px solid var(--line); border-radius:8px; box-shadow:none; font-size:14.5px; min-height:64px; }',
+    '.apt-act .apt-act__choices--grid .apt-act__choice-btn.is-selected{ background:#FFF6EC; border-color:var(--chalk); color:var(--ink); }',
+    /* «marcá todas las que…»: lista de una columna con casillero en vez
+       de letra, para que se vea que se puede marcar más de una */
+    '.apt-act .apt-act__choices--multiselect{ display:flex; flex-direction:column; gap:0; }',
+    '.apt-act .apt-act__choices--multiselect .apt-act__choice-btn{ font-family:var(--font-serif); font-weight:400; font-size:16px; padding:12px 4px; min-height:48px; border:none; border-bottom:1px solid var(--line); border-radius:0; }',
+    '.apt-act .apt-act__choices--multiselect .apt-act__choice-main{ font-size:16px; text-align:left; }',
+    '.apt-act .apt-act__choices--multiselect .apt-act__choice-btn::before{ content:""; flex:0 0 16px; width:16px; height:16px; margin:0; border:1.5px solid #A8A29E; border-radius:3px; background:#fff center/12px 12px no-repeat; }',
+    '.apt-act .apt-act__choices--multiselect .apt-act__choice-btn.is-selected::before{ content:""; border-color:var(--chalk); background-color:var(--chalk);' +
+      ' background-image:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'3.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'M5 12.5 10 17.5 19 7\'/%3E%3C/svg%3E"); }',
+    /* botones de acción: negro para comprobar, naranja para seguir */
+    '.apt-act .apt-act__check-btn{ border:none; background:var(--ink); color:#fff; font-family:var(--font-ui); font-weight:600; border-radius:8px; }',
+    '.apt-act .apt-act__check-btn:focus-visible{ outline-color:var(--ink); }',
+    '.apt-act .apt-act__next-btn{ background:var(--chalk); font-family:var(--font-ui); font-weight:600; border-radius:8px; }',
+    '.apt-act .apt-act__retry-btn{ border:1px solid #E7E5E4; background:#fff; color:var(--ink); font-family:var(--font-ui); font-weight:600; border-radius:8px; }',
+    '.apt-act .apt-act__setup-btn{ font-family:var(--font-ui); font-weight:600; border-radius:8px; }',
+    '.apt-act .apt-act__skip-btn{ align-self:flex-start; font-family:var(--font-ui); font-size:13px; text-decoration:none; }',
+    '.apt-act .apt-act__skip-btn:hover{ color:var(--ink); }',
+    /* celdas para cargar matrices */
+    '.apt-act .apt-act__cell{ font-family:var(--font-ui); background:#fff; border:1px solid #E7E5E4; border-radius:6px; }',
+    '.apt-act .apt-act__cell:focus{ background:#fff; border-color:var(--chalk); }',
+    '.apt-act .apt-act__lockcell{ font-family:var(--font-ui); background:#FAFAF9; border:1px dashed #E7E5E4; border-radius:6px; }',
+    '.apt-act .apt-act__signseg-btn{ font-family:var(--font-ui); }',
+    '.apt-act .apt-act__hint{ font-family:var(--font-ui); }',
+    /* corrección: el texto en tinta, el color sólo en el título */
+    '.apt-act .apt-act__feedback{ border:none; border-radius:8px; }',
+    '.apt-act .apt-act__feedback-text, .apt-act .apt-act__feedback--correct .apt-act__feedback-text, .apt-act .apt-act__feedback--wrong .apt-act__feedback-text{ font-family:var(--font-serif); font-size:15px; color:#3F3F46; }',
+    '.apt-act .apt-act__feedback-text strong{ font-family:var(--font-ui); font-weight:600; font-size:15px; }',
+    /* pie: texto, sin pastillas ni emojis */
+    '.apt-act .apt-act__footer{ border-top:1px solid var(--line); padding-top:12px; font-family:var(--font-ui); font-weight:500; color:var(--ink-soft); }',
+    '.apt-act .apt-act__nav-row{ flex-wrap:nowrap; justify-content:space-between; gap:8px; }',
+    '.apt-act .apt-act__nav-btn, .apt-act .apt-act__catalog-btn, .apt-act .apt-act__exam-btn{ border:none; background:transparent; padding:4px 0; white-space:nowrap;' +
+      ' font-family:var(--font-ui); font-weight:500; font-size:13px; color:var(--ink-soft); }',
+    '.apt-act .apt-act__nav-btn:hover, .apt-act .apt-act__catalog-btn:hover, .apt-act .apt-act__exam-btn:hover{ background:transparent; color:var(--ink); }',
+    '.apt-act .apt-act__exam-btn{ align-self:flex-start; }',
+    '.apt-act .apt-act__brand-link, .apt-act .apt-act__version, .apt-act .apt-act__streak, .apt-act .apt-act__streak b{ font-family:var(--font-ui); font-weight:500; font-size:12px; }',
+    '.apt-act .apt-act__brand-link{ color:var(--ink-soft); }',
+    '.apt-act .apt-act__streak b{ color:var(--ink); }',
+    '.apt-act .apt-act__mute-btn, .apt-act .apt-act__report-btn{ border:none; width:28px; height:28px; background:transparent; color:var(--ink-soft); }',
+    '.apt-act .apt-act__mute-btn:hover, .apt-act .apt-act__report-btn:hover{ color:var(--ink); background:transparent; }',
+    '.apt-act .apt-act__mute-btn svg, .apt-act .apt-act__report-btn svg{ width:16px; height:16px; display:block; }',
+    /* índice de cada unidad (unidad-N.js usa estas mismas variables) */
+    '.apt-act .apt-idx__topbar{ text-align:left; border-bottom:1px solid var(--line); padding-bottom:16px; }',
+    '.apt-act .apt-idx__eyebrow{ font-family:var(--font-ui); font-weight:600; font-size:11px; color:var(--chalk); }',
+    '.apt-act .apt-idx__title{ font-weight:600; }',
+    '.apt-act .apt-idx__subtitle{ font-size:16px; color:#44403C; }',
+    '.apt-act .apt-idx__item{ background:#fff; border:1px solid var(--line); border-radius:8px; font-family:var(--font-serif); font-size:15px; }',
+    '.apt-act .apt-idx__item:hover{ border-color:var(--chalk); background:#FFFBF6; }',
+    '.apt-act .apt-idx__num{ background:transparent; color:var(--chalk); font-family:var(--font-ui); font-weight:600; flex-basis:22px; }',
+    /* los tres modales viven fuera de .apt-act: colores a mano */
+    '.apt-report-modal, .apt-catalog-modal, .apt-registro-modal{ background:rgba(28,25,23,.45); font-family:"Inter",system-ui,sans-serif; }',
+    '.apt-report-modal .apt-report-modal__card, .apt-catalog-modal .apt-catalog-modal__card, .apt-registro-modal .apt-registro-modal__card{ background:#fff; border:none; border-radius:12px; box-shadow:0 12px 40px rgba(28,25,23,.18); }',
+    '.apt-report-modal .apt-report-modal__title, .apt-catalog-modal .apt-catalog-modal__title, .apt-registro-modal .apt-registro-modal__title{ font-family:"Source Serif 4",Georgia,serif; font-weight:600; color:#1C1917; }',
+    '.apt-report-modal .apt-report-modal__desc, .apt-registro-modal .apt-registro-modal__text{ color:#78716C; }',
+    '.apt-report-modal .apt-report-modal__context{ color:#ED7E00; }',
+    '.apt-report-modal .apt-report-modal__textarea{ font-family:"Inter",system-ui,sans-serif; color:#1C1917; background:#fff; border:1px solid #E7E5E4; border-radius:8px; }',
+    '.apt-report-modal .apt-report-modal__textarea:focus{ border-color:#ED7E00; background:#fff; }',
+    '.apt-report-modal .apt-report-modal__error{ color:#B91C1C; }',
+    '.apt-report-modal .apt-report-modal__cancel-btn{ font-family:"Inter",system-ui,sans-serif; font-weight:600; color:#1C1917; border:1px solid #E7E5E4; border-radius:8px; }',
+    '.apt-report-modal .apt-report-modal__send-btn, .apt-report-modal .apt-report-modal__close-btn, .apt-registro-modal .apt-registro-modal__cta{ font-family:"Inter",system-ui,sans-serif; font-weight:600; color:#fff; background:#1C1917; border-radius:8px; }',
+    '.apt-report-modal .apt-report-modal__send-btn:hover, .apt-report-modal .apt-report-modal__close-btn:hover, .apt-registro-modal .apt-registro-modal__cta:hover{ background:#000; color:#fff; }',
+    '.apt-report-modal .apt-report-modal__success p{ color:#15803D; }',
+    '.apt-report-modal .apt-report-modal__success svg path{ stroke:#15803D; }',
+    '.apt-catalog-modal .apt-catalog-modal__close-x, .apt-registro-modal .apt-registro-modal__close-x{ border:none; color:#78716C; }',
+    '.apt-catalog-modal .apt-catalog-modal__close-x:hover, .apt-registro-modal .apt-registro-modal__close-x:hover{ background:#F5F5F4; color:#1C1917; }',
+    '.apt-catalog-modal .apt-catalog-modal__unit{ border:none; border-bottom:1px solid #EAE7E4; border-radius:0; }',
+    '.apt-catalog-modal .apt-catalog-modal__unit-btn{ font-family:"Source Serif 4",Georgia,serif; font-weight:600; font-size:15px; color:#1C1917; background:transparent; padding:12px 2px; }',
+    '.apt-catalog-modal .apt-catalog-modal__unit-chevron{ color:#ED7E00; }',
+    '.apt-catalog-modal .apt-catalog-modal__unit-empty{ font-family:"Inter",system-ui,sans-serif; color:#78716C; }',
+    '.apt-catalog-modal .apt-catalog-modal__act-link{ font-family:"Source Serif 4",Georgia,serif; font-size:14.5px; color:#44403C; border-top:1px solid #F5F5F4; padding-left:14px; }',
+    '.apt-catalog-modal .apt-catalog-modal__act-link:hover{ background:#FBF8F5; color:#1C1917; }',
+    '.apt-registro-modal .apt-registro-modal__icon{ display:none; }',
+    '.apt-registro-modal .apt-registro-modal__secondary{ font-family:"Inter",system-ui,sans-serif; color:#78716C; }',
+    '.apt-registro-modal .apt-registro-modal__secondary:hover{ color:#1C1917; }'
   ].join('\n');
 
   var CHECK_SVG = '<svg class="apt-act__mark" viewBox="0 0 34 34"><path d="M6 18 L14 26 L28 8"/></svg>';
@@ -567,6 +683,13 @@
   // (ej: el orden de la matriz varía por ronda en factorización LU).
   function resolveNum(spec, current) {
     return typeof spec === 'function' ? spec(current) : spec;
+  }
+
+  // Los enunciados escriben igualdades en texto plano («D = P⁻¹·A·P»). Con
+  // espacios normales el teléfono puede cortar justo en el «=» y dejar la
+  // igualdad partida en dos líneas; con espacios duros baja entera. v4.17
+  function glueEquals(html) {
+    return typeof html === 'string' ? html.replace(/ = /g, ' = ') : html;
   }
 
   // Soporta LaTeX inline en textos como el subtítulo (ej. "encontrá $[v]_B$")
@@ -631,7 +754,7 @@
       var fonts = document.createElement('link');
       fonts.id = FONT_LINK_ID;
       fonts.rel = 'stylesheet';
-      fonts.href = 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Lora:wght@600;700&display=swap';
+      fonts.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap';
       document.head.appendChild(fonts);
     }
     if (!document.getElementById(STYLE_ID)) {
@@ -643,7 +766,7 @@
     if (!document.getElementById(BODY_BG_ID)) {
       var bg = document.createElement('style');
       bg.id = BODY_BG_ID;
-      bg.textContent = 'body{background-color:#0A0A0D;}';
+      bg.textContent = 'body{background-color:#FFFFFF;}';
       document.head.appendChild(bg);
     }
   }
@@ -677,17 +800,92 @@
       .replace(/\\end\{array\}\s*\\right\]/g, '\\end{array}\\right)');
   }
 
+  /* ------------------------------------------------------------
+     Fórmulas que no entran en el ancho del teléfono (v4.17)
+     ------------------------------------------------------------
+     Varias actividades ponen dos o tres fórmulas en una sola línea,
+     separadas por \qquad: «A = (…) \qquad P = (…)». Si no entran:
+       - en línea, KaTeX corta donde puede, que es después de un «=»,
+         y deja el «P =» colgado al final y su matriz sola debajo;
+       - en modo destacado (displayMode) no corta nunca, y la fórmula
+         se sale por el costado con una barra de desplazamiento.
+     Por eso se parte en los \qquad y en los saltos «\\» de primer
+     nivel (fuera de llaves y de entornos, o sea nunca dentro de una
+     matriz) y cada trozo se dibuja en su propio bloque: si no entran
+     juntos, el siguiente baja entero y centrado. Un trozo sólo se
+     corta por dentro cuando él solo ya es más ancho que la pantalla
+     (por ejemplo, un conjunto largo con \text), como pasaba antes.
+     Un «\\» sigue siendo un salto de línea obligatorio.
+     Lo que no tiene ni \qquad ni «\\» de primer nivel se dibuja igual
+     que siempre. */
+  var EQ_BREAK = {};
+  function splitTopLevel(tex) {
+    if (typeof tex !== 'string' || (tex.indexOf('\\qquad') === -1 && tex.indexOf('\\\\') === -1)) return null;
+    var parts = [], depth = 0, env = 0, start = 0, i = 0, cuts = 0;
+    while (i < tex.length) {
+      var ch = tex.charAt(i);
+      if (ch === '\\') {
+        /* Se salta sólo «\begin» y «\end»: sus llaves las cuenta el
+           bucle como cualquier otra, para que no queden descuadradas. */
+        if (tex.substr(i, 7) === '\\begin{') { env++; i += 6; continue; }
+        if (tex.substr(i, 5) === '\\end{') { env--; i += 4; continue; }
+        if (depth === 0 && env === 0) {
+          if (tex.substr(i, 6) === '\\qquad' && !/[a-zA-Z]/.test(tex.charAt(i + 6))) {
+            parts.push(tex.slice(start, i)); i += 6; start = i; cuts++; continue;
+          }
+          if (tex.charAt(i + 1) === '\\') {
+            parts.push(tex.slice(start, i)); parts.push(EQ_BREAK); i += 2;
+            var m = /^\s*\[[^\]]*\]/.exec(tex.slice(i));   // «\\[10pt]»: el espacio lo pone el CSS
+            if (m) i += m[0].length;
+            start = i; cuts++; continue;
+          }
+        }
+        i += 2; continue;
+      }
+      if (ch === '{') depth++;
+      else if (ch === '}') depth--;
+      i++;
+    }
+    if (!cuts || depth !== 0 || env !== 0) return null;   // algo raro: se deja como estaba
+    parts.push(tex.slice(start));
+    parts = parts.map(function (p) { return p === EQ_BREAK ? p : p.trim(); })
+                 .filter(function (p) { return p === EQ_BREAK || p; });
+    return parts.filter(function (p) { return p !== EQ_BREAK; }).length > 1 ? parts : null;
+  }
+  function eqPartsHtml(parts, opts, renderPart) {
+    var display = !!(opts && opts.displayMode);
+    var partOpts = {};
+    for (var key in (opts || {})) partOpts[key] = opts[key];
+    partOpts.displayMode = false;
+    return parts.map(function (p) {
+      if (p === EQ_BREAK) return '<span class="apt-act__eqbreak"></span>';
+      return '<span class="apt-act__eqpart">' + renderPart((display ? '\\displaystyle ' : '') + p, partOpts) + '</span>';
+    }).join('');
+  }
+
   var _katexPatched = false;
   function patchKatexDelims() {
     if (_katexPatched || !window.katex) return;
     var k = window.katex;
+    var origRTS = typeof k.renderToString === 'function' ? k.renderToString : null;
     if (typeof k.render === 'function') {
       var origRender = k.render;
-      k.render = function (tex, el, opts) { return origRender.call(k, normalizeMatrixDelims(tex), el, opts); };
+      k.render = function (tex, el, opts) {
+        tex = normalizeMatrixDelims(tex);
+        var parts = origRTS ? splitTopLevel(tex) : null;
+        if (el && el.classList) el.classList.toggle('apt-act__eqrow', !!parts);
+        if (!parts) return origRender.call(k, tex, el, opts);
+        el.innerHTML = eqPartsHtml(parts, opts, function (p, o) { return origRTS.call(k, p, o); });
+      };
     }
-    if (typeof k.renderToString === 'function') {
-      var origRTS = k.renderToString;
-      k.renderToString = function (tex, opts) { return origRTS.call(k, normalizeMatrixDelims(tex), opts); };
+    if (origRTS) {
+      k.renderToString = function (tex, opts) {
+        tex = normalizeMatrixDelims(tex);
+        var parts = splitTopLevel(tex);
+        if (!parts) return origRTS.call(k, tex, opts);
+        return '<span class="apt-act__eqrow">' +
+          eqPartsHtml(parts, opts, function (p, o) { return origRTS.call(k, p, o); }) + '</span>';
+      };
     }
     _katexPatched = true;
   }
@@ -1160,6 +1358,14 @@
     return -1;
   }
 
+  /* Iconos de línea del pie (v5.0): reemplazan a los emojis 🚩 🔊 🔇,
+     que cada teléfono dibuja distinto y no van con la hoja. Toman el
+     color del botón (currentColor). */
+  var ICON_ATTRS = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+  var ICON_REPORT = '<svg ' + ICON_ATTRS + '><path d="M4 22V4m0 0h12l-2 4 2 4H4"/></svg>';
+  var ICON_SOUND = '<svg ' + ICON_ATTRS + '><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>';
+  var ICON_MUTED = '<svg ' + ICON_ATTRS + '><path d="M11 5 6 9H2v6h4l5 4z"/><path d="m16 9 6 6m0-6-6 6"/></svg>';
+
   function mountFooter(container) {
     ensureAssets();
     container.className = 'apt-act__footer';
@@ -1172,19 +1378,19 @@
     container.innerHTML =
       '<div class="apt-act__nav-row">' +
         (prevEntry ? '<a class="apt-act__nav-btn apt-act__nav-btn--prev" href="' + prevEntry.url + '">← Anterior</a>' : '') +
-        '<button type="button" class="apt-act__catalog-btn">📚 Todos los ejercicios</button>' +
+        '<button type="button" class="apt-act__catalog-btn">Todos los ejercicios</button>' +
         (nextEntry ? '<a class="apt-act__nav-btn apt-act__nav-btn--next" href="' + nextEntry.url + '">Siguiente →</a>' : '') +
       '</div>' +
-      '<button type="button" class="apt-act__exam-btn">📝 Modo examen</button>' +
+      '<button type="button" class="apt-act__exam-btn">Modo examen</button>' +
       '<div class="apt-act__footer-row">' +
         '<span class="apt-act__brand-group">' +
           '<a class="apt-act__brand-link" href="https://www.instagram.com/soyjuanisilva/" target="_blank" rel="noopener">Álgebra Para Todos</a>' +
           '<span class="apt-act__version">v' + ENGINE_VERSION + '</span>' +
         '</span>' +
         '<span class="apt-act__footer-right">' +
-          '<button type="button" class="apt-act__report-btn" aria-label="Reportar un problema">🚩</button>' +
-          '<button type="button" class="apt-act__mute-btn" aria-pressed="false" aria-label="Silenciar sonidos">🔊</button>' +
-          '<span class="apt-act__streak">Racha: <b>0</b></span>' +
+          '<button type="button" class="apt-act__report-btn" aria-label="Reportar un problema">' + ICON_REPORT + '</button>' +
+          '<button type="button" class="apt-act__mute-btn" aria-pressed="false" aria-label="Silenciar sonidos">' + ICON_SOUND + '</button>' +
+          '<span class="apt-act__streak">Racha <b>0</b></span>' +
         '</span>' +
       '</div>';
 
@@ -1205,7 +1411,7 @@
     reportBtn.addEventListener('click', function () { openReportModal(); });
 
     function updateMuteBtn() {
-      muteBtn.textContent = muted ? '🔇' : '🔊';
+      muteBtn.innerHTML = muted ? ICON_MUTED : ICON_SOUND;
       muteBtn.setAttribute('aria-pressed', String(muted));
     }
     muteBtn.addEventListener('click', function () {
@@ -1542,7 +1748,7 @@
         '<div class="apt-act__topbar">' +
           '<p class="apt-act__eyebrow">' + (cfg.eyebrow || '') + '</p>' +
           '<h1 class="apt-act__title">' + (cfg.title || '') + '</h1>' +
-          '<p class="apt-act__subtitle">' + renderTextWithMath(cfg.subtitle || '') + '</p>' +
+          '<p class="apt-act__subtitle">' + glueEquals(renderTextWithMath(cfg.subtitle || '')) + '</p>' +
         '</div>' +
         '<div class="apt-act__card"><div class="apt-act__content" aria-live="polite"></div></div>' +
         interactionHTML +
@@ -1691,7 +1897,7 @@
         '<div class="apt-act__topbar">' +
           '<p class="apt-act__eyebrow">' + (cfg.eyebrow || '') + '</p>' +
           '<h1 class="apt-act__title">' + (cfg.title || '') + '</h1>' +
-          '<p class="apt-act__subtitle">' + renderTextWithMath(cfg.subtitle || '') + '</p>' +
+          '<p class="apt-act__subtitle">' + glueEquals(renderTextWithMath(cfg.subtitle || '')) + '</p>' +
         '</div>' +
         '<div class="apt-act__card"><div class="apt-act__content" aria-live="polite"></div></div>' +
         phasesHTML +

@@ -128,7 +128,13 @@
         '</span>' +
         '<div style="font-family:var(--font-mono,monospace);font-size:11px;color:var(--ink-soft,#A7ACC0);margin-top:6px;">(B es base de V)</div>';
       window.katex.render('v = ' + vLatex, container.querySelector('.row-vec'), { throwOnError:false });
-      window.katex.render('\\text{Encontrá las coordenadas de } v \\text{ en la base } B.', container.querySelector('.row-q'), { throwOnError:false });
+      /* Texto normal con v y B en KaTeX, no una frase entera dentro de
+         \text{}: KaTeX no corta un \text, y en un teléfono angosto la frase
+         se salía por el costado. Así se acomoda como cualquier párrafo. */
+      container.querySelector('.row-q').innerHTML =
+        '<span style="text-align:center;display:block;">Encontrá las coordenadas de ' +
+        window.katex.renderToString('v', { throwOnError:false }) + ' en la base ' +
+        window.katex.renderToString('B', { throwOnError:false }) + '.</span>';
     }
 
     window.AptActivity.init({
