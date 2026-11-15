@@ -233,7 +233,7 @@
           '<div class="apt-act__content-ambient"></div>' +
           '<div class="apt-sev-basis-wrap" style="margin-bottom:6px;"></div>' +
           '<div class="apt-sev-basis-wrap-2"></div>';
-        window.katex.render('V = ' + current.space.labelTex, el.querySelector('.apt-act__content-ambient'), { throwOnError:false });
+        window.katex.render('\\mathbb{V} = ' + current.space.labelTex, el.querySelector('.apt-act__content-ambient'), { throwOnError:false });
         AptActivity.renderSevAsBasisWrapped(el.querySelector('.apt-sev-basis-wrap'), current.space, current.Snative, 'S');
         AptActivity.renderSevAsBasisWrapped(el.querySelector('.apt-sev-basis-wrap-2'), current.space, current.Tnative, 'T');
       },

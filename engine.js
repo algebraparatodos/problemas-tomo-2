@@ -104,7 +104,7 @@
      del CDN de GitHub Pages). Notación tipo semver: número menor
      (1.0→1.1) en cambios chicos, mayor (1.0→2.0) en cambios grandes.
      Actualizar en CADA edición de engine.js, por chica que sea. */
-  var ENGINE_VERSION = '5.0';
+  var ENGINE_VERSION = '5.1';
 
   var REPORT_ENTRY_URL = 'entry.833697682';
 
@@ -180,7 +180,7 @@
         { title: 'Calculá el determinante', url: 'https://www.algebraparatodos.com/qrt2u1#20' },
         { title: 'Desarrollo por cofactores', url: 'https://www.algebraparatodos.com/qrt2u1#21' },
         { title: 'Calculá el determinante usando propiedades', url: 'https://www.algebraparatodos.com/qrt2u1#22' },
-        { title: 'Calculá la matriz adjunta', url: 'https://www.algebraparatodos.com/qrt2u1#23' },
+        { title: 'Calculá la inversa por la adjunta', url: 'https://www.algebraparatodos.com/qrt2u1#23' },
         { title: '¿Es invertible?', url: 'https://www.algebraparatodos.com/qrt2u1#24' },
         { title: 'Resolvé la ecuación matricial', url: 'https://www.algebraparatodos.com/qrt2u1#25' },
         { title: 'Factorización LU', url: 'https://www.algebraparatodos.com/qrt2u1#26' },
@@ -194,7 +194,7 @@
         { title: 'Neutro y simétrico de una operación "rara"', url: 'https://www.algebraparatodos.com/qrt2u2#4' },
         { title: '¿Es un subespacio vectorial?', url: 'https://www.algebraparatodos.com/qrt2u2#5' },
         { title: '¿Es LI o LD?', url: 'https://www.algebraparatodos.com/qrt2u2#6' },
-        { title: '¿Genera V? ¿Es base?', url: 'https://www.algebraparatodos.com/qrt2u2#7' },
+        { title: '¿Genera 𝕍? ¿Es base?', url: 'https://www.algebraparatodos.com/qrt2u2#7' },
         { title: 'Coordenadas de un vector en una base', url: 'https://www.algebraparatodos.com/qrt2u2#8' },
         { title: 'Matriz de cambio de base', url: 'https://www.algebraparatodos.com/qrt2u2#9' },
         { title: 'Base de un SEV', url: 'https://www.algebraparatodos.com/qrt2u2#10' },
@@ -206,7 +206,7 @@
         { title: 'Proyección ortogonal', url: 'https://www.algebraparatodos.com/qrt2u2#16' },
         { title: 'Método de Gram-Schmidt', url: 'https://www.algebraparatodos.com/qrt2u2#17' }
       ] },
-    { title: 'Unidad 3: Transformaciones Lineales', activities: [
+    { title: 'Unidad 3: Transformaciones lineales', activities: [
         { title: '¿Es lineal?', url: 'https://www.algebraparatodos.com/qrt2u3#1' },
         { title: '¿Existe? ¿Es única?', url: 'https://www.algebraparatodos.com/qrt2u3#2' },
         { title: 'Armá la matriz asociada', url: 'https://www.algebraparatodos.com/qrt2u3#3' },
@@ -1813,6 +1813,14 @@
          ciclo de vida de la fase. Opcional, no rompe nada si no
          se define.
 
+       phase.skip(current) → true si esa fase NO va en esta ronda,
+         aunque esté dentro de activePhaseCount: se salta y se pasa
+         a la siguiente. Hace falta cuando lo que cambia según el
+         caso es una fase del MEDIO y no la cola (ej: Gram-Schmidt,
+         donde la fase de u₃ sólo va con tres vectores y la fase
+         final de normalizar va siempre). No vale para la fase 0.
+         Opcional; sin ella todo funciona como antes. v5.1
+
      Un tercer caso especial: fases con mode:'setup'. Sirven para
      actividades donde el ALUMNO elige algo (ej: cuántos parámetros,
      dónde van) ANTES de que se genere el caso — a diferencia de
@@ -1970,13 +1978,25 @@
       return cfg.activePhaseCount ? cfg.activePhaseCount(current) : cfg.phases.length;
     }
 
+    // La fase que sigue a idx en esta ronda, salteando las que piden
+    // skip(current); -1 si idx era la última. Sin skip en ninguna fase
+    // es idx + 1 hasta activePhaseCount(), como siempre. v5.1
+    function nextPhaseIdx(idx) {
+      var n = activePhaseCount();
+      for (var j = idx + 1; j < n; j++) {
+        var ph = cfg.phases[j];
+        if (!(ph && typeof ph.skip === 'function' && ph.skip(current))) return j;
+      }
+      return -1;
+    }
+
     function advanceOrFinish(idx) {
-      var isLast = idx === activePhaseCount() - 1;
+      var isLast = nextPhaseIdx(idx) === -1;
       if (isLast) {
         registerRoundResult(true);
         refs.nextBtn.classList.remove('apt-act__next-btn--hidden');
       } else {
-        revealPhase(idx + 1);
+        revealPhase(nextPhaseIdx(idx));
         root.classList.remove('is-answered');
       }
     }
@@ -2078,7 +2098,8 @@
       current = cfg.generate(selections);
       cfg.renderContent(refs.content, current);
       refs.phaseRefs[idx].el.classList.add('apt-act__phase--hidden');
-      revealPhase(idx + 1);
+      var nx = nextPhaseIdx(idx);
+      revealPhase(nx === -1 ? idx + 1 : nx);
     }
 
     // ---------- choices ----------
@@ -2095,7 +2116,7 @@
       showPhaseFeedback(idx, correct, phaseCfg.explain(current, correct, value));
       if (phaseCfg.onAnswered) phaseCfg.onAnswered(current, correct, value, refs.content);
 
-      var isLast = idx === activePhaseCount() - 1;
+      var isLast = nextPhaseIdx(idx) === -1;
       if (correct) {
         advanceOrFinish(idx);
       } else {
@@ -2145,7 +2166,7 @@
       p.checkBtn.disabled = true;
       if (phaseCfg.onAnswered) phaseCfg.onAnswered(current, correct, read.matrix, refs.content);
 
-      var isLast = idx === activePhaseCount() - 1;
+      var isLast = nextPhaseIdx(idx) === -1;
       if (correct) {
         if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
         if (p.showAnswerBtn) p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
@@ -2193,9 +2214,9 @@
       p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
       renderFeedback(p.feedback, true, phaseCfg.answerTitle || 'La respuesta correcta', phaseCfg.answerText || '');
 
-      var isLast = idx === activePhaseCount() - 1;
+      var isLast = nextPhaseIdx(idx) === -1;
       if (isLast) { refs.nextBtn.classList.remove('apt-act__next-btn--hidden'); }
-      else { revealPhase(idx + 1); root.classList.remove('is-answered'); }
+      else { revealPhase(nextPhaseIdx(idx)); root.classList.remove('is-answered'); }
     }
 
     // ---------- vectors ----------
@@ -2238,7 +2259,7 @@
       p.checkBtn.disabled = true;
       if (phaseCfg.onAnswered) phaseCfg.onAnswered(current, correct, vectorReads, refs.content);
 
-      var isLast = idx === activePhaseCount() - 1;
+      var isLast = nextPhaseIdx(idx) === -1;
       if (correct) {
         if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
         if (p.showAnswerBtn) p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
@@ -2335,7 +2356,7 @@
       p.checkBtn.disabled = true;
       if (phaseCfg.onAnswered) phaseCfg.onAnswered(current, correct, reads, refs.content);
 
-      var isLast = idx === activePhaseCount() - 1;
+      var isLast = nextPhaseIdx(idx) === -1;
       if (correct) {
         if (p.retryBtn) p.retryBtn.classList.add('apt-act__retry-btn--hidden');
         advanceOrFinish(idx);
@@ -2376,9 +2397,9 @@
       renderFeedback(p.feedback, true, phaseCfg.answerTitle || 'Una respuesta posible',
         phaseCfg.answerText || 'Esta es una base válida — no la única. Cualquier otra que respete la estructura y genere el mismo subespacio también vale.');
 
-      var isLast = idx === activePhaseCount() - 1;
+      var isLast = nextPhaseIdx(idx) === -1;
       if (isLast) { refs.nextBtn.classList.remove('apt-act__next-btn--hidden'); }
-      else { revealPhase(idx + 1); root.classList.remove('is-answered'); }
+      else { revealPhase(nextPhaseIdx(idx)); root.classList.remove('is-answered'); }
     }
 
     function showAnswerVectorsPhase(idx) {
@@ -2392,9 +2413,9 @@
       p.showAnswerBtn.classList.add('apt-act__retry-btn--hidden');
       renderFeedback(p.feedback, true, phaseCfg.answerTitle || 'Una respuesta posible', phaseCfg.answerText || '');
 
-      var isLast = idx === activePhaseCount() - 1;
+      var isLast = nextPhaseIdx(idx) === -1;
       if (isLast) { refs.nextBtn.classList.remove('apt-act__next-btn--hidden'); }
-      else { revealPhase(idx + 1); root.classList.remove('is-answered'); }
+      else { revealPhase(nextPhaseIdx(idx)); root.classList.remove('is-answered'); }
     }
 
     // ---------- ronda nueva ----------

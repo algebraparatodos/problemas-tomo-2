@@ -121,7 +121,7 @@
       choicesGrid: true,
       eyebrow: 'Unidad 1 · Matrices y SEL',
       title: 'Trasposición de matrices',
-      subtitle: 'Elegí cuál es la matriz traspuesta de $A$ ($A^T$).',
+      subtitle: 'Elegí cuál es la matriz traspuesta de $A$ ($A^t$).',
 
       generate: generateCase,
       renderContent: renderContent,
@@ -133,11 +133,11 @@
       check: function(current, value){ return value === 'correct'; },
       explain: function(current, correct, value){
         var clicked = current.choicesData.filter(function(o){ return o.value===value; })[0];
-        if(correct) return 'Correcto: A^T se arma poniendo como filas las columnas de A (cambia de tamaño ' + current.rows + '×' + current.cols + ' a ' + current.cols + '×' + current.rows + ').';
+        if(correct) return 'Correcto: A^t se arma poniendo como filas las columnas de A (cambia de tamaño ' + current.rows + '×' + current.cols + ' a ' + current.cols + '×' + current.rows + ').';
         var msg = 'Revisá cómo se arma la traspuesta.';
-        if(clicked.kind === 'not-transposed') msg = 'Esa opción es A tal cual, sin transponer.';
+        if(clicked.kind === 'not-transposed') msg = 'Esa opción es A tal cual, sin trasponer.';
         if(clicked.kind === 'tweak-cell') msg = 'Esa opción tiene un error de cálculo en una celda.';
-        if(clicked.kind === 'reversed') msg = 'Esa opción transpuso, pero además invirtió el orden.';
+        if(clicked.kind === 'reversed') msg = 'Esa opción traspuso, pero además invirtió el orden.';
         return 'No es correcto. ' + msg;
       }
     });

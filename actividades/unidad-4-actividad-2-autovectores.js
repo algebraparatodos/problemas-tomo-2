@@ -213,7 +213,7 @@
       mount: '#apt-u4a2',
       eyebrow: 'Unidad 4 · Diagonalización',
       title: 'Hallá los autovectores',
-      subtitle: 'Un autovector asociado a λ es el que cumple A·v = λ·v. Los múltiplos de un autovector también lo son, así que acá alcanza con reconocer la dirección.',
+      subtitle: 'Un autovector asociado a λ es un vector v no nulo que cumple A·v = λ·v. Los múltiplos de un autovector también lo son, así que acá alcanza con reconocer la dirección.',
       nextLabel: 'Probar con otra matriz →',
       needsKatex: true,
       mode: 'choices',

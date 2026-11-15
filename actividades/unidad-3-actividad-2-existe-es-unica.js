@@ -238,10 +238,10 @@
         if (correct) {
           var rOk = rank(transpose(cur.vecs));
           if (real === 'unica') {
-            return 'Los vectores dados son LI y generan V, o sea que forman una base: conocer la imagen de una base determina la TL por completo.';
+            return 'Los vectores dados son LI y generan 𝕍, o sea que forman una base: conocer la imagen de una base determina la TL por completo.';
           }
           if (real === 'infinitas') {
-            return 'El rango de los vectores dados es ' + rOk + ' y dim(V) = ' + cur.n +
+            return 'El rango de los vectores dados es ' + rOk + ' y Dim(𝕍) = ' + cur.n +
               ', así que queda información sin fijar y hay más de una TL posible.';
           }
           return 'Los vectores dados son LD y las imágenes no respetan esa misma relación, y una TL conserva las combinaciones lineales.';
@@ -249,13 +249,13 @@
         var k = cur.vecs.length;
         var r = rank(transpose(cur.vecs));
         if (real === 'unica') {
-          return 'No es correcto: la TL existe y es única. Los ' + k + ' vectores son LI y generan V ' +
-            '(su rango es ' + r + ' y dim(V) = ' + cur.n + '), así que forman una base: conocer la imagen de una base ' +
+          return 'No es correcto: la TL existe y es única. Los ' + k + ' vectores son LI y generan 𝕍 ' +
+            '(su rango es ' + r + ' y Dim(𝕍) = ' + cur.n + '), así que forman una base: conocer la imagen de una base ' +
             'determina la TL por completo.';
         }
         if (real === 'infinitas') {
-          return 'No es correcto: existen infinitas. El rango de los vectores dados es ' + r + ' y dim(V) = ' + cur.n +
-            ', así que quedan ' + (cur.n - r) + ' dirección(es) de V sin información — cada forma de elegir esas imágenes da una TL distinta.';
+          return 'No es correcto: existen infinitas. El rango de los vectores dados es ' + r + ' y Dim(𝕍) = ' + cur.n +
+            ', así que quedan ' + (cur.n - r) + ' dirección(es) de 𝕍 sin información — cada forma de elegir esas imágenes da una TL distinta.';
         }
         return 'No es correcto: no existe ninguna TL con esos datos. Fijate que ' + depText(cur) +
           ', y una TL conserva las combinaciones lineales, así que su imagen debería ser ' +

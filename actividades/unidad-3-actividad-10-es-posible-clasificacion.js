@@ -104,16 +104,16 @@
 
   /* ---------- feedback: siempre con las dimensiones del caso ---------- */
   function porQue(cur) {
-    var d = 'dim(' + cur.V.plano + ') = ' + cur.V.dim + ' y dim(' + cur.W.plano + ') = ' + cur.W.dim + '. ';
+    var d = 'Acá 𝕍 = ' + cur.V.plano + ' y 𝕎 = ' + cur.W.plano + ': Dim(𝕍) = ' + cur.V.dim + ' y Dim(𝕎) = ' + cur.W.dim + '. ';
     if (cur.V.dim < cur.W.dim) {
       return d + 'Solo el monomorfismo es posible: como el espacio de partida es más chico, ' +
-        'la imagen nunca puede llenar todo W, así que no puede ser sobreyectiva ni isomorfismo. ' +
+        'la imagen nunca puede llenar todo 𝕎, así que no puede ser sobreyectiva ni isomorfismo. ' +
         'Pero sí puede tener núcleo trivial.';
     }
     if (cur.V.dim > cur.W.dim) {
-      return d + 'Solo el epimorfismo es posible: por el teorema de la dimensión, si dim(V) > dim(W) ' +
+      return d + 'Solo el epimorfismo es posible: por el teorema de la dimensión, si Dim(𝕍) > Dim(𝕎) ' +
         'el núcleo tiene dimensión al menos ' + (cur.V.dim - cur.W.dim) + ', así que nunca es inyectiva. ' +
-        'Pero la imagen sí puede cubrir todo W.';
+        'Pero la imagen sí puede cubrir todo 𝕎.';
     }
     return d + 'Las tres son posibles: al coincidir las dimensiones, una TL inyectiva es automáticamente ' +
       'sobreyectiva y viceversa. ' +

@@ -202,7 +202,7 @@
         window.katex.render(
           'A = ' + matrixLatex(current.A) +
           '\\qquad \\lambda = ' + current.lambdaDoble + '\\ \\text{(doble)}' +
-          '\\\\[8pt] E_\\lambda = \\text{gen}\\{(' + comoTexto(current.u1) + '), (' + comoTexto(current.w) + ')\\}',
+          '\\\\[8pt] E_\\lambda = \\operatorname{Gen}\\{(' + comoTexto(current.u1) + '), (' + comoTexto(current.w) + ')\\}',
           container, { throwOnError: false, displayMode: true }
         );
       },

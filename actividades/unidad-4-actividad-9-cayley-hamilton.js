@@ -106,11 +106,30 @@
 
     /** Escribe «A² = c₁·A + c₀·I» con los signos ya resueltos. */
     function expresion(coefA, coefI) {
-      var parteA = coefA === 1 ? 'A' : (coefA === -1 ? '−A' : coefA + '·A');
+      var parteA = coefA === 1 ? 'A' : (coefA === -1 ? '−A' : conSigno(coefA) + '·A');
       var signo = coefI < 0 ? ' − ' : ' + ';
       var valor = Math.abs(coefI);
       var parteI = valor === 1 ? 'I' : valor + '·I';
       return 'A² = ' + parteA + signo + parteI;
+    }
+
+    /** Un entero con el signo menos tipográfico: −3 en vez de -3. */
+    function conSigno(n) { return n < 0 ? '−' + Math.abs(n) : String(n); }
+
+    /** «x² + b·x + c» (o «A² + b·A + c·I») con los signos ya resueltos,
+        para no escribir nunca «− -3» ni «+ -4». b y c nunca son 0 acá:
+        el generador descarta traza y determinante nulos. */
+    function polinomio(x, b, c, conIdentidad) {
+      var s = x + '²';
+      if (b !== 0) {
+        var ab = Math.abs(b);
+        s += (b < 0 ? ' − ' : ' + ') + (ab === 1 ? '' : ab + '·') + x;
+      }
+      if (c !== 0) {
+        var ac = Math.abs(c);
+        s += (c < 0 ? ' − ' : ' + ') + (conIdentidad ? (ac === 1 ? 'I' : ac + '·I') : String(ac));
+      }
+      return s;
     }
 
     function matrixLatex(M) {
@@ -142,12 +161,16 @@
       },
       check: function (current, value) { return value === current.correcta; },
       explain: function (current, correcto) {
+        var A2tex = window.katex.renderToString(
+          'A^2 = \\begin{pmatrix} ' + current.A2.map(function (fila) { return fila.join(' & '); }).join(' \\\\ ') + ' \\end{pmatrix}',
+          { throwOnError: false });
         return (correcto ? '¡Correcto! ' : 'No es correcto. ') +
-          'El polinomio característico es p(λ) = λ² − ' + current.tr + '·λ + ' + current.det +
-          ', porque el coeficiente del término lineal es la traza cambiada de signo y el independiente es el determinante. ' +
-          'Cayley-Hamilton dice que p(A) = O, así que A² − ' + current.tr + '·A + ' + current.det + '·I = O, ' +
+          'El polinomio característico es p(λ) = ' + polinomio('λ', -current.tr, current.det, false) +
+          ' (con Tr(A) = ' + conSigno(current.tr) + ' y det(A) = ' + conSigno(current.det) + '), ' +
+          'porque el coeficiente del término lineal es la traza cambiada de signo y el independiente es el determinante. ' +
+          'Cayley-Hamilton dice que p(A) = O, así que ' + polinomio('A', -current.tr, current.det, true) + ' = O, ' +
           'y despejando queda ' + current.correcta + '. ' +
-          'Podés comprobarlo: A² da ' + JSON.stringify(current.A2).replace(/[[\]]/g, '') +
+          'Podés comprobarlo: ' + A2tex +
           ', y la cuenta de la derecha da lo mismo. Y fijate lo que significa: ' +
           'te deja calcular A² sin multiplicar matrices, sólo escalando A y sumando un múltiplo de la identidad.';
       }

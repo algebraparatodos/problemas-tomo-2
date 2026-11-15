@@ -173,26 +173,26 @@
 
   /* ---------- feedback: siempre con los números del caso ---------- */
   function porQue(cur) {
-    var base = 'El rango de M(T) es ' + cur.r + ', dim(V) = ' + cur.n + ' y dim(W) = ' + cur.m + '. ';
+    var base = 'El rango de M(T) es ' + cur.r + ', Dim(𝕍) = ' + cur.n + ' y Dim(𝕎) = ' + cur.m + '. ';
     if (cur.categoria === 'iso') {
       return base + 'Como el rango coincide con las dos dimensiones, T es inyectiva y sobreyectiva a la vez: es un isomorfismo.';
     }
     if (cur.categoria === 'mono') {
-      return base + 'El rango llega a dim(V), así que dim(Nu(T)) = 0 y T es inyectiva. Pero no llega a dim(W), ' +
-        'así que la imagen no cubre todo W: no es sobreyectiva.';
+      return base + 'El rango llega a Dim(𝕍), así que Dim(Nu(T)) = 0 y T es inyectiva. Pero no llega a Dim(𝕎), ' +
+        'así que la imagen no cubre todo 𝕎: no es sobreyectiva.';
     }
     if (cur.categoria === 'epi') {
-      return base + 'El rango llega a dim(W), así que la imagen es todo W y T es sobreyectiva. Pero como es menor que dim(V), ' +
-        'queda dim(Nu(T)) = ' + (cur.n - cur.r) + ' ≠ 0: no es inyectiva.';
+      return base + 'El rango llega a Dim(𝕎), así que la imagen es todo 𝕎 y T es sobreyectiva. Pero como es menor que Dim(𝕍), ' +
+        'queda Dim(Nu(T)) = ' + (cur.n - cur.r) + ' ≠ 0: no es inyectiva.';
     }
-    return base + 'El rango no llega ni a dim(V) ni a dim(W): el núcleo no es trivial (dim ' + (cur.n - cur.r) +
-      ') y la imagen no cubre todo W. No es ninguno de los tres.';
+    return base + 'El rango no llega ni a Dim(𝕍) ni a Dim(𝕎): el núcleo no es trivial (dimensión ' + (cur.n - cur.r) +
+      ') y la imagen no cubre todo 𝕎. No es ninguno de los tres.';
   }
 
   var OPCIONES = [
-    { value: 'mono',    label: 'Monomorfismo', sub: 'inyectiva, no sobreyectiva' },
-    { value: 'epi',     label: 'Epimorfismo',  sub: 'sobreyectiva, no inyectiva' },
-    { value: 'iso',     label: 'Isomorfismo',  sub: 'las dos cosas' },
+    { value: 'mono',    label: 'Monomorfismo', sub: 'sólo inyectiva' },
+    { value: 'epi',     label: 'Epimorfismo',  sub: 'sólo sobreyectiva' },
+    { value: 'iso',     label: 'Isomorfismo',  sub: 'inyectiva y sobreyectiva (también es mono y epi)' },
     { value: 'ninguno', label: 'Ninguno',      sub: 'ni una ni la otra' }
   ];
 
@@ -203,7 +203,7 @@
       choicesStacked: true,
       eyebrow: 'Unidad 3 · Transformaciones lineales',
       title: 'Clasificá la TL',
-      subtitle: 'Comparando el rango de $M(T)$ con $\\dim(V)$ y $\\dim(W)$, clasificá la transformación.',
+      subtitle: 'Comparando el rango de $M(T)$ con $\\operatorname{Dim}(\\mathbb{V})$ y $\\operatorname{Dim}(\\mathbb{W})$, clasificá la transformación $T: \\mathbb{V} \\to \\mathbb{W}$.',
       nextLabel: 'Probar con otra transformación →',
       generate: generate,
       renderContent: renderContent,

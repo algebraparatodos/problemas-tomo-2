@@ -156,7 +156,7 @@
 
     window.AptActivity.init({
       mount: '#apt-u1a1',
-      eyebrow: 'Unidad 1 · Sistemas lineales',
+      eyebrow: 'Unidad 1 · Matrices y SEL',
       title: 'Clasificá el sistema',
       subtitle: 'SCD: se cruzan en un punto · SCI: son la misma recta · SI: no comparten ningún punto.',
       nextLabel: 'Probar con otras rectas →',

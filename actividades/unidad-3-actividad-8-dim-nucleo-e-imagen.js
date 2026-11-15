@@ -172,27 +172,27 @@
       phases: [
         {
           mode: 'choices',
-          question: '¿Cuál es dim(Im(T))?',
+          question: '¿Cuál es Dim(Im(T))?',
           choicesStacked: false,
           choices: function (cur) {
             return cur.opcionesIm.map(function (v) { return { value: String(v), label: String(v) }; });
           },
           check: function (cur, value) { return Number(value) === cur.dimIm; },
           explain: function (cur, correct) {
-            var base = 'La imagen está generada por las columnas de M(T), así que dim(Im(T)) es el rango de la matriz: ' + cur.dimIm + '.';
+            var base = 'La imagen está generada por las columnas de M(T), así que Dim(Im(T)) es el rango de la matriz: ' + cur.dimIm + '.';
             return correct ? base : 'No es correcto. ' + base;
           }
         },
         {
           mode: 'choices',
-          question: '¿Y cuál es dim(Nu(T))?',
+          question: '¿Y cuál es Dim(Nu(T))?',
           choicesStacked: false,
           choices: function (cur) {
             return cur.opcionesNu.map(function (v) { return { value: String(v), label: String(v) }; });
           },
           check: function (cur, value) { return Number(value) === cur.dimNu; },
           explain: function (cur, correct) {
-            var base = 'Por el teorema de la dimensión, dim(Nu(T)) + dim(Im(T)) = dim(V): ' +
+            var base = 'Por el teorema de la dimensión, Dim(Nu(T)) + Dim(Im(T)) = Dim(𝕍): ' +
               cur.dimNu + ' + ' + cur.dimIm + ' = ' + cur.n + '. ' +
               'Sabiendo el rango no hace falta calcular el núcleo aparte.';
             return correct ? base : 'No es correcto. ' + base;

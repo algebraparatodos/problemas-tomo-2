@@ -50,7 +50,7 @@
     { n: 16, titulo: 'Componé geométricas',                  archivo: 'unidad-3-actividad-16-composicion-geometricas.js' }
   ];
 
-  var UNIDAD_TITULO = 'Unidad 3 · Transformaciones Lineales';
+  var UNIDAD_TITULO = 'Unidad 3 · Transformaciones lineales';
 
   /* ---------- punto de montaje ----------
      Igual que en las actividades: se captura la posición del <script>

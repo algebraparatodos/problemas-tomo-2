@@ -69,7 +69,7 @@
     function explainResults(results){
       var wrong = results.filter(function(r){ return !r.ok; });
       if(wrong.length === 0){
-        return 'Correcto: cada fila son los coeficientes de x, y, z (en ese orden) y, después de la barra, el término independiente.';
+        return 'Correcto: cada fila tiene los coeficientes de x, y, z (en ese orden) y, después de la barra, el término independiente.';
       }
       var first = wrong[0];
       var colName = first.col < 3 ? ('el coeficiente de ' + VARS[first.col]) : 'el término independiente';
@@ -83,7 +83,7 @@
 
     window.AptActivity.init({
       mount: '#apt-u1a2',
-      eyebrow: 'Unidad 1 · Sistemas lineales',
+      eyebrow: 'Unidad 1 · Matrices y SEL',
       title: 'Matriz ampliada',
       subtitle: 'Mirá el sistema y completá su matriz ampliada.',
       nextLabel: 'Probar con otro sistema →',
@@ -122,7 +122,7 @@
         ];
       },
       answerTitle: 'La respuesta correcta',
-      answerText: 'Cada fila son los coeficientes de x, y, z (en ese orden) y, después de la barra, el término independiente.'
+      answerText: 'Cada fila tiene los coeficientes de x, y, z (en ese orden) y, después de la barra, el término independiente.'
     });
   })();
 

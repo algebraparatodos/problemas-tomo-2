@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · exam.js (v2.16)
+   ÁLGEBRA PARA TODOS · exam.js (v2.17)
    ------------------------------------------------------------
    Modo examen: independiente de engine.js a propósito (son dos
    cosas distintas que conviven, no una extensión de la otra).
@@ -54,7 +54,7 @@
      mayor para cambios de fondo. Y mantener sincronizado el numero del
      comentario de arriba. La 2.0 es el salto de leer exercises.js a leer
      las actividades del repo, mas las preguntas compuestas. */
-  var VERSION = '2.16';
+  var VERSION = '2.17';
 
   var FONT_LINK_ID = 'apt-exam-fonts';
   var KATEX_CSS_ID = 'apt-exam-katex-css';
@@ -1028,7 +1028,10 @@
       function grupoDeFases(ex, current, topic) {
         var total = ex.activePhaseCount ? ex.activePhaseCount(current) : ex.phases.length;
         if (!(total > 0)) total = ex.phases.length;
-        var activas = ex.phases.slice(0, total).filter(function (f) { return f.mode !== 'setup'; });
+        /* Las fases con skip(current) no van en este caso (engine v5.1). */
+        var activas = ex.phases.slice(0, total).filter(function (f) {
+          return f.mode !== 'setup' && !(typeof f.skip === 'function' && f.skip(current));
+        });
         var grupo = [];
         activas.forEach(function (fase, i) {
           var e = ejercicioDeFase(ex, fase, i, activas.length);

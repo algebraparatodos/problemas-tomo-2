@@ -176,12 +176,12 @@
         var correct = wrong.length === 0;
         var text = '';
         if (correct) {
-          text = 'Cada columna de M(T) son las coordenadas, en la base canónica de W, de la imagen del vector correspondiente de la base canónica de V.';
+          text = 'Cada columna de M(T) tiene las coordenadas, en la base canónica de 𝕎, de la imagen del vector correspondiente de la base canónica de 𝕍.';
         }
         if (!correct) {
           var f = wrong[0];
           var puesto = (f.val === null) ? 'la dejaste vacía' : 'pusiste ' + f.val;
-          text = 'La columna ' + (f.c + 1) + ' de M(T) son las coordenadas de T(' + canonName(cur.vKey, f.c) + '). ' +
+          text = 'La columna ' + (f.c + 1) + ' de M(T) tiene las coordenadas de T(' + canonName(cur.vKey, f.c) + '). ' +
             'En la fila ' + (f.r + 1) + ' de esa columna va ' + cur.A[f.r][f.c] + ', y ' + puesto + '.';
           if (wrong.length > 1) {
             text += ' Hay ' + (wrong.length - 1) + ' celda' + (wrong.length - 1 > 1 ? 's' : '') +
@@ -193,7 +193,7 @@
       },
       getAnswerGrid: function (cur) { return cur.A; },
       answerTitle: 'La respuesta correcta',
-      answerText: 'Cada columna j de M(T) son las coordenadas, en la base canónica de W, de la imagen del j-ésimo vector de la base canónica de V.'
+      answerText: 'Cada columna j de M(T) tiene las coordenadas, en la base canónica de 𝕎, de la imagen del j-ésimo vector de la base canónica de 𝕍.'
     });
   })();
 

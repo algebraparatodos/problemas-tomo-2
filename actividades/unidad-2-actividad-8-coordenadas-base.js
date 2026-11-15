@@ -82,7 +82,7 @@
       return { space:space, d:d, basis:basis, v:v, coefs:coefs };
     }
 
-    var SPACE_LABEL = { R2:'V = \\mathbb{R}^2', R3:'V = \\mathbb{R}^3', M22:'V = M_{2\\times2}(\\mathbb{R})', P2:'V = P_2(\\mathbb{R})' };
+    var SPACE_LABEL = { R2:'\\mathbb{V} = \\mathbb{R}^2', R3:'\\mathbb{V} = \\mathbb{R}^3', M22:'\\mathbb{V} = M_{2\\times2}(\\mathbb{R})', P2:'\\mathbb{V} = P_2(\\mathbb{R})' };
 
     function polyToLatex(coefs){
       var terms = [];
@@ -126,7 +126,7 @@
           window.katex.renderToString('B=', { throwOnError:false }) +
           setHTML(basisLatexList, current.space==='M22') +
         '</span>' +
-        '<div style="font-family:var(--font-mono,monospace);font-size:11px;color:var(--ink-soft,#A7ACC0);margin-top:6px;">(B es base de V)</div>';
+        '<div style="font-family:var(--font-mono,monospace);font-size:11px;color:var(--ink-soft,#A7ACC0);margin-top:6px;">(B es base de 𝕍)</div>';
       window.katex.render('v = ' + vLatex, container.querySelector('.row-vec'), { throwOnError:false });
       /* Texto normal con v y B en KaTeX, no una frase entera dentro de
          \text{}: KaTeX no corta un \text, y en un teléfono angosto la frase
@@ -143,7 +143,7 @@
       needsKatex: true,
       eyebrow: 'Unidad 2 · Subespacios vectoriales',
       title: 'Coordenadas de un vector en una base',
-      subtitle: 'Dados $v$ y una base $B$ de $V$, encontrá las coordenadas $[v]_B$ — los coeficientes que arman $v$ como combinación lineal de $B$.',
+      subtitle: 'Dados $v$ y una base $B$ de $\\mathbb{V}$, encontrá las coordenadas $[v]_B$ — los coeficientes que arman $v$ como combinación lineal de $B$.',
       grid: { rows: function(current){ return current.d; }, cols: 1, noDivider: true, label: '[v]_B =' },
 
       generate: generateCase,

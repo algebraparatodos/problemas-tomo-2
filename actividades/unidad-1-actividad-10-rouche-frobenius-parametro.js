@@ -193,7 +193,7 @@
       return { rows:rows, cols:cols, seed:seed, numParams:2, location:'ambos', descriptors:descriptors };
     }
 
-    // ---------- 2 parámetros, ubicación 'A' (relación k - t = D controla rango(A)) ----------
+    // ---------- 2 parámetros, ubicación 'A' (relación k - t = D controla rg(A)) ----------
     function build2ParamA(shape){
       var rows=shape.rows, cols=shape.cols;
       var maxOrderA=Math.min(rows,cols);
@@ -363,7 +363,7 @@
       mount: '#apt-u1a10',
       mode: 'phases',
       needsKatex: true,
-      eyebrow: 'Unidad 1 · Sistemas lineales',
+      eyebrow: 'Unidad 1 · Matrices y SEL',
       title: 'Rouché-Frobenius con parámetros',
       subtitle: 'Elegí cuántos parámetros y dónde van. Después vas a tener que hallar, para cada clasificación, los valores que la producen.',
 
@@ -392,8 +392,8 @@
           choices: function(current){ return current.options.SCD; },
           check: function(current, value){ return value === 'correct'; },
           explain: function(current, correct, value){
-            var msg = 'La condición correcta es: ' + renderDescriptor(current.descriptors.SCD) + '. Orlando, ahí rango(A) llega al número de incógnitas y coincide con rango((A|B)).';
-            if(current.descriptors.SCD.type === 'none') msg = 'Con esta forma, rango(A) nunca puede llegar al número de incógnitas — SCD es imposible acá, para cualquier valor de los parámetros.';
+            var msg = 'La condición correcta es: ' + renderDescriptor(current.descriptors.SCD) + '. Orlando, ahí rg(A) llega al número de incógnitas y coincide con rg(A|B).';
+            if(current.descriptors.SCD.type === 'none') msg = 'Con esta forma, rg(A) nunca puede llegar al número de incógnitas — SCD es imposible acá, para cualquier valor de los parámetros.';
             return (correct ? '' : 'No es correcto. ') + msg;
           }
         },
@@ -403,7 +403,7 @@
           choices: function(current){ return current.options.SCI; },
           check: function(current, value){ return value === 'correct'; },
           explain: function(current, correct, value){
-            var msg = 'La condición correcta es: ' + renderDescriptor(current.descriptors.SCI) + '. Ahí rango(A) = rango((A|B)), pero por debajo del número de incógnitas.';
+            var msg = 'La condición correcta es: ' + renderDescriptor(current.descriptors.SCI) + '. Ahí rg(A) = rg(A|B), pero por debajo del número de incógnitas.';
             if(current.descriptors.SCI.type === 'none') msg = 'Con este sistema, SCI no ocurre para ningún valor de los parámetros.';
             return (correct ? '' : 'No es correcto. ') + msg;
           }
@@ -414,7 +414,7 @@
           choices: function(current){ return current.options.SI; },
           check: function(current, value){ return value === 'correct'; },
           explain: function(current, correct, value){
-            var msg = 'La condición correcta es: ' + renderDescriptor(current.descriptors.SI) + '. Ahí, orlando con la columna B aparece un menor no nulo que no estaba en A: rango((A|B)) > rango(A).';
+            var msg = 'La condición correcta es: ' + renderDescriptor(current.descriptors.SI) + '. Ahí, orlando con la columna B aparece un menor no nulo que no estaba en A: rg(A|B) > rg(A).';
             if(current.descriptors.SI.type === 'none') msg = 'Con este sistema, SI no ocurre para ningún valor de los parámetros.';
             return (correct ? '' : 'No es correcto. ') + msg;
           }

@@ -207,7 +207,7 @@
       mode: 'choices',
       eyebrow: 'Unidad 2 · Subespacios vectoriales',
       title: 'Cambio de base en un SEV',
-      subtitle: 'B y B\' son dos bases de un mismo subespacio S. Elegí la matriz de cambio de base de B a B\'.',
+      subtitle: '$B_1$ y $B_2$ son dos bases de un mismo subespacio S. Elegí la matriz de cambio de base de $B_1$ a $B_2$.',
       needsKatex: true,
       choicesGrid: true,
       choicesGridSingleColumn: true,
@@ -220,12 +220,12 @@
           '<div class="apt-sev-basis-wrap" style="margin-bottom:6px;"></div>' +
           '<div class="apt-sev-basis-wrap-2"></div>';
         window.katex.render(ambientLatex, el.querySelector('.apt-act__content-ambient'), { throwOnError:false });
-        AptActivity.renderBasisWrapped(el.querySelector('.apt-sev-basis-wrap'), current.space, current.basisB, 'B');
-        AptActivity.renderBasisWrapped(el.querySelector('.apt-sev-basis-wrap-2'), current.space, current.basisBp, "B'");
+        AptActivity.renderBasisWrapped(el.querySelector('.apt-sev-basis-wrap'), current.space, current.basisB, 'B₁');
+        AptActivity.renderBasisWrapped(el.querySelector('.apt-sev-basis-wrap-2'), current.space, current.basisBp, 'B₂');
       },
       choices: function (current) {
         return current.options.map(function (P, idx) {
-          var latex = 'P_{B \\to B\'} = ' + fracMatrixToKatex(P);
+          var latex = 'P_{B_1 \\to B_2} = ' + fracMatrixToKatex(P);
           var html = window.katex.renderToString(latex, { throwOnError: false });
           return { value: String(idx), label: html };
         });
@@ -233,8 +233,8 @@
       check: function (current, value) { return Number(value) === current.correctIndex; },
       explain: function (current, correct) {
         return correct
-          ? 'Correcto: esa matriz convierte coordenadas en B a coordenadas en B\', dentro de S.'
-          : 'No es correcto: esa matriz no convierte correctamente las coordenadas de B a B\'.';
+          ? 'Correcto: esa matriz convierte coordenadas en B₁ a coordenadas en B₂, dentro de S.'
+          : 'No es correcto: esa matriz no convierte correctamente las coordenadas de B₁ a B₂.';
       }
     });
   })();

@@ -161,8 +161,8 @@
           check: function (current, value) { return Number(value) === current.m; },
           explain: function (current, correct) {
             return correct
-              ? 'Correcto: la dimensión de S⊥ es ' + current.m + ' (dim V − dim S = ' + current.n + ' − ' + current.k + ').'
-              : 'La dimensión real de S⊥ es ' + current.m + ' (dim V − dim S = ' + current.n + ' − ' + current.k + ').';
+              ? 'Correcto: la dimensión de S⊥ es ' + current.m + ' (Dim(𝕍) − Dim(S) = ' + current.n + ' − ' + current.k + ').'
+              : 'La dimensión real de S⊥ es ' + current.m + ' (Dim(𝕍) − Dim(S) = ' + current.n + ' − ' + current.k + ').';
           }
         },
         {

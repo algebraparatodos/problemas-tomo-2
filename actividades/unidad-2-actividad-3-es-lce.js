@@ -34,7 +34,7 @@
     { k:'\\mathbb{R}', v:'\\mathbb{R}^2', f:'(\\lambda^2 x,\\ \\lambda^2 y)', isLCE:true },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^2', f:'(|\\lambda| x,\\ |\\lambda| y)', isLCE:true },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^3', f:'(\\lambda x,\\ \\lambda y,\\ 0)', isLCE:true },
-    { k:'\\mathbb{R}', v:'\\{A\\in M_{2\\times2}(\\mathbb{R}) : A^T=A\\}\\ \\text{(matrices simétricas)}', f:'\\lambda A', isLCE:true },
+    { k:'\\mathbb{R}', v:'\\{A\\in M_{2\\times2}(\\mathbb{R}) : A^t=A\\}\\ \\text{(matrices simétricas)}', f:'\\lambda A', isLCE:true },
     { k:'\\mathbb{R}', v:'\\{A\\in M_{2\\times2}(\\mathbb{R}) : \\text{triangular superior}\\}', f:'\\lambda A', isLCE:true },
     { k:'\\mathbb{R}', v:'\\{p\\in P_2(\\mathbb{R}) : a_0=0\\}', f:'\\lambda p', isLCE:true },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^2', f:'(\\lambda x,\\ y)', isLCE:true },
@@ -43,7 +43,7 @@
     { k:'\\mathbb{R}', v:'P_2(\\mathbb{R})', f:'\\lambda^3 p', isLCE:true },
     { k:'\\mathbb{R}', v:'\\{(x,y)\\in\\mathbb{R}^2 : xy\\ge0\\}', f:'(\\lambda x,\\ \\lambda y)', isLCE:true },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^3', f:'(0,\\ 0,\\ 0)', isLCE:true },
-    { k:'\\mathbb{R}', v:'M_{2\\times2}(\\mathbb{R})', f:'\\lambda A^T', isLCE:true },
+    { k:'\\mathbb{R}', v:'M_{2\\times2}(\\mathbb{R})', f:'\\lambda A^t', isLCE:true },
     { k:'\\mathbb{R}', v:'P_2(\\mathbb{R})', f:'p(\\lambda x)', isLCE:true },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^2', f:'(\\lambda y,\\ \\lambda x)', isLCE:true },
     { k:'\\mathbb{R}', v:'\\{(x,y,z)\\in\\mathbb{R}^3 : x+y+z=0\\}', f:'(\\lambda x,\\ \\lambda y,\\ \\lambda z)', isLCE:true },
@@ -54,11 +54,11 @@
     { k:'\\mathbb{R}', v:'GL_2(\\mathbb{R})\\ \\text{(matrices invertibles)}', f:'\\lambda A', isLCE:false, cx:'Con λ=0: el resultado es la matriz nula, que no es invertible.' },
     { k:'\\mathbb{R}', v:'\\{p\\in P_2(\\mathbb{R}) : a_2\\ne0\\}\\ \\text{(grado exactamente 2)}', f:'\\lambda p', isLCE:false, cx:'Con λ=0: el resultado es el polinomio nulo, que no tiene grado 2.' },
     { k:'\\mathbb{R}', v:'\\{(x,y,z)\\in\\mathbb{R}^3 : x+y+z=1\\}', f:'\\lambda v', isLCE:false, cx:'Con λ=2 y v=(1,0,0) (que cumple x+y+z=1): el resultado (2,0,0) da x+y+z=2≠1.' },
-    { k:'\\mathbb{R}', v:'\\mathbb{Z}^2\\ \\text{(coordenadas enteras)}', f:'(\\lambda x,\\ \\lambda y)', isLCE:false, cx:'Con λ=1/2 y v=(1,0): el resultado es (0,5, 0), que no tiene coordenadas enteras.' },
-    { k:'\\mathbb{R}', v:'\\{(x,y)\\in\\mathbb{R}^2 : x>0\\}', f:'(\\lambda x,\\ \\lambda y)', isLCE:false, cx:'Con λ=0: el resultado es (0,y), y 0 no es >0.' },
-    { k:'\\mathbb{R}', v:'\\{A\\in M_{2\\times2}(\\mathbb{R}) : A^T=A\\}\\ \\text{(matrices simétricas)}', f:'A + \\begin{pmatrix}0 & \\lambda\\\\ 0 & 0\\end{pmatrix}', isLCE:false, cx:'Con λ=1: solo se suma en la entrada (1,2), rompiendo la simetría.' },
-    { k:'\\mathbb{R}', v:'\\{v\\in\\mathbb{R}^3 : \\|v\\|=1\\}\\ \\text{(vectores unitarios)}', f:'v + \\lambda(1,0,0)', isLCE:false, cx:'Con λ=1: la norma del resultado cambia y deja de ser 1.' },
-    { k:'\\mathbb{R}', v:'\\{(x,y,z)\\in\\mathbb{R}^3 : z=0\\}', f:'(\\lambda x,\\ \\lambda y,\\ \\lambda z+1)', isLCE:false, cx:'Como z=0 en todo vector de V, la tercera coordenada del resultado es siempre 1, nunca 0.' },
+    { k:'\\mathbb{R}', v:'\\mathbb{Z}^2\\ \\text{(coordenadas enteras)}', f:'(\\lambda x,\\ \\lambda y)', isLCE:false, cx:'Con λ=1/2 y v=(1,0): el resultado es (1/2, 0), que no tiene coordenadas enteras.' },
+    { k:'\\mathbb{R}', v:'\\{(x,y)\\in\\mathbb{R}^2 : x>0\\}', f:'(\\lambda x,\\ \\lambda y)', isLCE:false, cx:'Con λ=0: el resultado es (0,0), y 0 no es >0.' },
+    { k:'\\mathbb{R}', v:'\\{A\\in M_{2\\times2}(\\mathbb{R}) : A^t=A\\}\\ \\text{(matrices simétricas)}', f:'A + \\begin{pmatrix}0 & \\lambda\\\\ 0 & 0\\end{pmatrix}', isLCE:false, cx:'Con λ=1: solo se suma en la entrada (1,2), rompiendo la simetría.' },
+    { k:'\\mathbb{R}', v:'\\{v\\in\\mathbb{R}^3 : \\|v\\|=1\\}\\ \\text{(vectores unitarios)}', f:'v + \\lambda(1,0,0)', isLCE:false, cx:'Con λ=1 y v=(0,1,0): el resultado es (1,1,0), cuya norma es √2, no 1.' },
+    { k:'\\mathbb{R}', v:'\\{(x,y,z)\\in\\mathbb{R}^3 : z=0\\}', f:'(\\lambda x,\\ \\lambda y,\\ \\lambda z+1)', isLCE:false, cx:'Como z=0 en todo vector de 𝕍, la tercera coordenada del resultado es siempre 1, nunca 0.' },
 
     // ---------- No válidas, K=R: fórmula no bien definida (10) ----------
     { k:'\\mathbb{R}', v:'\\mathbb{R}^2', f:'(\\lambda x,\\ y/\\lambda)', isLCE:false, cx:'No está definida en λ=0 (se dividiría por 0).' },
@@ -78,17 +78,17 @@
     { k:'\\mathbb{R}', v:'M_{2\\times2}(\\mathbb{R})', f:'\\lambda \\det(A)', isLCE:false, cx:'El resultado es un número real (el determinante escalado), no una matriz.' },
     { k:'\\mathbb{R}', v:'P_2(\\mathbb{R})', f:'\\lambda\\, p(1)', isLCE:false, cx:'El resultado es un número real (el polinomio evaluado en 1), no un polinomio.' },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^2', f:'(\\lambda x,\\ \\lambda y,\\ 0)', isLCE:false, cx:'El resultado tiene 3 componentes, no 2: no es un elemento de ℝ².' },
-    { k:'\\mathbb{R}', v:'M_{2\\times2}(\\mathbb{R})', f:'\\lambda\\,\\text{tr}(A)', isLCE:false, cx:'El resultado es un número real (la traza escalada), no una matriz.' },
+    { k:'\\mathbb{R}', v:'M_{2\\times2}(\\mathbb{R})', f:'\\lambda\\,\\operatorname{Tr}(A)', isLCE:false, cx:'El resultado es un número real (la traza escalada), no una matriz.' },
 
     // ---------- Nuevos: variando K (10) ----------
     { k:'\\mathbb{Z}', v:'\\mathbb{R}^2', f:'(\\lambda x,\\ \\lambda y)', isLCE:true },
     { k:'\\mathbb{Z}', v:'\\mathbb{Z}^2\\ \\text{(coordenadas enteras)}', f:'(\\lambda x,\\ \\lambda y)', isLCE:true },
     { k:'\\mathbb{Q}', v:'\\mathbb{Q}^2', f:'(\\lambda x,\\ \\lambda y)', isLCE:true },
-    { k:'\\mathbb{Q}', v:'\\mathbb{Z}^2\\ \\text{(coordenadas enteras)}', f:'(\\lambda x,\\ \\lambda y)', isLCE:false, cx:'Con λ=1/2 y v=(1,0): el resultado (0,5, 0) no tiene coordenadas enteras.' },
+    { k:'\\mathbb{Q}', v:'\\mathbb{Z}^2\\ \\text{(coordenadas enteras)}', f:'(\\lambda x,\\ \\lambda y)', isLCE:false, cx:'Con λ=1/2 y v=(1,0): el resultado (1/2, 0) no tiene coordenadas enteras.' },
     { k:'\\mathbb{Z}', v:'\\{A\\in M_{2\\times2} : \\text{entradas enteras}\\}', f:'\\lambda A', isLCE:true },
-    { k:'\\mathbb{Q}', v:'\\{A\\in M_{2\\times2} : \\text{entradas enteras}\\}', f:'\\lambda A', isLCE:false, cx:'Con λ=1/2 se puede romper la integridad de las entradas (ej. entrada 1 pasa a 0,5).' },
+    { k:'\\mathbb{Q}', v:'\\{A\\in M_{2\\times2} : \\text{entradas enteras}\\}', f:'\\lambda A', isLCE:false, cx:'Con λ=1/2, una entrada igual a 1 pasa a valer 0,5, que no es entera.' },
     { k:'\\mathbb{Z}', v:'\\{p\\in P_2(\\mathbb{R}) : \\text{coeficientes enteros}\\}', f:'\\lambda p', isLCE:true },
-    { k:'\\mathbb{Q}', v:'\\{p\\in P_2(\\mathbb{R}) : \\text{coeficientes enteros}\\}', f:'\\lambda p', isLCE:false, cx:'Con λ=1/3 se puede romper la integridad de los coeficientes.' },
+    { k:'\\mathbb{Q}', v:'\\{p\\in P_2(\\mathbb{R}) : \\text{coeficientes enteros}\\}', f:'\\lambda p', isLCE:false, cx:'Con λ=1/3, un coeficiente igual a 1 pasa a valer 1/3, que no es entero.' },
     { k:'\\mathbb{N}', v:'\\mathbb{R}', f:'\\lambda x', isLCE:true },
     { k:'\\mathbb{Z}', v:'\\mathbb{R}^+\\ \\text{(reales positivos)}', f:'\\lambda x', isLCE:false, cx:'Con λ=-1 (entero) y x=2: el resultado es -2, que no es positivo.' }
   ];
@@ -104,8 +104,8 @@
     function generateCase(){ return CASES[pickLeastUsedIdx()]; }
 
     function renderContent(container, current){
-      var latex = 'K = ' + current.k + ' \\quad\\quad V = ' + current.v +
-                  ' \\\\[10pt] \\ast : K \\times V \\to V \\quad\\quad \\lambda \\ast v = ' + current.f;
+      var latex = 'K = ' + current.k + ' \\quad\\quad \\mathbb{V} = ' + current.v +
+                  ' \\\\[10pt] \\ast : K \\times \\mathbb{V} \\to \\mathbb{V} \\quad\\quad \\lambda \\ast v = ' + current.f;
       window.katex.render(latex, container, { throwOnError:false });
     }
 
@@ -115,7 +115,7 @@
       needsKatex: true,
       eyebrow: 'Unidad 2 \u00b7 Subespacios vectoriales',
       title: '\u00bfEs una LCE?',
-      subtitle: 'Mir\u00e1 el conjunto K de escalares, el conjunto V, y la f\u00f3rmula. \u00bfEs una ley de composici\u00f3n externa de K sobre V?',
+      subtitle: 'Mir\u00e1 el conjunto K de escalares, el conjunto $\\mathbb{V}$, y la f\u00f3rmula. \u00bfEs una ley de composici\u00f3n externa de K sobre $\\mathbb{V}$?',
 
       generate: generateCase,
       renderContent: renderContent,
@@ -126,7 +126,7 @@
       check: function(current, value){ return (value==='si') === current.isLCE; },
       explain: function(current, correct){
         if(correct) return '';
-        if(current.isLCE) return 'No es correcto: esta f\u00f3rmula s\u00ed es una LCE (el resultado siempre queda bien definido y dentro de V).';
+        if(current.isLCE) return 'No es correcto: esta f\u00f3rmula s\u00ed es una LCE (el resultado siempre queda bien definido y dentro de 𝕍).';
         return 'No es correcto. Un contraejemplo: ' + current.cx;
       }
     });

@@ -64,7 +64,7 @@
        Sin ella, la respuesta se podría acertar sin comprobar nada:
        bastaría con elegir entre 2 y 3. Con ella, hay que calcular las
        potencias de verdad, que es lo que la sección enseña — y la cota de
-       4.3.1 dice justamente hasta dónde hay que calcular: si Aⁿ no da la
+       4.5.3 dice justamente hasta dónde hay que calcular: si Aⁿ no da la
        matriz nula, ninguna potencia posterior lo va a hacer. */
     function generarCaso() {
       var intentos = 0;
@@ -179,7 +179,7 @@
       mount: '#apt-u4a12',
       eyebrow: 'Unidad 4 · Diagonalización',
       title: 'Índice de nilpotencia',
-      subtitle: 'Calculá las potencias hasta que alguna dé la matriz nula. Por la cota de 4.3.1 sabés hasta dónde hay que llegar.',
+      subtitle: 'Calculá las potencias hasta que alguna dé la matriz nula. Por la cota de 4.5.3 sabés hasta dónde hay que llegar.',
       nextLabel: 'Probar con otra matriz →',
       needsKatex: true,
       mode: 'choices',
@@ -200,7 +200,7 @@
 
         if (!current.nilpotente) {
           return cabeza + 'Esta matriz no es nilpotente. Y no hacía falta calcular potencias para siempre: ' +
-            'por el teorema de 4.3.1, si una matriz de ' + current.n + '×' + current.n + ' fuera nilpotente, ' +
+            'por la propiedad de 4.5.3, si una matriz de ' + current.n + '×' + current.n + ' fuera nilpotente, ' +
             'su potencia ' + current.n + '-ésima ya tendría que dar la matriz nula. Como no da, ninguna posterior lo va a hacer. ' +
             'Otra forma de verlo: los autovalores de una nilpotente son todos cero, y ésta tiene alguno distinto.';
         }
@@ -208,7 +208,7 @@
         return cabeza + 'Su índice es ' + current.indice + ': la potencia ' + current.indice +
           '-ésima da la matriz nula y la anterior todavía no. ' +
           'Fijate que ' + current.indice + ' es menor o igual que ' + current.n +
-          ', como asegura el teorema de 4.3.1 — la cota dice «como máximo n», no «exactamente n».';
+          ', como asegura la propiedad de 4.5.3 — la cota dice «como máximo n», no «exactamente n».';
       }
     });
   })();

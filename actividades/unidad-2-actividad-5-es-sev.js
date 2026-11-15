@@ -65,23 +65,23 @@
     { space:'R3', cond:'x^2 + y^2 + z^2 \\le 9', isSEV:false, cx:'(3,0,0) cumple (9≤9), pero 2·(3,0,0) = (6,0,0), y 6² = 36 > 9. No cierra bajo producto por escalar.' },
 
     // ============ M2×2(R) (14) ============
-    { space:'M22', cond:'A = A^T \\ \\text{(simétrica)}', isSEV:true },
-    { space:'M22', cond:'\\text{tr}(A) = 0', isSEV:true },
+    { space:'M22', cond:'A = A^t \\ \\text{(simétrica)}', isSEV:true },
+    { space:'M22', cond:'\\operatorname{Tr}(A) = 0', isSEV:true },
     { space:'M22', cond:'\\text{triangular superior}', isSEV:true },
     { space:'M22', cond:'\\text{diagonal}', isSEV:true },
-    { space:'M22', cond:'A = -A^T \\ \\text{(antisimétrica)}', isSEV:true },
+    { space:'M22', cond:'A = -A^t \\ \\text{(antisimétrica)}', isSEV:true },
     { space:'M22', cond:'\\text{cualquier } A \\in M_{2\\times2}(\\mathbb{R})', isSEV:true },
 
-    { space:'M22', cond:'\\text{tr}(A) = 1', isSEV:false, cx:'La matriz nula tiene traza 0 ≠ 1, así que no pertenece al conjunto. Todo SEV tiene que contener a la matriz nula.' },
+    { space:'M22', cond:'\\operatorname{Tr}(A) = 1', isSEV:false, cx:'La matriz nula tiene traza 0 ≠ 1, así que no pertenece al conjunto. Todo SEV tiene que contener a la matriz nula.' },
     { space:'M22', cond:'a_{11} = 1', isSEV:false, cx:'La matriz nula tiene a₁₁ = 0 ≠ 1, así que no pertenece.' },
     { space:'M22', cond:'\\det(A) = 1', isSEV:false, cx:'La matriz nula tiene determinante 0 ≠ 1, así que no pertenece.' },
     { space:'M22', cond:'a_{11} + a_{22} = 3', isSEV:false, cx:'La matriz nula tiene a₁₁+a₂₂ = 0 ≠ 3, así que no pertenece.' },
 
-    { space:'M22', cond:'\\det(A) = 0', isSEV:false, cx:'A=[[1,0],[0,0]] y B=[[0,0],[0,1]] tienen determinante 0, pero A+B = [[1,0],[0,1]] (la identidad), que tiene determinante 1 ≠ 0. No cierra bajo la suma.' },
-    { space:'M22', cond:'\\text{alguna entrada de } A \\text{ es } 0', isSEV:false, cx:'A=[[0,1],[1,1]] y B=[[1,1],[1,0]] tienen alguna entrada en 0, pero A+B = [[1,2],[2,1]], que no tiene ninguna entrada en 0. No cierra bajo la suma.' },
+    { space:'M22', cond:'\\det(A) = 0', isSEV:false, cx:'$A=\\begin{pmatrix}1&0\\\\0&0\\end{pmatrix}$ y $B=\\begin{pmatrix}0&0\\\\0&1\\end{pmatrix}$ tienen determinante 0, pero $A+B=I$, que tiene determinante 1 ≠ 0. No cierra bajo la suma.' },
+    { space:'M22', cond:'\\text{alguna entrada de } A \\text{ es } 0', isSEV:false, cx:'$A=\\begin{pmatrix}0&1\\\\1&1\\end{pmatrix}$ y $B=\\begin{pmatrix}1&1\\\\1&0\\end{pmatrix}$ tienen alguna entrada en 0, pero $A+B=\\begin{pmatrix}1&2\\\\2&1\\end{pmatrix}$, que no tiene ninguna entrada en 0. No cierra bajo la suma.' },
 
     { space:'M22', cond:'\\det(A) \\ne 0 \\ \\text{(invertible)}', isSEV:false, cx:'La identidad I es invertible, pero 0·I es la matriz nula, que no es invertible. No cierra bajo producto por escalar.' },
-    { space:'M22', cond:'\\text{todas las entradas} \\ge 0', isSEV:false, cx:'A=[[1,0],[0,1]] cumple, pero (-1)·A = [[-1,0],[0,-1]], con entradas negativas. No cierra bajo producto por escalar.' },
+    { space:'M22', cond:'\\text{todas las entradas} \\ge 0', isSEV:false, cx:'$A=\\begin{pmatrix}1&0\\\\0&1\\end{pmatrix}$ cumple, pero $(-1)\\cdot A=\\begin{pmatrix}-1&0\\\\0&-1\\end{pmatrix}$, con entradas negativas. No cierra bajo producto por escalar.' },
 
     // ============ P2(R) (14) ============
     { space:'P2', cond:'a_0 = 0', isSEV:true },
@@ -103,10 +103,10 @@
     { space:'P2', cond:'p(2) \\le 5', isSEV:false, cx:'p=5 (constante) cumple p(2)=5≤5, pero 2p tiene 2p(2)=10 > 5. No cierra bajo producto por escalar.' }
   ];
     var SPACE_LABEL = {
-      R2: 'V = \\mathbb{R}^2',
-      R3: 'V = \\mathbb{R}^3',
-      M22: 'V = M_{2\\times2}(\\mathbb{R})',
-      P2: 'V = P_2(\\mathbb{R})'
+      R2: '\\mathbb{V} = \\mathbb{R}^2',
+      R3: '\\mathbb{V} = \\mathbb{R}^3',
+      M22: '\\mathbb{V} = M_{2\\times2}(\\mathbb{R})',
+      P2: '\\mathbb{V} = P_2(\\mathbb{R})'
     };
     var SPACE_ELEMENT = {
       R2: '(x,y)',
@@ -128,7 +128,7 @@
 
     function renderContent(container, current){
       var latex = SPACE_LABEL[current.space] +
-                  ' \\\\[8pt] S = \\{\\ ' + SPACE_ELEMENT[current.space] + ' \\in V \\ : \\ ' + current.cond + '\\ \\}';
+                  ' \\\\[8pt] S = \\{\\ ' + SPACE_ELEMENT[current.space] + ' \\in \\mathbb{V} \\ : \\ ' + current.cond + '\\ \\}';
       window.katex.render(latex, container, { throwOnError:false });
     }
 
@@ -138,7 +138,7 @@
       needsKatex: true,
       eyebrow: 'Unidad 2 \u00b7 Subespacios vectoriales',
       title: '\u00bfEs un subespacio vectorial?',
-      subtitle: 'Mir\u00e1 el espacio V y el subconjunto S. \u00bfS es un subespacio vectorial de V?',
+      subtitle: 'Mir\u00e1 el espacio $\\mathbb{V}$ y el subconjunto S. \u00bfS es un subespacio vectorial de $\\mathbb{V}$?',
 
       generate: generateCase,
       renderContent: renderContent,
@@ -150,7 +150,7 @@
       explain: function(current, correct){
         if(correct) return '';
         if(current.isSEV) return 'No es correcto: S s\u00ed es un subespacio vectorial (contiene al 0 y cierra bajo suma y producto por escalar).';
-        return 'No es correcto. Un contraejemplo: ' + current.cx;
+        return 'No es correcto. Un contraejemplo: ' + window.AptActivity.renderTextWithMath(current.cx);
       }
     });
   })();

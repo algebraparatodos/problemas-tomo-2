@@ -243,8 +243,8 @@
           check: function (cur, value) { return Number(value) === cur.k; },
           explain: function (cur, correct) {
             var base = cur.pide === 'imagen'
-              ? 'dim(Im(T)) es el rango de M(T), que es ' + cur.r + '.'
-              : 'dim(Nu(T)) = dim(V) − rango = ' + cur.n + ' − ' + cur.r + ' = ' + cur.k + '.';
+              ? 'Dim(Im(T)) es el rango de M(T), que es ' + cur.r + '.'
+              : 'Dim(Nu(T)) = Dim(𝕍) − rango = ' + cur.n + ' − ' + cur.r + ' = ' + cur.k + '.';
             return correct ? base : 'No es correcto. ' + base;
           }
         },

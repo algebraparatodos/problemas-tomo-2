@@ -48,18 +48,22 @@
 
     /* ---------- Las dos formas de tener un autovalor doble ----------
 
-       Éste es el corazón de la unidad, y la única manera de que el alumno
-       lo vea es ponerle delante los dos casos con el mismo autovalor
-       repetido:
+       La matriz es de 3×3 con dos autovalores: uno doble y uno simple. Y
+       el doble aparece de las dos maneras posibles:
 
        - Si la matriz viene de una diagonal con λ dos veces, el
-         autoespacio tiene dimensión 2 y MG = MA. Es diagonalizable.
+         autoespacio tiene dimensión 2 y MG = MA.
        - Si viene de un bloque con un 1 arriba de la diagonal, el
-         autoespacio se queda en dimensión 1 y MG < MA. No lo es.
+         autoespacio se queda en dimensión 1 y MG < MA.
 
        Las dos matrices tienen exactamente el mismo polinomio
        característico, así que no hay forma de distinguirlas sin calcular
-       el núcleo de (A − λI). Que es justamente lo que hay que aprender. */
+       el núcleo de (A − λI). Que es justamente lo que hay que aprender.
+
+       Se pide el par (MA, MG) de CADA autovalor, como dice el QR del
+       libro, en una fase por autovalor. Los dos se muestran ordenados de
+       menor a mayor, así que el doble puede ser λ₁ o λ₂: para saber cuál
+       es hay que mirar el polinomio característico. */
     function generarCaso() {
       var intentos = 0;
       while (intentos++ < 400) {
@@ -94,35 +98,46 @@
         for (i = 0; i < n; i++) for (c = 0; c < n; c++) if (Math.abs(A[i][c]) > 14) grande = true;
         if (grande) continue;
 
-        // La geométrica se calcula de verdad sobre la matriz que se
-        // muestra, no se da por supuesta del generador.
-        var mg = n - rango(restar(A, lambda, n), n);
+        // Las geométricas se calculan de verdad sobre la matriz que se
+        // muestra, no se dan por supuestas del generador.
+        var rgDoble = rango(restar(A, lambda, n), n);
+        var rgSimple = rango(restar(A, otro, n), n);
+        var mg = n - rgDoble;
         var esperada = completa ? 2 : 1;
         if (mg !== esperada) continue;
+        if (n - rgSimple !== 1) continue;
 
-        // Y la algebraica tiene que ser 2: si el otro autovalor hubiera
-        // coincidido, sería 3.
-        if (otro === lambda) continue;
+        var doble = { valor: lambda, ma: 2, mg: mg, rango: rgDoble };
+        var simple = { valor: otro, ma: 1, mg: 1, rango: rgSimple };
+        var autovalores = lambda < otro ? [doble, simple] : [simple, doble];
 
-        var pares = [
-          { ma: 2, mg: 2 }, { ma: 2, mg: 1 }, { ma: 1, mg: 1 }, { ma: 3, mg: 2 }
-        ];
-        var opciones = shuffle(pares).map(function (p) {
-          return {
-            value: p.ma + ',' + p.mg,
-            label: 'MA(λ) = ' + p.ma + '   y   MG(λ) = ' + p.mg
-          };
+        autovalores.forEach(function (av, idx) {
+          av.indice = idx + 1;
+          av.opciones = shuffle(PARES).map(function (p) {
+            return {
+              value: p.ma + ',' + p.mg,
+              label: 'MA(λ' + SUB[idx + 1] + ') = ' + p.ma + '   y   MG(λ' + SUB[idx + 1] + ') = ' + p.mg
+            };
+          });
         });
 
         return {
-          n: n, A: A, lambda: lambda, otro: otro,
-          ma: 2, mg: mg,
-          diagonalizable: mg === 2,
-          opciones: opciones
+          n: n, A: A,
+          autovalores: autovalores,
+          diagonalizable: mg === 2
         };
       }
       return null;
     }
+
+    var SUB = ['₀', '₁', '₂', '₃'];
+
+    /* Los mismos cuatro pares para los dos autovalores. Con dos
+       autovalores distintos en una matriz de 3×3, MA vale 1 o 2. El par
+       (1, 2) es la trampa de quien calcula bien el autoespacio pero no
+       mira el polinomio: la geométrica nunca puede superar a la
+       algebraica. */
+    var PARES = [{ ma: 1, mg: 1 }, { ma: 2, mg: 1 }, { ma: 2, mg: 2 }, { ma: 1, mg: 2 }];
 
     function restar(A, lambda, n) {
       var M = [], r, c;
@@ -130,7 +145,7 @@
       return M;
     }
 
-    /** Rango por eliminación con fracciones, para no arrastrar redondeos. */
+    /** Rango por eliminación sin divisiones (todo queda entero). */
     function rango(M, n) {
       var A = [], r, c;
       for (r = 0; r < n; r++) { A.push([]); for (c = 0; c < n; c++) A[r].push(M[r][c]); }
@@ -184,16 +199,65 @@
         '\\end{array}\\right]';
     }
 
+    /* ---------- Textos de la explicación, con los números del caso ---------- */
+    function num(x) { return x < 0 ? '−' + Math.abs(x) : String(x); }
+    // «A − 2I», «A + I», «A − I»
+    function aMenosLambdaI(x) {
+      var ax = Math.abs(x);
+      return 'A ' + (x < 0 ? '+' : '−') + ' ' + (ax === 1 ? '' : ax) + 'I';
+    }
+    // p(λ) = det(A − λI) factorizado, como en el libro: (2 − λ)²(−1 − λ)
+    function polinomioFactorizado(cur) {
+      var d = cur.autovalores.filter(function (av) { return av.ma === 2; })[0];
+      var s = cur.autovalores.filter(function (av) { return av.ma === 1; })[0];
+      return '(' + num(d.valor) + ' − λ)²(' + num(s.valor) + ' − λ)';
+    }
+
+    function porQue(cur, av) {
+      var nombre = 'λ' + SUB[av.indice];
+      var raiz = 'MA(' + nombre + ') = ' + av.ma + ' porque ' + nombre + ' = ' + num(av.valor) + ' es raíz ' +
+        (av.ma === 2 ? 'doble' : 'simple') + ' del polinomio característico, p(λ) = ' + polinomioFactorizado(cur) + '. ';
+      var auto = 'Y MG(' + nombre + ') = ' + av.mg + ' porque su autoespacio, Nu(' + aMenosLambdaI(av.valor) +
+        '), tiene dimensión 3 − Rango(' + aMenosLambdaI(av.valor) + ') = 3 − ' + av.rango + ' = ' + av.mg + '.';
+      return raiz + auto;
+    }
+
+    function cierre(cur) {
+      if (cur.diagonalizable) {
+        return ' Como MG = MA para los dos autovalores, en 4.2.2 vas a ver que esta matriz es diagonalizable.';
+      }
+      return ' Como MG < MA en el autovalor doble, en 4.2.2 vas a ver que esta matriz no es diagonalizable: le falta un autovector para llegar a los tres que hacen falta. ' +
+        'Fijate que el polinomio característico no alcanza para saberlo — hay matrices con este mismo polinomio que sí son diagonalizables.';
+    }
+
+    function fase(idx) {
+      var nombreTex = '\\lambda_' + (idx + 1);
+      return {
+        mode: 'choices',
+        question: 'Multiplicidad algebraica y geométrica de $' + nombreTex + '$:',
+        choicesStacked: true,
+        choices: function (current) { return current.autovalores[idx].opciones; },
+        check: function (current, value) {
+          var av = current.autovalores[idx];
+          return value === av.ma + ',' + av.mg;
+        },
+        explain: function (current, correcto) {
+          var texto = (correcto ? '¡Correcto! ' : 'No es correcto. ') + porQue(current, current.autovalores[idx]);
+          // La conclusión va en la última fase, cuando ya están los dos.
+          if (idx === 1) texto += cierre(current);
+          return texto;
+        }
+      };
+    }
+
     window.AptActivity.init({
       mount: '#apt-u4a3',
       eyebrow: 'Unidad 4 · Diagonalización',
       title: 'Multiplicidad algebraica y geométrica',
-      subtitle: 'El polinomio característico de esta matriz tiene a λ como raíz doble. La pregunta es qué dimensión tiene su autoespacio.',
+      subtitle: 'Te doy la matriz y sus dos autovalores. Para cada uno, encontrá la multiplicidad algebraica (cuántas veces es raíz del polinomio característico) y la geométrica (la dimensión de su autoespacio).',
       nextLabel: 'Probar con otra matriz →',
       needsKatex: true,
-      mode: 'choices',
-      choicesStacked: true,
-      choices: function (current) { return current.opciones; },
+      mode: 'phases',
       generate: function () {
         var caso = generarCaso();
         while (!caso) caso = generarCaso();
@@ -201,24 +265,12 @@
       },
       renderContent: function (container, current) {
         window.katex.render(
-          matrixLatex(current.A) + '\\qquad \\lambda = ' + current.lambda,
+          'A = ' + matrixLatex(current.A) + '\\qquad \\lambda_1 = ' + current.autovalores[0].valor +
+            ',\\ \\ \\lambda_2 = ' + current.autovalores[1].valor,
           container, { throwOnError: false }
         );
       },
-      check: function (current, value) {
-        return value === current.ma + ',' + current.mg;
-      },
-      explain: function (current, correcto) {
-        var base = (correcto ? '¡Correcto! ' : 'No es correcto. ') +
-          'MA(λ)=2 porque λ=' + current.lambda + ' es raíz doble del polinomio característico ' +
-          '(el otro autovalor es ' + current.otro + '). Y MG(λ)=' + current.mg +
-          ' porque el autoespacio E_λ = Nuc(A − λI) tiene dimensión ' + current.mg + '. ';
-
-        return base + (current.diagonalizable
-          ? 'Como MG = MA para los dos autovalores, esta matriz sí es diagonalizable.'
-          : 'Como MG < MA, esta matriz no es diagonalizable: le falta un autovector para llegar a los tres que hacen falta. ' +
-            'Fijate que el polinomio característico no alcanza para saberlo — hay matrices con este mismo polinomio que sí son diagonalizables.');
-      }
+      phases: [fase(0), fase(1)]
     });
   })();
 

@@ -187,7 +187,7 @@
         : 'Corresponden: ' + trueShown.join(', ') + '.';
 
       var cls = current.classification;
-      if(cls.nula) msg += ' Por ser nula, también es escalar, diagonal, triangular superior y triangular inferior a la vez.';
+      if(cls.nula && cls.cuadrada) msg += ' Por ser nula y cuadrada, también es escalar, diagonal, triangular superior y triangular inferior a la vez.';
       else if(cls.escalar) msg += ' Por ser escalar, también es diagonal, triangular superior y triangular inferior a la vez.';
       else if(cls.diagonal) msg += ' Por ser diagonal, también es triangular superior y triangular inferior a la vez.';
 

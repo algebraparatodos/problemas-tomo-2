@@ -103,7 +103,7 @@
       return { space:space, d:d, n:n, r:r, vectors:vectors, generates:generates, isBasis:isBasis, questionType:questionType };
     }
 
-    var SPACE_LABEL = { R2:'V = \\mathbb{R}^2', R3:'V = \\mathbb{R}^3', M22:'V = M_{2\\times2}(\\mathbb{R})', P2:'V = P_2(\\mathbb{R})' };
+    var SPACE_LABEL = { R2:'\\mathbb{V} = \\mathbb{R}^2', R3:'\\mathbb{V} = \\mathbb{R}^3', M22:'\\mathbb{V} = M_{2\\times2}(\\mathbb{R})', P2:'\\mathbb{V} = P_2(\\mathbb{R})' };
 
     function polyToLatex(coefs){
       var terms = [];
@@ -139,7 +139,7 @@
 
     function renderContent(container, current){
       var vectorLatexList = current.vectors.map(function(v){ return vectorToLatex(current.space, v); });
-      var question = current.questionType==='genera' ? '\\text{¿G genera V?}' : '\\text{¿G es base de V?}';
+      var question = current.questionType==='genera' ? '\\text{¿G genera }\\mathbb{V}\\text{?}' : '\\text{¿G es base de }\\mathbb{V}\\text{?}';
       container.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;"><div class="row-v"></div><div class="row-g"></div><div class="row-q"></div></div>';
       window.katex.render(SPACE_LABEL[current.space], container.querySelector('.row-v'), { throwOnError:false });
       container.querySelector('.row-g').innerHTML =
@@ -156,8 +156,8 @@
       needsKatex: true,
       choicesStacked: false,
       eyebrow: 'Unidad 2 · Subespacios vectoriales',
-      title: '¿Genera V? ¿Es base?',
-      subtitle: 'Mirá el conjunto G y el espacio V. Comparando Rg(G) contra dim(V) — y |G| si la pregunta es sobre bases — respondé.',
+      title: '¿Genera 𝕍? ¿Es base?',
+      subtitle: 'Mirá el conjunto G y el espacio $\\mathbb{V}$. Comparando Rango(G) contra $\\operatorname{Dim}(\\mathbb{V})$ — y |G| si la pregunta es sobre bases — respondé.',
 
       generate: generateCase,
       renderContent: renderContent,
@@ -171,16 +171,16 @@
       },
       explain: function(current, correct){
         if(current.questionType==='genera'){
-          var genBase = 'Rg(G) = ' + current.r + ', dim(V) = ' + current.d + '.';
+          var genBase = 'Rango(G) = ' + current.r + ', Dim(𝕍) = ' + current.d + '.';
           var genText = current.generates
-            ? genBase + ' Como Rg(G) = dim(V), G genera V.'
-            : genBase + ' Como Rg(G) < dim(V), G no llega a generar V.';
+            ? genBase + ' Como Rango(G) = Dim(𝕍), G genera 𝕍.'
+            : genBase + ' Como Rango(G) < Dim(𝕍), G no llega a generar 𝕍.';
           return correct ? genText : 'No es correcto. ' + genText;
         }
-        var baseWithCard = 'Rg(G) = ' + current.r + ', dim(V) = ' + current.d + ', |G| = ' + current.n + '.';
+        var baseWithCard = 'Rango(G) = ' + current.r + ', Dim(𝕍) = ' + current.d + ', |G| = ' + current.n + '.';
         var baseText = current.isBasis
-          ? baseWithCard + ' Como Rg(G) = |G| = dim(V), G es base de V.'
-          : baseWithCard + ' ' + (current.generates ? 'G genera V, pero |G| ≠ dim(V), así que no es base.' : 'Como Rg(G) < dim(V), G ni siquiera genera V, así que no puede ser base.');
+          ? baseWithCard + ' Como Rango(G) = |G| = Dim(𝕍), G es base de 𝕍.'
+          : baseWithCard + ' ' + (current.generates ? 'G genera 𝕍, pero |G| ≠ Dim(𝕍), así que no es base.' : 'Como Rango(G) < Dim(𝕍), G ni siquiera genera 𝕍, así que no puede ser base.');
         return correct ? baseText : 'No es correcto. ' + baseText;
       }
     });

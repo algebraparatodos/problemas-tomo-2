@@ -91,24 +91,126 @@
   }
   function isSafeFrac(f) { return Number.isSafeInteger(f.n) && Number.isSafeInteger(f.d); }
 
+  /* ---------- La fase final: normalizar ----------
+
+     La base ortogonal sale con coordenadas enteras, pero al dividir cada
+     uᵢ por su norma aparecen raíces: ‖uᵢ‖ = √(suma de los cuadrados).
+     Las celdas de la grilla no aceptan raíces, así que el último paso es
+     de opción múltiple, como en «Hallá M(T⁻¹)» de la U3.
+
+     Cada vector de una opción se guarda como (1/√m)·w, con m entero y w
+     de coordenadas enteras. Así dos opciones que se escriben distinto
+     pero valen lo mismo se reconocen por su clave y nunca quedan dos
+     iguales en pantalla. Los distractores son los errores típicos:
+       - dividir por ‖uᵢ‖² en vez de por ‖uᵢ‖           (m = ‖uᵢ‖⁴)
+       - normalizar los vectores de B, que no son ortogonales
+       - «olvidarse» de los cuadrados: √(Σ|xᵢ|) como norma
+       - normalizar sólo u₁ y dejar los demás como estaban
+       - dividir cada uᵢ por la norma de otro */
+  function sqNorm(c) { return c.reduce(function (s, x) { return s + x * x; }, 0); }
+  function absSum(c) { return c.reduce(function (s, x) { return s + Math.abs(x); }, 0); }
+
+  // √m = a·√b con b libre de cuadrados.
+  function simplifySqrt(m) {
+    var a = 1, b = m;
+    for (var p = 2; p * p <= b; p++) {
+      while (b % (p * p) === 0) { b /= p * p; a *= p; }
+    }
+    return { a: a, b: b };
+  }
+  function sqrtTex(m) {
+    var s = simplifySqrt(m);
+    if (s.b === 1) return String(s.a);
+    return (s.a === 1 ? '' : s.a) + '\\sqrt{' + s.b + '}';
+  }
+  // El factor 1/√m en LaTeX ('' si m = 1).
+  function factorTex(m) {
+    if (m === 1) return '';
+    return '\\dfrac{1}{' + sqrtTex(m) + '}';
+  }
+  // ‖u‖ en texto plano: «√50 = 5√2», «√6», «3».
+  function normText(m) {
+    var s = simplifySqrt(m);
+    if (s.b === 1) return (s.a === 1 && m === 1) ? '1' : ('√' + m + ' = ' + s.a);
+    return '√' + m + (s.a === 1 ? '' : ' = ' + s.a + '√' + s.b);
+  }
+
+  function scaledTex(space, m, coords) {
+    var f = factorTex(m);
+    var body = space.toKatex(space.fromCoords(coords));
+    if (!f) return body;
+    // Un polinomio multiplicado por el factor va siempre entre paréntesis:
+    // sin ellos «½ 2x²» se lee mal.
+    if (space.family === 'poly') body = '\\left(' + body + '\\right)';
+    return f + '\\,' + body;
+  }
+
+  function optionKey(vecs) {
+    return vecs.map(function (v) { return v.m + ':' + v.c.join(','); }).join('|');
+  }
+
+  function buildNormOptions(Vc, Uc) {
+    var k = Uc.length;
+    var sq = Uc.map(sqNorm);
+    var correct = Uc.map(function (u, i) { return { m: sq[i], c: u }; });
+
+    var candidatos = [
+      { tipo: 'cuadrado', vecs: Uc.map(function (u, i) { return { m: sq[i] * sq[i], c: u }; }) },
+      { tipo: 'base-original', vecs: Vc.map(function (v) { return { m: sqNorm(v), c: v }; }) },
+      { tipo: 'sin-cuadrados', vecs: Uc.map(function (u) { return { m: absSum(u), c: u }; }) },
+      { tipo: 'solo-el-primero', vecs: Uc.map(function (u, i) { return { m: i === 0 ? sq[0] : 1, c: u }; }) },
+      { tipo: 'norma-de-otro', vecs: Uc.map(function (u, i) { return { m: sq[(i + 1) % k], c: u }; }) }
+    ];
+
+    var vistos = [optionKey(correct)];
+    var elegidos = [{ tipo: 'ok', vecs: correct }];
+    shuffle(candidatos).forEach(function (c) {
+      if (elegidos.length >= 4) return;
+      var key = optionKey(c.vecs);
+      if (vistos.indexOf(key) !== -1) return;
+      vistos.push(key);
+      elegidos.push(c);
+    });
+    return elegidos.length >= 4 ? shuffle(elegidos) : null;
+  }
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) { var j = randInt(0, i); var t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+
+  /* El generador sortea hasta dar con un caso que cierre: base ortogonal
+     entera (las fases de u₂ y u₃ piden enteros), números chicos y cuatro
+     opciones distintas para la normalización. Nunca devuelve un caso que
+     no cumpla todo eso (el generador anterior, si a los 80 intentos no
+     daba con una base entera, seguía con la última; en 20.000 rondas
+     simuladas no pasó nunca, pero ahora tampoco puede pasar). */
+  var MAX_ENTRADA = 12, MAX_NORMA2 = 150;
   function generateCase() {
     var pool = [AptActivity.SPACES.R3, AptActivity.SPACES.R4, AptActivity.SPACES.M2x2, AptActivity.SPACES.M2x3, AptActivity.SPACES.M3x2, AptActivity.SPACES.P2, AptActivity.SPACES.P3];
-    var space, n, k, V, U, tries = 0;
-    do {
-      space = pick(pool);
-      n = space.dim;
-      k = randInt(2, Math.min(3, n));
-      V = scramble(buildLiCoords(n, k), k);
-      U = gramSchmidt(V);
-      tries++;
-    } while (!U.every(function(u){ return u.every(function(f){ return f.d === 1 && isSafeFrac(f); }); }) && tries < 80);
+    for (var tries = 0; tries < 20000; tries++) {
+      var space = pick(pool);
+      var n = space.dim;
+      var k = randInt(2, Math.min(3, n));
+      var V = scramble(buildLiCoords(n, k), k);
+      var U = gramSchmidt(V);
+      if (!U.every(function(u){ return u.every(function(f){ return f.d === 1 && isSafeFrac(f); }); })) continue;
 
-    var Uint = U.map(function(u){ return u.map(function(f){ return f.n; }); });
+      var Uint = U.map(function(u){ return u.map(function(f){ return f.n; }); });
+      if (Uint.some(function (u) { return u.every(function (x) { return x === 0; }); })) continue;
+      if (Uint.some(function (u) { return u.some(function (x) { return Math.abs(x) > MAX_ENTRADA; }) || sqNorm(u) > MAX_NORMA2; })) continue;
+      // Si los uᵢ ya tienen norma 1 no hay nada que normalizar.
+      if (Uint.every(function (u) { return sqNorm(u) === 1; })) continue;
 
-    var Vnative = V.map(function(c){ return space.fromCoords(c); });
-    var Unative = Uint.map(function(c){ return space.fromCoords(c); });
+      var opciones = buildNormOptions(V, Uint);
+      if (!opciones) continue;
 
-    return { space: space, n: n, k: k, Vnative: Vnative, Unative: Unative };
+      var Vnative = V.map(function(c){ return space.fromCoords(c); });
+      var Unative = Uint.map(function(c){ return space.fromCoords(c); });
+
+      return { space: space, n: n, k: k, Vnative: Vnative, Unative: Unative, Ucoords: Uint, normOptions: opciones };
+    }
+    return null;
   }
 
 
@@ -131,12 +233,14 @@
       return {
         mode: 'space-basis',
         question: idx === 0
-          ? 'Encontrá el primer vector de la base ortogonal, u' + SUBSCRIPTS[1] + '. Recordá que podés tomar cualquier vector de la base original.'
+          ? 'Encontrá el primer vector de la base ortogonal, u' + SUBSCRIPTS[1] + '. Como en el libro, el primero se conserva: u' + SUBSCRIPTS[1] + ' es el primer vector de la base dada.'
           : 'Encontrá u' + SUBSCRIPTS[idx + 1] + '.',
         count: function () { return 1; },
         space: function (current) { return current.space; },
         exactMatch: true,
         answerLabel: 'u' + SUBSCRIPTS[idx + 1],
+        // La fase de u₃ sólo va cuando hay tres vectores (engine v5.1).
+        skip: function (current) { return idx >= current.k; },
         getExpectedBasis: function (current) { return [current.Unative[idx]]; },
         explain: function (current, correct) {
           return correct ? '¡Correcto!' : 'No es correcto: revisá el resultado marcado en rojo.';
@@ -147,17 +251,64 @@
       };
     }
 
+    /* Cada opción es la base entera: un renglón por vector, que baja de
+       línea si no entra en el ancho del teléfono. */
+    function normOptionHtml(current, opt) {
+      var items = opt.vecs.map(function (v, i) {
+        var tex = '\\hat{u}_{' + (i + 1) + '} = ' + scaledTex(current.space, v.m, v.c);
+        return '<span style="white-space:nowrap;">' + window.katex.renderToString(tex, { throwOnError: false }) + '</span>';
+      });
+      return '<span style="display:inline-flex;flex-wrap:wrap;align-items:center;justify-content:center;column-gap:18px;row-gap:8px;">' +
+        items.join('') + '</span>';
+    }
+
+    function normasTexto(current) {
+      return current.Ucoords.map(function (u, i) {
+        return '‖u' + SUBSCRIPTS[i + 1] + '‖ = ' + normText(sqNorm(u));
+      }).join(', ');
+    }
+
+    var POR_QUE_NO = {
+      'cuadrado': 'Esa opción divide por el cuadrado de la norma y no por la norma: así los vectores no quedan de norma 1.',
+      'base-original': 'Esa opción normaliza los vectores de la base B que te dimos, y esos no son ortogonales entre sí: hay que normalizar la base ortogonal que encontraste.',
+      'sin-cuadrados': 'En esa opción la norma está mal calculada: es la raíz de la suma de los cuadrados de las coordenadas, no de sus valores absolutos.',
+      'solo-el-primero': 'Esa opción normaliza sólo a u₁: hay que dividir a cada vector por su propia norma.',
+      'norma-de-otro': 'En esa opción cada vector está dividido por la norma de otro: cada uno va dividido por su propia norma.'
+    };
+
+    var normPhase = {
+      mode: 'choices',
+      question: 'Último paso: dividí cada vector de la base ortogonal por su norma. ¿Cuál es la base ortonormal?',
+      choicesGrid: true,
+      choicesGridSingleColumn: true,
+      choices: function (current) {
+        return current.normOptions.map(function (o, i) {
+          return { value: o.tipo === 'ok' ? 'ok' : o.tipo, label: normOptionHtml(current, o) };
+        });
+      },
+      check: function (current, value) { return value === 'ok'; },
+      explain: function (current, correct, value) {
+        var base = 'Cada vector de la base ortogonal se divide por su norma, que es la raíz de la suma de los cuadrados de sus coordenadas: ' +
+          normasTexto(current) + '. Así los vectores, además de ortogonales, quedan de norma 1.';
+        if (correct) return '¡Correcto! ' + base;
+        return 'No es correcto. ' + (POR_QUE_NO[value] ? POR_QUE_NO[value] + ' ' : '') + base;
+      }
+    };
+
     AptActivity.init({
       mount: '#apt-gram-schmidt-mount',
       mode: 'phases',
       eyebrow: 'Unidad 2 · Subespacios vectoriales',
       title: 'Método de Gram-Schmidt',
-      subtitle: 'Te damos un conjunto de vectores LI. Aplicá Gram-Schmidt para encontrar una base ortogonal, paso a paso.',
+      subtitle: 'Te damos un conjunto de vectores LI. Aplicá Gram-Schmidt para encontrar una base ortogonal, paso a paso, y al final normalizala para llegar a una base ortonormal.',
       needsKatex: true,
-      generate: generateCase,
-      activePhaseCount: function (current) { return current.k; },
+      generate: function () {
+        var caso = generateCase();
+        while (!caso) caso = generateCase();
+        return caso;
+      },
       renderContent: function (el, current) {
-        var ambientLatex = 'V = ' + current.space.labelTex;
+        var ambientLatex = '\\mathbb{V} = ' + current.space.labelTex;
         el.className = 'apt-act__content apt-act__content--sev';
         el.innerHTML =
           '<div class="apt-act__content-ambient"></div>' +
@@ -166,7 +317,7 @@
         window.katex.render(ambientLatex, el.querySelector('.apt-act__content-ambient'), { throwOnError:false });
         AptActivity.renderBasisWrapped(el.querySelector('.apt-sev-basis-wrap'), current.space, current.Vnative, 'B');
       },
-      phases: [ makePhase(0), makePhase(1), makePhase(2) ]
+      phases: [ makePhase(0), makePhase(1), makePhase(2), normPhase ]
     });
   })();
 

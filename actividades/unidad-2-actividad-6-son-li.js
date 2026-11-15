@@ -85,7 +85,7 @@
       return { space:space, d:d, n:n, r:r, vectors:vectors, isLI:isLI };
     }
 
-    var SPACE_LABEL = { R2:'V = \\mathbb{R}^2', R3:'V = \\mathbb{R}^3', M22:'V = M_{2\\times2}(\\mathbb{R})', P2:'V = P_2(\\mathbb{R})' };
+    var SPACE_LABEL = { R2:'\\mathbb{V} = \\mathbb{R}^2', R3:'\\mathbb{V} = \\mathbb{R}^3', M22:'\\mathbb{V} = M_{2\\times2}(\\mathbb{R})', P2:'\\mathbb{V} = P_2(\\mathbb{R})' };
 
     function polyToLatex(coefs){
       var terms = [];
@@ -137,7 +137,7 @@
       needsKatex: true,
       eyebrow: 'Unidad 2 · Subespacios vectoriales',
       title: '¿Es LI o LD?',
-      subtitle: 'Mirá el conjunto de vectores G. Comparando |G| (cuántos son) contra Rg(G) (el rango), ¿es linealmente independiente o dependiente?',
+      subtitle: 'Mirá el conjunto de vectores G. Comparando |G| (cuántos son) contra Rango(G) (el rango), ¿es linealmente independiente o dependiente?',
 
       generate: generateCase,
       renderContent: renderContent,
@@ -148,15 +148,15 @@
       ],
       check: function(current, value){ return (value==='li') === current.isLI; },
       explain: function(current, correct){
-        var base = '|G| = ' + current.n + ', Rg(G) = ' + current.r + '.';
+        var base = '|G| = ' + current.n + ', Rango(G) = ' + current.r + '.';
         if(correct){
           return current.isLI
-            ? base + ' Como Rg(G) coincide con |G|, G es LI.'
-            : base + ' Como Rg(G) es menor que |G|, G es LD.';
+            ? base + ' Como Rango(G) coincide con |G|, G es LI.'
+            : base + ' Como Rango(G) es menor que |G|, G es LD.';
         }
         return current.isLI
-          ? 'No es correcto: G sí es LI. ' + base + ' Como Rg(G) coincide con |G|, son independientes.'
-          : 'No es correcto: G es LD. ' + base + ' Como Rg(G) es menor que |G|, hay dependencia lineal.';
+          ? 'No es correcto: G sí es LI. ' + base + ' Como Rango(G) coincide con |G|, son independientes.'
+          : 'No es correcto: G es LD. ' + base + ' Como Rango(G) es menor que |G|, hay dependencia lineal.';
       }
     });
   })();

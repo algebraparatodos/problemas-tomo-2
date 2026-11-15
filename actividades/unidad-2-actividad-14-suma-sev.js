@@ -158,7 +158,7 @@
       mode: 'phases',
       eyebrow: 'Unidad 2 · Subespacios vectoriales',
       title: 'Suma de subespacios',
-      subtitle: 'Te damos dos subespacios S y T. Encontrá dim(S + T) y si la suma es directa.',
+      subtitle: 'Te damos dos subespacios S y T. Encontrá Dim(S + T) y si la suma es directa.',
       needsKatex: true,
       generate: generateCase,
       renderContent: function (el, current) {
@@ -168,14 +168,14 @@
           '<div class="apt-act__content-ambient"></div>' +
           '<div class="apt-sev-basis-wrap" style="margin-bottom:6px;"></div>' +
           '<div class="apt-sev-basis-wrap-2"></div>';
-        window.katex.render('V = ' + current.space.labelTex, el.querySelector('.apt-act__content-ambient'), { throwOnError:false });
+        window.katex.render('\\mathbb{V} = ' + current.space.labelTex, el.querySelector('.apt-act__content-ambient'), { throwOnError:false });
         AptActivity.renderSevAsBasisWrapped(el.querySelector('.apt-sev-basis-wrap'), current.space, current.Snative, 'S');
         AptActivity.renderSevAsBasisWrapped(el.querySelector('.apt-sev-basis-wrap-2'), current.space, current.Tnative, 'T');
       },
       phases: [
         {
           mode: 'choices',
-          question: '¿Cuál es dim(S + T)?',
+          question: '¿Cuál es Dim(S + T)?',
           choices: function (current) {
             return current.dimSumOptions.map(function (n) { return { value: String(n), label: String(n) }; });
           },
@@ -183,8 +183,8 @@
           check: function (current, value) { return Number(value) === current.dimSum; },
           explain: function (current, correct) {
             return correct
-              ? 'Correcto: dim(S + T) = ' + current.dimSum + '.'
-              : 'dim(S + T) es en realidad ' + current.dimSum + '.';
+              ? 'Correcto: Dim(S + T) = ' + current.dimSum + '.'
+              : 'Dim(S + T) es en realidad ' + current.dimSum + '.';
           }
         },
         {
@@ -198,8 +198,8 @@
           explain: function (current, correct) {
             var reallyIs = current.isDirect ? 'sí es' : 'no es';
             return correct
-              ? '¡Correcto! Es' + (current.isDirect ? '' : ' que no es') + ' directa: dim(S) + dim(T) ' + (current.isDirect ? '=' : '≠') + ' dim(S+T).'
-              : 'En realidad ' + reallyIs + ' directa: dim(S) + dim(T) ' + (current.isDirect ? '=' : '≠') + ' dim(S+T) (' + current.kS + ' + ' + current.kT + ' ' + (current.isDirect ? '=' : '≠') + ' ' + current.dimSum + ').';
+              ? '¡Correcto! Es' + (current.isDirect ? '' : ' que no es') + ' directa: Dim(S) + Dim(T) ' + (current.isDirect ? '=' : '≠') + ' Dim(S+T).'
+              : 'En realidad ' + reallyIs + ' directa: Dim(S) + Dim(T) ' + (current.isDirect ? '=' : '≠') + ' Dim(S+T) (' + current.kS + ' + ' + current.kT + ' ' + (current.isDirect ? '=' : '≠') + ' ' + current.dimSum + ').';
           }
         }
       ]

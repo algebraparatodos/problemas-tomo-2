@@ -38,7 +38,7 @@
     { n: 4,  titulo: 'Neutro y simétrico de una operación "rara"',         archivo: 'unidad-2-actividad-4-neutro-y-simetrico.js' },
     { n: 5,  titulo: '¿Es un subespacio vectorial?',                       archivo: 'unidad-2-actividad-5-es-sev.js' },
     { n: 6,  titulo: '¿Es LI o LD?',                                       archivo: 'unidad-2-actividad-6-son-li.js' },
-    { n: 7,  titulo: '¿Genera V? ¿Es base?',                               archivo: 'unidad-2-actividad-7-genera-s.js' },
+    { n: 7,  titulo: '¿Genera 𝕍? ¿Es base?',                               archivo: 'unidad-2-actividad-7-genera-s.js' },
     { n: 8,  titulo: 'Coordenadas de un vector en una base',               archivo: 'unidad-2-actividad-8-coordenadas-base.js' },
     { n: 9,  titulo: 'Matriz de cambio de base',                           archivo: 'unidad-2-actividad-9-matriz-cambio-base.js' },
     { n: 10, titulo: 'Base de un SEV',                                     archivo: 'unidad-2-actividad-10-base-sev.js' },

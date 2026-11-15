@@ -196,7 +196,7 @@
     window.AptActivity.init({
       mount: '#apt-u1a8',
       mode: 'phases',
-      eyebrow: 'Unidad 1 · Rango de matrices',
+      eyebrow: 'Unidad 1 · Matrices y SEL',
       title: 'Rango por orlado',
       subtitle: 'Partiendo de la entrada marcada, decidí en cada paso si existe un menor de orden mayor —que orle al anterior— que no se anule.',
 
@@ -231,7 +231,7 @@
               msg = 'Sí existe: tomando la fila ' + ordinalRows(step.rows) + ' y la columna ' + ordinalCols(step.cols) +
                     ' se forma un menor de orden 2 que vale ' + step.value + ' (no nulo). Seguimos orlando.';
             } else {
-              msg = 'No existe: cualquier menor de orden 2 que orle la entrada marcada da 0. Por lo tanto, rango(A) = 1.';
+              msg = 'No existe: cualquier menor de orden 2 que orle la entrada marcada da 0. Por lo tanto, rg(A) = 1.';
             }
             return (correct ? '' : 'No es correcto. ') + msg;
           },
@@ -242,7 +242,7 @@
               highlightCells(contentEl, step.rows, step.cols, 'is-order2');
               setCaption(contentEl, 'Menor de orden 2 no nulo (vale ' + step.value + '), resaltado en la matriz.');
             } else {
-              setCaption(contentEl, 'Ningún menor de orden 2 orla esta entrada sin anularse. Rango(A) = 1.');
+              setCaption(contentEl, 'Ningún menor de orden 2 orla esta entrada sin anularse. rg(A) = 1.');
             }
           }
         },
@@ -263,9 +263,9 @@
               msg = 'Sí existe: tomando las filas ' + step.rows.map(function(r){return r+1;}).join(', ') +
                     ' y las columnas ' + step.cols.map(function(c){return c+1;}).join(', ') +
                     ' se forma un menor de orden 3 que vale ' + step.value +
-                    ' (no nulo). No quedan más filas ni columnas para seguir orlando, así que rango(A) = 3 (rango completo).';
+                    ' (no nulo). No quedan más filas ni columnas para seguir orlando, así que rg(A) = 3 (rango completo).';
             } else {
-              msg = 'No existe: todos los menores de orden 3 que orlan al anterior dan 0. Por lo tanto, rango(A) = 2.';
+              msg = 'No existe: todos los menores de orden 3 que orlan al anterior dan 0. Por lo tanto, rg(A) = 2.';
             }
             return (correct ? '' : 'No es correcto. ') + msg;
           },
@@ -274,9 +274,9 @@
             var step = current.steps[3];
             if(step.exists){
               highlightCells(contentEl, step.rows, step.cols, 'is-order3');
-              setCaption(contentEl, 'Menor de orden 3 no nulo (vale ' + step.value + '), resaltado en la matriz. Rango(A) = 3.');
+              setCaption(contentEl, 'Menor de orden 3 no nulo (vale ' + step.value + '), resaltado en la matriz. rg(A) = 3.');
             } else {
-              setCaption(contentEl, 'Ningún menor de orden 3 orla al anterior sin anularse. Rango(A) = 2.');
+              setCaption(contentEl, 'Ningún menor de orden 3 orla al anterior sin anularse. rg(A) = 2.');
             }
           }
         }

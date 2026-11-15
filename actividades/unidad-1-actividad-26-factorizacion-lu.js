@@ -48,18 +48,21 @@
   }
 
   // ---------- Generador ----------
-  // A puede ser cuadrada o rectangular. k = min(filas, columnas).
-  // L es filas×k (triangular inferior unitaria en el bloque k×k; si sobran
-  // filas, esas filas extra son libres). U es k×columnas (triangular
-  // superior en el bloque k×k, diagonal ≠ 0; si sobran columnas, esas
-  // columnas extra son libres). A = L·U.
+  // A es m×n, cuadrada o rectangular, y la factorización es la del libro
+  // (U1, «Factorización LU»): L ∈ M_{m×m}, triangular inferior con unos en
+  // la diagonal, y U ∈ M_{m×n}, escalonada (lo que deja Gauss sin
+  // intercambiar filas).
   //
-  // Como en el caso cuadrado: la diagonal de U nunca es cero, así que los
-  // menores principales del bloque k×k de A son todos no nulos por
-  // construcción — A admite LU sin reordenar filas, sea cuadrada o
-  // rectangular. Con la diagonal de L fija en 1, la factorización sigue
-  // siendo única. Validado con 2.000 simulaciones (cuadrado + las 4
-  // combinaciones rectangulares).
+  // Se arma con k = min(m, n): un bloque Lk de m×k (unos en la diagonal)
+  // y un bloque Uk de k×n (triangular superior, diagonal ≠ 0), y A = Lk·Uk.
+  // Como la diagonal de Uk nunca es cero, A admite LU sin reordenar filas.
+  // Después se completan al tamaño del libro:
+  //   - L: las columnas que faltan (cuando m > n) son las de la identidad,
+  //     porque Gauss ya no hace ninguna operación con esas filas.
+  //   - U: las filas que faltan (cuando m > n) son nulas: A tiene rango n
+  //     y la eliminación las deja en cero.
+  // Con las formas de SHAPES (m ≤ n + 1) la factorización es única: debajo
+  // de la diagonal de L no queda ninguna entrada libre.
   function generateLU(){
     var shape = randChoice(SHAPES);
     var rows = shape.rows, cols = shape.cols;
@@ -98,22 +101,44 @@
         A[i][j] = s;
       }
     }
-    return { rows:rows, cols:cols, k:k, L:L, U:U, A:A };
+
+    // Al tamaño del libro: L de m×m y U de m×n (ver el comentario de arriba).
+    var Lm = [], Um = [];
+    for(i=0;i<rows;i++){
+      Lm.push([]);
+      for(j=0;j<rows;j++) Lm[i].push(j < k ? L[i][j] : (i === j ? 1 : 0));
+    }
+    for(i=0;i<rows;i++) Um.push(i < k ? U[i].slice() : new Array(cols).fill(0));
+
+    return { rows:rows, cols:cols, k:k, L:Lm, U:Um, A:A };
   }
 
   // ---------- Preguntas de dimensión ----------
+  // Como en el libro: L ∈ M_{m×m} y U ∈ M_{m×n}, para A ∈ M_{m×n}.
+  function correctDim(rows, cols, kind){
+    return kind === 'L' ? (rows + '×' + rows) : (rows + '×' + cols);
+  }
+
   function dimOptionsFor(rows, cols, kind){
     var k = Math.min(rows, cols);
-    var correct = kind === 'L' ? (rows + '×' + k) : (k + '×' + cols);
-    var candidates = [
-      rows + '×' + cols,        // "L/U tiene la misma forma que A"
-      cols + '×' + rows,        // forma traspuesta de A
-      k + '×' + k,              // "siempre son cuadradas k×k"
-      rows + '×' + rows,        // cuadrada usando filas
-      cols + '×' + cols,        // cuadrada usando columnas
-      (rows-1) + '×' + k, rows + '×' + (k-1),
-      (k-1) + '×' + cols, k + '×' + (cols-1)
-    ];
+    var correct = correctDim(rows, cols, kind);
+    var candidates = kind === 'L'
+      ? [
+          rows + '×' + cols,        // "L tiene la misma forma que A"
+          cols + '×' + cols,        // cuadrada, pero usando las columnas de A
+          rows + '×' + k,           // "tantas columnas como el menor de los dos"
+          cols + '×' + rows,        // forma traspuesta de A
+          k + '×' + k,
+          (rows-1) + '×' + rows, rows + '×' + (rows-1)
+        ]
+      : [
+          cols + '×' + rows,        // forma traspuesta de A
+          k + '×' + cols,           // "tantas filas como el menor de los dos"
+          rows + '×' + rows,        // "cuadrada, como L"
+          cols + '×' + cols,
+          k + '×' + k,
+          (rows-1) + '×' + cols, rows + '×' + (cols-1)
+        ];
     var pool = [];
     candidates.forEach(function(c){
       if(c !== correct && pool.indexOf(c) === -1) pool.push(c);
@@ -123,15 +148,12 @@
   }
 
   function explainDim(current, kind, correct){
-    var rows = current.rows, cols = current.cols, k = current.k;
-    if(correct){
-      return kind === 'L'
-        ? 'L tiene tantas filas como A (' + rows + ') y ' + k + ' columnas — el menor entre filas y columnas de A.'
-        : 'U tiene tantas columnas como A (' + cols + ') y ' + k + ' filas — el menor entre filas y columnas de A.';
-    }
-    return kind === 'L'
-      ? 'No es correcto. L es ' + rows + '×' + k + ': tantas filas como A, y ' + k + ' columnas (el menor entre filas y columnas de A).'
-      : 'No es correcto. U es ' + k + '×' + cols + ': ' + k + ' filas (el menor entre filas y columnas de A) y tantas columnas como A.';
+    var rows = current.rows, cols = current.cols;
+    var texto = kind === 'L'
+      ? 'L es cuadrada, de ' + rows + '×' + rows + ': tantas filas y columnas como filas tiene A.'
+      : 'U tiene el mismo tamaño que A, ' + rows + '×' + cols + ': es la matriz escalonada que deja la eliminación de Gauss.' +
+        (rows > cols ? ' Como A tiene más filas que columnas, la última fila de U queda en cero.' : '');
+    return correct ? texto : 'No es correcto. ' + texto;
   }
 
   function matrixLatex(M){
@@ -142,35 +164,42 @@
   }
 
   // ---------- Fases de grilla (L y U) ----------
+  // Lo que ya viene dado (recuadros punteados): en L, la diagonal de unos,
+  // los ceros de arriba y, si A tiene más filas que columnas, los ceros
+  // debajo de la diagonal en las columnas que Gauss no usa; en U, los
+  // ceros debajo de la diagonal y las filas nulas del final.
+  function lockedFor(kind, current, r, c){
+    if(kind === 'L'){
+      if(c > r) return 0;
+      if(c === r) return 1;
+      if(c >= current.k) return 0;
+      return null;
+    }
+    if(r > c || r >= current.k) return 0;
+    return null;
+  }
+
   function makeGridPhase(kind){
     return {
       mode: 'grid',
       question: 'Completá ' + kind + ':',
       hint: 'Los recuadros punteados ya vienen dados. Tocá − o + para cambiar el signo de los que faltan.',
       grid: {
-        rows: function(current){ return kind === 'L' ? current.rows : current.k; },
-        cols: function(current){ return kind === 'L' ? current.k : current.cols; },
+        rows: function(current){ return current.rows; },
+        cols: function(current){ return kind === 'L' ? current.rows : current.cols; },
         noDivider: true,
-        lockedValue: function(current, r, c){
-          if(kind === 'L'){
-            if(c > r) return 0;
-            if(c === r) return 1;
-            return null;
-          }
-          if(r > c) return 0;
-          return null;
-        }
+        lockedValue: function(current, r, c){ return lockedFor(kind, current, r, c); }
       },
       checkGrid: function(current, M, hasEmpty){
         var trueM = kind === 'L' ? current.L : current.U;
-        var rows = kind === 'L' ? current.rows : current.k;
-        var cols = kind === 'L' ? current.k : current.cols;
+        var rows = current.rows;
+        var cols = kind === 'L' ? current.rows : current.cols;
         var correct = !hasEmpty;
         var cellStatus = [];
         for(var r=0;r<rows;r++){
           var rowStatus = [];
           for(var c=0;c<cols;c++){
-            var isFree = kind === 'L' ? (c < r) : (r <= c);
+            var isFree = lockedFor(kind, current, r, c) === null;
             if(!isFree){ rowStatus.push(null); continue; }
             var ok = M[r][c] === trueM[r][c];
             if(!ok) correct = false;
@@ -194,7 +223,7 @@
     mount: '#apt-u1a26',
     eyebrow: 'Unidad 1 · Matrices y SEL',
     title: 'Factorización LU',
-    subtitle: 'L es triangular inferior con 1 en la diagonal; U es triangular superior. Encontrá ambas tal que A = L · U.',
+    subtitle: 'L es triangular inferior con 1 en la diagonal; U es escalonada. Encontrá ambas tal que A = L · U.',
     nextLabel: 'Probar con otra matriz →',
     needsKatex: true,
     mode: 'phases',
@@ -207,7 +236,7 @@
         mode: 'choices',
         question: '¿Qué dimensión tiene la matriz L?',
         choices: function(current){ return dimOptionsFor(current.rows, current.cols, 'L'); },
-        check: function(current, value){ return value === current.rows + '×' + current.k; },
+        check: function(current, value){ return value === correctDim(current.rows, current.cols, 'L'); },
         explain: function(current, correct){ return explainDim(current, 'L', correct); }
       },
       makeGridPhase('L'),
@@ -215,7 +244,7 @@
         mode: 'choices',
         question: '¿Qué dimensión tiene la matriz U?',
         choices: function(current){ return dimOptionsFor(current.rows, current.cols, 'U'); },
-        check: function(current, value){ return value === current.k + '×' + current.cols; },
+        check: function(current, value){ return value === correctDim(current.rows, current.cols, 'U'); },
         explain: function(current, correct){ return explainDim(current, 'U', correct); }
       },
       makeGridPhase('U')

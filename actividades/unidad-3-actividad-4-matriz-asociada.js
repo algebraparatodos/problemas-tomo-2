@@ -259,11 +259,11 @@
     if (mal.length === 0) {
       return {
         correct: true, cellStatus: status,
-        feedbackText: 'Cada columna son las coordenadas en B₂ de la imagen del vector correspondiente de B₁.'
+        feedbackText: 'Cada columna tiene las coordenadas en B₂ de la imagen del vector correspondiente de B₁.'
       };
     }
     var f = mal[0];
-    var texto = 'La columna ' + (f.c + 1) + ' son las coordenadas en B₂ de T aplicada al vector ' + (f.c + 1) +
+    var texto = 'La columna ' + (f.c + 1) + ' tiene las coordenadas en B₂ de T aplicada al vector ' + (f.c + 1) +
       ' de B₁. En la fila ' + (f.r + 1) + ' de esa columna va ' + cur.M[f.r][f.c] + ', y pusiste ' + f.puesto + '.';
     if (mal.length > 1) {
       texto += ' Hay ' + (mal.length - 1) + ' celda' + (mal.length - 1 > 1 ? 's' : '') +
@@ -294,7 +294,7 @@
       checkGrid: checkGrid,
       getAnswerGrid: function (cur) { return cur.M; },
       answerTitle: 'La respuesta correcta',
-      answerText: 'La columna j son las coordenadas, en la base B₂, de la imagen del j-ésimo vector de B₁.'
+      answerText: 'La columna j tiene las coordenadas, en la base B₂, de la imagen del j-ésimo vector de B₁.'
     });
   }
 

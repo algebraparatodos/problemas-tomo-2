@@ -131,7 +131,7 @@
       mount: '#apt-u1a9',
       mode: 'phases',
       needsKatex: true,
-      eyebrow: 'Unidad 1 · Sistemas lineales',
+      eyebrow: 'Unidad 1 · Matrices y SEL',
       title: 'Clasificá con Rouché-Frobenius',
       subtitle: 'Calculá el rango por determinantes y clasificá el sistema.',
 
@@ -148,24 +148,24 @@
             var maxOrderA = Math.min(current.m, current.n);
             var msg;
             if(current.rankA === maxOrderA){
-              msg = 'rango(A) = ' + current.rankA + ': orlando se llega a un menor de orden ' + current.rankA + ' no nulo, y no hay lugar para un menor de mayor orden dentro de A.';
+              msg = 'rg(A) = ' + current.rankA + ': orlando se llega a un menor de orden ' + current.rankA + ' no nulo, y no hay lugar para un menor de mayor orden dentro de A.';
             } else {
-              msg = 'rango(A) = ' + current.rankA + ': orlando se llega a un menor de orden ' + current.rankA + ' no nulo, y cualquier menor de orden mayor dentro de A se anula.';
+              msg = 'rg(A) = ' + current.rankA + ': orlando se llega a un menor de orden ' + current.rankA + ' no nulo, y cualquier menor de orden mayor dentro de A se anula.';
             }
             return (correct ? '' : 'No es correcto. ') + msg;
           }
         },
         {
           mode: 'choices',
-          question: '¿Y el rango de la matriz ampliada [A | B]?',
+          question: '¿Y el rango de la matriz ampliada (A|B)?',
           choices: function(current){ return numberChoices(Math.min(current.m, current.n + 1)); },
           check: function(current, value){ return parseInt(value,10) === current.rankAB; },
           explain: function(current, correct, value){
             var msg;
             if(current.rankAB > current.rankA){
-              msg = 'rango((A|B)) = ' + current.rankAB + ': orlando con la columna B aparece un menor de orden ' + current.rankAB + ' no nulo que no se podía formar usando solo columnas de A.';
+              msg = 'rg(A|B) = ' + current.rankAB + ': orlando con la columna B aparece un menor de orden ' + current.rankAB + ' no nulo que no se podía formar usando solo columnas de A.';
             } else {
-              msg = 'rango((A|B)) = ' + current.rankAB + ' (igual que rango(A)): todo menor que incluya la columna B, de orden mayor a ' + current.rankA + ', se anula.';
+              msg = 'rg(A|B) = ' + current.rankAB + ' (igual que rg(A)): todo menor que incluya la columna B, de orden mayor a ' + current.rankA + ', se anula.';
             }
             return (correct ? '' : 'No es correcto. ') + msg;
           }
@@ -182,11 +182,11 @@
           explain: function(current, correct, value){
             var msg;
             if(current.classification === 'SI'){
-              msg = 'rango((A|B)) = ' + current.rankAB + ' > rango(A) = ' + current.rankA + ', así que el sistema es incompatible (SI): no tiene solución.';
+              msg = 'rg(A|B) = ' + current.rankAB + ' > rg(A) = ' + current.rankA + ', así que el sistema es incompatible (SI): no tiene solución.';
             } else if(current.classification === 'SCD'){
-              msg = 'rango(A) = rango((A|B)) = ' + current.rankA + ', igual al número de incógnitas (' + current.n + '), así que el sistema es compatible determinado (SCD): solución única.';
+              msg = 'rg(A) = rg(A|B) = ' + current.rankA + ', igual al número de incógnitas (' + current.n + '), así que el sistema es compatible determinado (SCD): solución única.';
             } else {
-              msg = 'rango(A) = rango((A|B)) = ' + current.rankA + ', menor al número de incógnitas (' + current.n + '), así que el sistema es compatible indeterminado (SCI): infinitas soluciones.';
+              msg = 'rg(A) = rg(A|B) = ' + current.rankA + ', menor al número de incógnitas (' + current.n + '), así que el sistema es compatible indeterminado (SCI): infinitas soluciones.';
             }
             return (correct ? '' : 'No es correcto. ') + msg;
           }
