@@ -180,7 +180,7 @@
         }
         var feedbackText;
         if(hasEmpty) feedbackText = 'Dejaste alguna celda vacía (se tomó como 0 para revisar) — completá todas antes de comprobar la próxima vez.';
-        else if(correct) feedbackText = kind === 'L' ? 'Esos son los multiplicadores correctos de la eliminación de Gauss.' : '¡Completaste la factorización! A = L · U.';
+        else if(correct) feedbackText = kind === 'L' ? '¡Correcto! Debajo de la diagonal, L guarda los opuestos de los multiplicadores de la eliminación de Gauss.' : '¡Completaste la factorización! A = L · U.';
         else feedbackText = 'No es correcto — revisá los números marcados en rojo.';
         return { correct: correct, cellStatus: cellStatus, feedbackText: feedbackText };
       },
