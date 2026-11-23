@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · Unidad 4 · Actividad 10
+   ÁLGEBRA PARA TODOS · Unidad 4 · Actividad 11
    "Cadenas de Markov: el estado a largo plazo"
    ------------------------------------------------------------
    Toda la infraestructura común (CSS, sonido, mute, footer, modal
@@ -9,15 +9,15 @@
    En la landing va únicamente esto, en este orden:
 
      <script src="https://algebraparatodos.github.io/problemas-tomo-2/engine.js"><\/script>
-     <script src="https://algebraparatodos.github.io/problemas-tomo-2/actividades/unidad-4-actividad-10-markov.js"><\/script>
+     <script src="https://algebraparatodos.github.io/problemas-tomo-2/actividades/unidad-4-actividad-11-markov.js"><\/script>
    ============================================================ */
 (function () {
   /* El div de montaje se inserta ACÁ, en el lugar del <script>,
      aprovechando que document.currentScript todavía es válido. */
   (function placeMount() {
-    if (document.getElementById('apt-u4a10')) return;
+    if (document.getElementById('apt-u4a11')) return;
     var d = document.createElement('div');
-    d.id = 'apt-u4a10';
+    d.id = 'apt-u4a11';
     var s = document.currentScript;
     if (s && s.parentNode) s.parentNode.insertBefore(d, s);
     else document.body.appendChild(d);
@@ -72,11 +72,14 @@
         // cuatro opciones.
         if (den1 > 9 || den2 > 9) continue;
 
-        var correcto = fraccion(b, suma) + '  y  ' + fraccion(a, suma);
+        // Cada opción dice qué parte queda en cada ciudad: uno de los
+        // distractores es el mismo reparto al revés, así que sin decir
+        // cuál es A y cuál es B la pregunta no tendría respuesta.
+        var correcto = reparto(fraccion(b, suma), fraccion(a, suma));
         var candidatos = [
-          fraccion(a, suma) + '  y  ' + fraccion(b, suma),
-          '1/2  y  1/2',
-          fraccion(1, 2) === fraccion(b, suma) ? null : fraccion(b, suma + 1) + '  y  ' + fraccion(a + 1, suma + 1)
+          reparto(fraccion(a, suma), fraccion(b, suma)),
+          reparto('1/2', '1/2'),
+          fraccion(1, 2) === fraccion(b, suma) ? null : reparto(fraccion(b, suma + 1), fraccion(a + 1, suma + 1))
         ];
 
         var textos = [correcto], opciones = [];
@@ -101,6 +104,8 @@
       return null;
     }
 
+    function reparto(enA, enB) { return 'Ciudad A: ' + enA + ' · Ciudad B: ' + enB; }
+
     function fraccion(num, den) {
       var g = mcd(num, den) || 1;
       var n = num / g, d = den / g;
@@ -121,10 +126,10 @@
     }
 
     window.AptActivity.init({
-      mount: '#apt-u4a10',
+      mount: '#apt-u4a11',
       eyebrow: 'Unidad 4 · Diagonalización',
       title: 'Cadenas de Markov: el estado a largo plazo',
-      subtitle: 'Cada año, una parte de los habitantes de cada ciudad se muda a la otra. Esta es la matriz de transición. ¿Cómo queda el reparto a la larga?',
+      subtitle: 'Cada año, una parte de los habitantes de cada ciudad se muda a la otra. Esta es la matriz de transición, con la ciudad A primero y la B después, como en el libro. ¿Cómo queda el reparto a la larga?',
       nextLabel: 'Probar con otra matriz →',
       needsKatex: true,
       mode: 'choices',
@@ -144,8 +149,8 @@
       check: function (current, value) { return value === current.correcto; },
       explain: function (current, correcto) {
         return (correcto ? '¡Correcto! ' : 'No es correcto. ') +
-          'A la larga el reparto se estabiliza en ' + current.reparto[0] + ' y ' + current.reparto[1] +
-          ', y no depende de cómo estuvieran repartidos al principio. ' +
+          'A la larga el reparto se estabiliza: ' + current.reparto[0] + ' de la gente termina en A y ' +
+          current.reparto[1] + ' en B, y eso no depende de cómo estuvieran repartidos al principio. ' +
           'La cuenta corta es esta: toda matriz de transición tiene al 1 como autovalor —porque sus columnas suman 1—, ' +
           'y el estado de equilibrio es su autovector, normalizado para que las componentes sumen 1. ' +
           'Acá ese autovector es (' + current.b + ', ' + current.a + '), y dividiéndolo por ' + current.suma +

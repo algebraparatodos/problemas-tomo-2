@@ -144,9 +144,10 @@
     }
 
     /* Los distractores son listas de autovalores plausibles: la correcta
-       con un signo cambiado —el error de olvidar que el polinomio es
-       det(A−λI) y no det(λI−A)—, la de la diagonal de A sin calcular
-       nada, y una con un valor corrido. */
+       con todos los signos cambiados —el error de leer mal las raíces al
+       factorizar, tomando (λ − 3) como raíz −3; no es confundir det(A−λI)
+       con det(λI−A), que tienen las mismas raíces—, la de la diagonal de
+       A sin calcular nada, y una con un valor corrido. */
     function armarOpciones(correctos, n) {
       var candidatos = [];
       candidatos.push(correctos.map(function (v) { return -v; }).sort(function (a, b) { return a - b; }));

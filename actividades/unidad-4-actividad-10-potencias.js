@@ -1,5 +1,5 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · Unidad 4 · Actividad 9
+   ÁLGEBRA PARA TODOS · Unidad 4 · Actividad 10
    "Calculá una potencia alta"
    ------------------------------------------------------------
    Toda la infraestructura común (CSS, sonido, mute, footer, modal
@@ -9,15 +9,15 @@
    En la landing va únicamente esto, en este orden:
 
      <script src="https://algebraparatodos.github.io/problemas-tomo-2/engine.js"><\/script>
-     <script src="https://algebraparatodos.github.io/problemas-tomo-2/actividades/unidad-4-actividad-9-potencias.js"><\/script>
+     <script src="https://algebraparatodos.github.io/problemas-tomo-2/actividades/unidad-4-actividad-10-potencias.js"><\/script>
    ============================================================ */
 (function () {
   /* El div de montaje se inserta ACÁ, en el lugar del <script>,
      aprovechando que document.currentScript todavía es válido. */
   (function placeMount() {
-    if (document.getElementById('apt-u4a9')) return;
+    if (document.getElementById('apt-u4a10')) return;
     var d = document.createElement('div');
-    d.id = 'apt-u4a9';
+    d.id = 'apt-u4a10';
     var s = document.currentScript;
     if (s && s.parentNode) s.parentNode.insertBefore(d, s);
     else document.body.appendChild(d);
@@ -76,10 +76,13 @@
         var Dk = [[Math.pow(valores[0], k), 0], [0, Math.pow(valores[1], k)]];
         var Ak = multiplicar(multiplicar(P, Dk, n), Pinv, n);
 
+        /* Las celdas del motor aceptan hasta dos cifras: con una entrada
+           de tres (126, 190, 378…) la respuesta no se podía escribir. Por
+           eso Aᵏ se queda entre −99 y 99. */
         var grande = false;
         for (r = 0; r < n; r++) for (c = 0; c < n; c++) {
           if (Math.abs(A[r][c]) > 8) grande = true;
-          if (Math.abs(Ak[r][c]) > 400) grande = true;
+          if (Math.abs(Ak[r][c]) > 99) grande = true;
         }
         if (grande) continue;
 
@@ -118,7 +121,7 @@
     }
 
     window.AptActivity.init({
-      mount: '#apt-u4a9',
+      mount: '#apt-u4a10',
       eyebrow: 'Unidad 4 · Diagonalización',
       title: 'Calculá una potencia alta',
       subtitle: 'La diagonalización ya está hecha. Usá Aᵏ = P·Dᵏ·P⁻¹ y completá el resultado.',
