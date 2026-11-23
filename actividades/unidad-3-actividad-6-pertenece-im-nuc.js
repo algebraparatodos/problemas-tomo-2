@@ -1,8 +1,8 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 10
+   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 6
    "¿Pertenece a la imagen o al núcleo?"
    ------------------------------------------------------------
-   Sección 4.5. Dada M(T) y un vector, decidir si pertenece al
+   Sección 3.5. Dada M(T) y un vector, decidir si pertenece al
    núcleo o a la imagen. Alterna entre las dos preguntas:
 
      v ∈ Nu(T)  ⟺  M(T)·v = 0
@@ -21,7 +21,7 @@
    columnas que lo produce — no dice solo "sí pertenece".
 
    En la landing de Kajabi no va nada: esta actividad se carga desde
-   unidad-3.js cuando la URL termina en #10.
+   unidad-3.js cuando la URL termina en #6.
    ============================================================ */
 (function () {
   'use strict';

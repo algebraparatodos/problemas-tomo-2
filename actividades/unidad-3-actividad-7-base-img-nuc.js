@@ -1,8 +1,8 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 11
+   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 7
    "Base de la imagen y del núcleo"
    ------------------------------------------------------------
-   Sección 4.5. Dada M(T), escribir una base de Im(T) o de Nu(T).
+   Sección 3.5. Dada M(T), escribir una base de Im(T) o de Nu(T).
    Cada ronda pide una de las dos.
 
    RESPUESTA NO ÚNICA: cualquier base del mismo subespacio vale. Se
@@ -26,7 +26,7 @@
    cantidad de casillas de la fase 2 no regale la dimensión.
 
    En la landing de Kajabi no va nada: esta actividad se carga desde
-   unidad-3.js cuando la URL termina en #11.
+   unidad-3.js cuando la URL termina en #7.
    ============================================================ */
 (function () {
   'use strict';

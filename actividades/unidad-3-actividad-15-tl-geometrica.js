@@ -2,9 +2,12 @@
    ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 15
    "Identificá la TL geométrica"
    ------------------------------------------------------------
-   Sección 4.8. Dada la matriz en bases canónicas, reconocer de qué
-   transformación geométrica se trata. Los criterios son los del
-   libro, y todos salen de mirar la matriz:
+   Sección 3.8. Dada la matriz en bases canónicas, reconocer de qué
+   transformación geométrica se trata. Los criterios salen de mirar
+   la matriz, y valen DENTRO DE ESTE BANCO (no son reglas generales:
+   el libro muestra en 3.8.3.4 una reflexión respecto de una recta en
+   R³ con det = 1, y un det = 0 no garantiza una proyección). Por eso
+   la corrección habla de «entre estas opciones»:
 
      proyección     →  det = 0 (colapsa una dimensión)
      reflexión      →  det = -1
@@ -22,8 +25,10 @@
      · los escalados llevan siempre factores positivos y ≥ 2
      · las reflexiones tienen det = -1, así que nunca se solapan con
        un escalado
-   La validación comprueba, caso por caso, que la firma de ningún otro
-   tipo coincida con la matriz generada.
+   El banco es fijo y está armado a mano con esas reglas; no hay una
+   validación en tiempo de ejecución (con un banco fijo no hace falta:
+   se comprobó una vez, generando todos los casos, que ninguna matriz
+   encaja en dos tipos).
 
    Incluye casos de R² y de R³, con las familias limpias del libro.
 
@@ -160,11 +165,14 @@
   function porQue(cur) {
     var d = 'El determinante vale ' + detTexto(cur) + '. ';
     if (cur.tipo === 'proyeccion') {
-      return d + 'Un determinante nulo significa que la transformación colapsa una dimensión, y eso solo lo hace una proyección. ' +
+      return d + 'Un determinante nulo dice que la transformación aplasta el espacio sobre uno de dimensión menor (una recta o un plano). ' +
+        'Entre estas opciones, la única que hace eso es la proyección: las otras cuatro tienen determinante distinto de cero. ' +
         'Es ' + cur.detalle + '.';
     }
     if (cur.tipo === 'reflexion') {
-      return d + 'Vale -1: conserva el tamaño pero invierte la orientación, que es exactamente lo que hace una reflexión. ' +
+      return d + 'Las columnas son perpendiculares entre sí y de norma 1, así que conserva distancias, y el determinante −1 dice que invierte la orientación. ' +
+        'Entre estas opciones, eso es una reflexión' + (cur.dim === 2 ? ' respecto de una recta' : ' respecto de un plano') + '. ' +
+        (cur.dim === 3 ? 'Ojo: no toda reflexión tiene determinante −1; la reflexión respecto de una recta en R³ tiene determinante 1. ' : '') +
         'Es ' + cur.detalle + '.';
     }
     if (cur.tipo === 'rotacion') {

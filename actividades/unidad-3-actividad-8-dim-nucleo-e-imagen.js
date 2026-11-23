@@ -1,11 +1,19 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 4
+   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 8
    "Dimensiones de núcleo e imagen"
    ------------------------------------------------------------
    Dada M(T) en bases canónicas, encontrar dim(Im(T)) y dim(Nu(T)).
    Dos fases encadenadas: primero la imagen (que es el rango de la
-   matriz), después el núcleo — y el feedback las conecta con el
-   teorema de la dimensión, que es el punto de la sección 4.5.
+   matriz), después el núcleo.
+
+   OJO CON EL ORDEN DEL LIBRO: el QR #8 está impreso al final de
+   3.5.2, ANTES de 3.5.3 «Teorema de la dimensión». Por eso la
+   corrección del núcleo no nombra ese teorema: usa lo que el libro
+   ya mostró en 3.5.2, que el núcleo son las soluciones de
+   M(T)·v = 0 y que Dim(Nu(T)) = Dim(𝕍) − #Ec. LI. Las ecuaciones LI
+   son las filas no nulas que quedan al escalonar M(T), o sea el
+   rango, que es lo mismo que se calculó para la imagen («capitalizar
+   el trabajo de la imagen», como dice el libro).
 
    El caso se construye "al revés": se decide el rango r de antemano,
    se arma la matriz con r filas pivote garantizadas y el resto en
@@ -14,7 +22,7 @@
    que haya que calcular y esperar que salga lindo.
 
    En la landing de Kajabi no va nada: esta actividad se carga desde
-   unidad-3.js cuando la URL termina en #4.
+   unidad-3.js cuando la URL termina en #8.
    ============================================================ */
 (function () {
   'use strict';
@@ -192,9 +200,11 @@
           },
           check: function (cur, value) { return Number(value) === cur.dimNu; },
           explain: function (cur, correct) {
-            var base = 'Por el teorema de la dimensión, Dim(Nu(T)) + Dim(Im(T)) = Dim(𝕍): ' +
-              cur.dimNu + ' + ' + cur.dimIm + ' = ' + cur.n + '. ' +
-              'Sabiendo el rango no hace falta calcular el núcleo aparte.';
+            var base = 'El núcleo son las soluciones de M(T)·v = 0. Al escalonar M(T) ' +
+              (cur.dimIm === 1 ? 'queda ' : 'quedan ') + cur.dimIm +
+              ' fila' + (cur.dimIm === 1 ? '' : 's') + ' no nula' + (cur.dimIm === 1 ? '' : 's') +
+              ' (las mismas que te dieron el rango), o sea ' + cur.dimIm + ' ecuaci' + (cur.dimIm === 1 ? 'ón' : 'ones') + ' LI. ' +
+              'Entonces Dim(Nu(T)) = Dim(𝕍) − #Ec. LI = ' + cur.n + ' − ' + cur.dimIm + ' = ' + cur.dimNu + '.';
             return correct ? base : 'No es correcto. ' + base;
           }
         }

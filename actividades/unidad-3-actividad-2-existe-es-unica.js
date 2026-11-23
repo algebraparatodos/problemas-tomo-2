@@ -113,12 +113,32 @@
     }
     var SUB = ['₁', '₂', '₃', '₄', '₅'];
 
-    /* ---------- generador ---------- */
+    /* ---------- generador ----------
+       Los tres casos del libro (3.3), con sus variantes, para que
+       ninguna regla de atajo alcance:
+
+         única      · base: n vectores LI (3.3.1, caso 1)
+                    · generador: una base y uno o dos vectores de más,
+                      LD con los anteriores, cuyas imágenes respetan
+                      la misma combinación (3.3.1, caso 2)
+         infinitas  · LI: menos de n vectores LI
+                    · LD coherente: menos de n vectores LI y alguno de
+                      más que respeta la linealidad (el ejemplo de 3.3.2:
+                      al escalonar quedan filas de ceros)
+         no existe  · un vector LD cuya imagen NO respeta la combinación
+                      (3.3.3), generen o no 𝕍 los demás
+
+       Así hay conjuntos LD en los tres casos: la regla falsa «si son
+       LD, no existe» falla, y también «si son más de n, no existe».
+       Cada caso sale 1/3 de las veces; en única e infinitas, cada
+       variante sale la mitad de esas veces. La respuesta no se toma de
+       acá: classify() la recalcula con rangos exactos. */
     function generate() {
       var vKey = randChoice(SPACE_KEYS), wKey = randChoice(SPACE_KEYS);
       var n = SPACES[vKey].dim, m = SPACES[wKey].dim;
       var kind = randChoice(['unica', 'infinitas', 'noexiste']);
-      var vecs = [], imgs = [], dep = null;
+      var variante = kind === 'noexiste' ? 'incoherente' : randChoice(['li', 'ld']);
+      var vecs = [], imgs = [], dep = null, extras = [];
 
       function randVec(d, lo, hi) { var v = []; for (var i = 0; i < d; i++) v.push(randInt(lo, hi)); return v; }
       function buildIndep(count) {
@@ -130,30 +150,61 @@
         } while (rank(out) !== count && tries < 200);
         return out;
       }
-
-      if (kind === 'unica') {
-        vecs = buildIndep(n);
-        imgs = vecs.map(function () { return randVec(m, -3, 3); });
-      } else if (kind === 'infinitas') {
-        var k = Math.max(1, randInt(1, n - 1));
-        vecs = buildIndep(k);
-        imgs = vecs.map(function () { return randVec(m, -3, 3); });
-      } else {
-        var base = buildIndep(Math.max(2, Math.min(n, randInt(2, n))));
-        var coefs = base.map(function () { return randInt(-2, 2); });
-        if (coefs.every(function (c) { return c === 0; })) coefs[0] = 1;
-        var combo = new Array(n).fill(0);
-        base.forEach(function (v, i) { for (var j = 0; j < n; j++) combo[j] += coefs[i] * v[j]; });
-        var baseImgs = base.map(function () { return randVec(m, -3, 3); });
-        var goodImg = new Array(m).fill(0);
-        baseImgs.forEach(function (w, i) { for (var j = 0; j < m; j++) goodImg[j] += coefs[i] * w[j]; });
-        var badImg = goodImg.slice();
-        badImg[randInt(0, m - 1)] += randNonZero(1, 3);
-        vecs = base.concat([combo]);
-        imgs = baseImgs.concat([badImg]);
-        dep = { coefs: coefs, goodImg: goodImg, badImg: badImg };
+      function igual(u, v) { return u.every(function (x, i) { return x === v[i]; }); }
+      /* Combinación lineal de los vectores de la base (y la misma de sus
+         imágenes) con coeficientes chicos. Con dos o más vectores se usan
+         al menos dos, para que el de más no sea un simple múltiplo y haya
+         que mirarlo de verdad; con uno solo, un múltiplo distinto de 0 y 1. */
+      function combinar(base, baseImgs, previos) {
+        var coefs, combo, tries = 0;
+        do {
+          coefs = base.map(function () { return 0; });
+          if (base.length === 1) coefs[0] = randChoice([-2, -1, 2, 3]);
+          else {
+            var idx = base.map(function (_, i) { return i; });
+            for (var s = idx.length - 1; s > 0; s--) { var j = randInt(0, s); var t = idx[s]; idx[s] = idx[j]; idx[j] = t; }
+            var usar = randInt(2, Math.min(3, base.length));
+            for (var u = 0; u < usar; u++) coefs[idx[u]] = randChoice([-2, -1, 1, 1, 2]);
+          }
+          combo = new Array(n).fill(0);
+          base.forEach(function (v, i) { for (var j2 = 0; j2 < n; j2++) combo[j2] += coefs[i] * v[j2]; });
+          tries++;
+        } while ((combo.every(function (x) { return x === 0; }) ||
+                  previos.some(function (p) { return igual(p, combo); })) && tries < 100);
+        var img = new Array(m).fill(0);
+        baseImgs.forEach(function (w, i) { for (var j3 = 0; j3 < m; j3++) img[j3] += coefs[i] * w[j3]; });
+        return { coefs: coefs, vec: combo, img: img };
       }
-      return { vKey: vKey, wKey: wKey, n: n, m: m, vecs: vecs, imgs: imgs, kind: kind, dep: dep };
+
+      if (kind === 'noexiste') {
+        var base = buildIndep(Math.max(2, Math.min(n, randInt(2, n))));
+        var baseImgs = base.map(function () { return randVec(m, -3, 3); });
+        var c = combinar(base, baseImgs, base);
+        var badImg = c.img.slice();
+        badImg[randInt(0, m - 1)] += randNonZero(-3, 3);
+        vecs = base.concat([c.vec]);
+        imgs = baseImgs.concat([badImg]);
+        dep = { coefs: c.coefs, goodImg: c.img, badImg: badImg };
+      } else {
+        // única: base de 𝕍 (k = n); infinitas: k < n vectores LI
+        var k = kind === 'unica' ? n : randInt(1, n - 1);
+        var base2 = buildIndep(k);
+        var baseImgs2 = base2.map(function () { return randVec(m, -3, 3); });
+        vecs = base2.slice();
+        imgs = baseImgs2.slice();
+        if (variante === 'ld') {
+          // Uno o dos de más, sin pasar de 5 renglones en total.
+          var cuantos = Math.min(randChoice([1, 1, 2]), 5 - k);
+          for (var e = 0; e < cuantos; e++) {
+            var c2 = combinar(base2, baseImgs2, vecs);
+            vecs.push(c2.vec);
+            imgs.push(c2.img);
+            extras.push({ idx: vecs.length - 1, coefs: c2.coefs, img: c2.img });
+          }
+        }
+      }
+      return { vKey: vKey, wKey: wKey, n: n, m: m, vecs: vecs, imgs: imgs, kind: kind,
+               variante: variante, dep: dep, extras: extras };
     }
 
     /* Clasificación independiente: rangos exactos, sin mirar cur.kind */
@@ -200,13 +251,12 @@
     }
 
     /* Combinación lineal en texto plano: "v₃ = 2·v₁ − v₂" */
-    function depText(cur) {
-      var last = cur.vecs.length;
+    function comboText(idx, coefs, nombre) {
       var parts = [];
-      cur.dep.coefs.forEach(function (c, i) {
+      coefs.forEach(function (c, i) {
         if (c === 0) return;
         var abs = Math.abs(c);
-        var piece = (abs === 1 ? '' : abs + '·') + 'v' + SUB[i];
+        var piece = (abs === 1 ? '' : abs + '·') + nombre(i);
         parts.push({ neg: c < 0, piece: piece });
       });
       var s = '';
@@ -214,7 +264,19 @@
         if (i === 0) s += (p.neg ? '−' : '') + p.piece;
         else s += (p.neg ? ' − ' : ' + ') + p.piece;
       });
-      return 'v' + SUB[last - 1] + ' = ' + s;
+      return nombre(idx) + ' = ' + s;
+    }
+    function vName(i) { return 'v' + SUB[i]; }
+    function tName(i) { return 'T(v' + SUB[i] + ')'; }
+    function depText(cur) { return comboText(cur.vecs.length - 1, cur.dep.coefs, vName); }
+
+    /* Vectores de más que SÍ respetan la linealidad:
+       "v₄ = v₁ + 2·v₂, y el dato cumple T(v₄) = T(v₁) + 2·T(v₂) = (3, 1)" */
+    function extrasText(cur) {
+      return cur.extras.map(function (x) {
+        return comboText(x.idx, x.coefs, vName) + ', y el dato cumple ' +
+          comboText(x.idx, x.coefs, tName) + ' = ' + vecToPlain(cur.wKey, x.img);
+      }).join('; ');
     }
 
     AptActivity.init({
@@ -235,31 +297,38 @@
       check: function (cur, value) { return value === classify(cur); },
       explain: function (cur, correct) {
         var real = classify(cur);
-        if (correct) {
-          var rOk = rank(transpose(cur.vecs));
-          if (real === 'unica') {
-            return 'Los vectores dados son LI y generan 𝕍, o sea que forman una base: conocer la imagen de una base determina la TL por completo.';
-          }
-          if (real === 'infinitas') {
-            return 'El rango de los vectores dados es ' + rOk + ' y Dim(𝕍) = ' + cur.n +
-              ', así que queda información sin fijar y hay más de una TL posible.';
-          }
-          return 'Los vectores dados son LD y las imágenes no respetan esa misma relación, y una TL conserva las combinaciones lineales.';
-        }
         var k = cur.vecs.length;
         var r = rank(transpose(cur.vecs));
+        var conExtras = cur.extras && cur.extras.length > 0;
+        var pre = correct ? '' : (real === 'unica' ? 'No es correcto: la TL existe y es única. '
+          : real === 'infinitas' ? 'No es correcto: existen infinitas. '
+          : 'No es correcto: no existe ninguna TL con esos datos. ');
         if (real === 'unica') {
-          return 'No es correcto: la TL existe y es única. Los ' + k + ' vectores son LI y generan 𝕍 ' +
-            '(su rango es ' + r + ' y Dim(𝕍) = ' + cur.n + '), así que forman una base: conocer la imagen de una base ' +
-            'determina la TL por completo.';
+          if (conExtras) {
+            return pre + 'Los ' + k + ' vectores son LD, pero eso solo no dice que no exista: hay que ver si se respeta la linealidad. ' +
+              'Fijate que ' + extrasText(cur) + ', así que al escalonar ' +
+              (cur.extras.length === 1 ? 'queda una fila' : 'quedan filas') + ' de ceros. ' +
+              'Los otros ' + cur.n + ' son LI (rango ' + r + ' = Dim(𝕍)), así que forman una base, y conocer la imagen de una base determina la TL por completo.';
+          }
+          return pre + 'Los ' + k + ' vectores son LI y generan 𝕍 (su rango es ' + r + ' y Dim(𝕍) = ' + cur.n +
+            '), así que forman una base: conocer la imagen de una base determina la TL por completo.';
         }
         if (real === 'infinitas') {
-          return 'No es correcto: existen infinitas. El rango de los vectores dados es ' + r + ' y Dim(𝕍) = ' + cur.n +
-            ', así que quedan ' + (cur.n - r) + ' dirección(es) de 𝕍 sin información — cada forma de elegir esas imágenes da una TL distinta.';
+          var falta = 'El rango de los vectores dados es ' + r + ' y Dim(𝕍) = ' + cur.n + ', así que ' +
+            (cur.n - r === 1
+              ? 'falta la imagen de un vector para completar una base de 𝕍, y esa imagen se puede elegir libremente'
+              : 'faltan las imágenes de ' + (cur.n - r) + ' vectores para completar una base de 𝕍, y esas imágenes se pueden elegir libremente') +
+            ': cada elección da una TL distinta.';
+          if (conExtras) {
+            return pre + 'Los ' + k + ' vectores son LD, pero las imágenes respetan esa dependencia: ' + extrasText(cur) +
+              '. Al escalonar, eso da ' + (cur.extras.length === 1 ? 'una fila' : 'filas') + ' de ceros, así que la TL existe. ' + falta;
+          }
+          return pre + falta;
         }
-        return 'No es correcto: no existe ninguna TL con esos datos. Fijate que ' + depText(cur) +
+        return pre + 'Fijate que ' + depText(cur) +
           ', y una TL conserva las combinaciones lineales, así que su imagen debería ser ' +
-          vecToPlain(cur.wKey, cur.dep.goodImg) + '. Pero el dato dice ' + vecToPlain(cur.wKey, cur.dep.badImg) + '.';
+          vecToPlain(cur.wKey, cur.dep.goodImg) + '. Pero el dato dice ' + vecToPlain(cur.wKey, cur.dep.badImg) +
+          ': al escalonar quedaría algo como T(0) ≠ 0, y eso no puede pasar en una TL.';
       }
     });
   })();

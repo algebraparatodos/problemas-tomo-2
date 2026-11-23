@@ -1,8 +1,8 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 8
+   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 4
    "Matriz asociada en bases cualesquiera"
    ------------------------------------------------------------
-   Sección 4.4. Dada la expresión analítica de T y dos bases B₁ de V
+   Sección 3.4. Dada la expresión analítica de T y dos bases B₁ de V
    y B₂ de W, escribir M(T) en esas bases.
 
    El procedimiento es el del libro: la columna j de M(T) son las
@@ -24,7 +24,7 @@
    se vuelve ilegible en un celular.
 
    En la landing de Kajabi no va nada: esta actividad se carga desde
-   unidad-3.js cuando la URL termina en #8.
+   unidad-3.js cuando la URL termina en #4.
    ============================================================ */
 (function () {
   'use strict';

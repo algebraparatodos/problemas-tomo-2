@@ -1,8 +1,8 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 14
+   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 12
    "Hallá M(T⁻¹)"
    ------------------------------------------------------------
-   Sección 4.7.1. Dos fases, en el mismo orden que el libro:
+   Sección 3.7.1. Dos fases, en el mismo orden que el libro:
 
      1) ¿T es un isomorfismo?  →  se decide con el determinante
      2) si lo es, ¿cuál es M(T⁻¹)?  →  tipo test
@@ -22,7 +22,7 @@
    matriz adjunta sin dividir por el determinante.
 
    En la landing de Kajabi no va nada: esta actividad se carga desde
-   unidad-3.js cuando la URL termina en #14.
+   unidad-3.js cuando la URL termina en #12.
    ============================================================ */
 (function () {
   'use strict';

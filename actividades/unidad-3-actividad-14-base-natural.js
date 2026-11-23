@@ -1,12 +1,12 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 7
+   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 14
    "Armá la base natural"
    ------------------------------------------------------------
-   Sección 4.8.1. Dada una recta r por el origen y una TL geométrica
+   Sección 3.8.1. Dada una recta r por el origen y una TL geométrica
    (reflexión respecto de r, o proyección ortogonal sobre r), armar
    la base natural y escribir M(T) en esa base.
 
-   Es el corazón del método que declarás al abrir 4.8: elegir la base
+   Es el corazón del método que declarás al abrir 3.8: elegir la base
    donde la transformación se lee "a ojo", en vez de memorizar una
    fórmula. En esa base:
 
@@ -21,7 +21,7 @@
    contra una respuesta fija.
 
    En la landing de Kajabi no va nada: esta actividad se carga desde
-   unidad-3.js cuando la URL termina en #7.
+   unidad-3.js cuando la URL termina en #14.
    ============================================================ */
 (function () {
   'use strict';

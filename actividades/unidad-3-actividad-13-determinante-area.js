@@ -1,8 +1,8 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 6
+   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 13
    "Determinante y área"
    ------------------------------------------------------------
-   Sección 4.7.2. Dado un endomorfismo de R², decidir qué le hace
+   Sección 3.7.2. Dado un endomorfismo de R², decidir qué le hace
    al área y qué le hace a la orientación:
 
      |det| = 1  → conserva el área
@@ -23,13 +23,13 @@
       falta. Con entradas enteras |det| es entero, así que el caso
       "reduce el área" (|det| < 1) sería imposible de generar. El
       factor lo destraba, y es la misma forma en que el libro escribe
-      las matrices de proyección y reflexión en 4.8.
+      las matrices de proyección y reflexión en 3.8.
 
    La orientación se pregunta solo si det ≠ 0: si colapsa, no hay
    orientación que conservar ni invertir.
 
    En la landing de Kajabi no va nada: esta actividad se carga desde
-   unidad-3.js cuando la URL termina en #6.
+   unidad-3.js cuando la URL termina en #13.
    ============================================================ */
 (function () {
   'use strict';
@@ -154,9 +154,14 @@
   }
 
   /* ---------- feedback, siempre en texto plano ---------- */
+  /* det(M(T)) = det(A)/k², siempre como fracción reducida: nada de
+     «4/4» o «-6/9» en la corrección. */
   function detTexto(cur) {
     if (cur.k === 1) return String(cur.det);
-    return cur.det + '/' + (cur.k * cur.k);
+    var den = cur.k * cur.k;
+    var g = gcd(cur.det, den);
+    var n = cur.det / g, d = den / g;
+    return d === 1 ? String(n) : (n + '/' + d);
   }
   function absTexto(cur) {
     return cur.absDen === 1 ? String(cur.absNum) : (cur.absNum + '/' + cur.absDen);

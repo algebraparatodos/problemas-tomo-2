@@ -1,10 +1,10 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 5
+   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 11
    "Clasificá la TL"
    ------------------------------------------------------------
    Dada M(T) en bases canónicas, decidir si T es monomorfismo,
    epimorfismo, isomorfismo o ninguno de los tres. Es la sección
-   4.7: la clasificación sale SOLO de comparar dimensiones, sin
+   3.7: la clasificación sale SOLO de comparar dimensiones, sin
    calcular el núcleo ni la imagen explícitamente.
 
      inyectiva    ⟺  dim(Nu) = 0        ⟺  rango = dim V
@@ -20,7 +20,7 @@
    "ninguno" saldría la mayoría de las veces.
 
    En la landing de Kajabi no va nada: esta actividad se carga desde
-   unidad-3.js cuando la URL termina en #5.
+   unidad-3.js cuando la URL termina en #11.
    ============================================================ */
 (function () {
   'use strict';

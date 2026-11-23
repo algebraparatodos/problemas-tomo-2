@@ -2,7 +2,7 @@
    ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 16
    "Componé geométricas"
    ------------------------------------------------------------
-   Sección 4.8.4. Se dan dos transformaciones geométricas POR SU
+   Sección 3.8.4. Se dan dos transformaciones geométricas POR SU
    NOMBRE y hay que decir qué resulta de componerlas. A propósito no
    se muestran las matrices: si se mostraran, el ejercicio sería
    multiplicar y clasificar (que ya son las actividades 12 y 15).

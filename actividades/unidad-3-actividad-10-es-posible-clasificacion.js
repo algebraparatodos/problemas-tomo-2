@@ -1,15 +1,15 @@
 /* ============================================================
-   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 13
+   ÁLGEBRA PARA TODOS · Unidad 3 · Actividad 10
    "¿Qué es posible?"
    ------------------------------------------------------------
-   Sección 4.7. Sin ninguna matriz y sin ninguna cuenta: solo con las
+   Sección 3.7. Sin ninguna matriz y sin ninguna cuenta: solo con las
    dimensiones de V y W, decidir qué clasificaciones son POSIBLES.
 
      monomorfismo posible  ⟺  dim(V) ≤ dim(W)
      epimorfismo posible   ⟺  dim(V) ≥ dim(W)
      isomorfismo posible   ⟺  dim(V) = dim(W)
 
-   Es el punto que remarcás en 4.7: hay casos en que la clasificación
+   Es el punto que remarcás en 3.7: hay casos en que la clasificación
    queda descartada de antemano, antes de mirar la transformación.
 
    Va con tildes múltiples (no una sola opción) para que el alumno
@@ -21,7 +21,7 @@
    solo se usaran R² y R³, alcanzaría con memorizar tres patrones.
 
    En la landing de Kajabi no va nada: esta actividad se carga desde
-   unidad-3.js cuando la URL termina en #13.
+   unidad-3.js cuando la URL termina en #10.
    ============================================================ */
 (function () {
   'use strict';
