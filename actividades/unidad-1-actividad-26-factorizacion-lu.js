@@ -209,7 +209,7 @@
         }
         var feedbackText;
         if(hasEmpty) feedbackText = 'Dejaste alguna celda vacía (se tomó como 0 para revisar) — completá todas antes de comprobar la próxima vez.';
-        else if(correct) feedbackText = kind === 'L' ? 'Debajo de la diagonal, L guarda los opuestos de los multiplicadores de la eliminación de Gauss.' : '¡Completaste la factorización! A = L · U.';
+        else if(correct) feedbackText = kind === 'L' ? 'Debajo de la diagonal, L guarda los multiplicadores de la eliminación de Gauss.' : '¡Completaste la factorización! A = L · U.';
         else feedbackText = 'Revisá los números marcados en rojo.';
         return { correct: correct, cellStatus: cellStatus, feedbackText: feedbackText };
       },
