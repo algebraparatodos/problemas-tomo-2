@@ -133,12 +133,16 @@
       check: function(current, value){ return value === 'correct'; },
       explain: function(current, correct, value){
         var clicked = current.choicesData.filter(function(o){ return o.value===value; })[0];
-        if(correct) return 'Correcto: A^t se arma poniendo como filas las columnas de A (cambia de tamaño ' + current.rows + '×' + current.cols + ' a ' + current.cols + '×' + current.rows + ').';
+        var k = function(tex){ return window.katex.renderToString(tex, { throwOnError:false }); };
+        var regla = k('A^t') + ' se arma poniendo como filas las columnas de ' + k('A') + ': cambia de tamaño ' + k(current.rows + '\\times ' + current.cols) + ' a ' + k(current.cols + '\\times ' + current.rows) + '.';
+        if(correct) return regla;
         var msg = 'Revisá cómo se arma la traspuesta.';
-        if(clicked.kind === 'not-transposed') msg = 'Esa opción es A tal cual, sin trasponer.';
-        if(clicked.kind === 'tweak-cell') msg = 'Esa opción tiene un error de cálculo en una celda.';
-        if(clicked.kind === 'reversed') msg = 'Esa opción traspuso, pero además invirtió el orden.';
-        return 'No es correcto. ' + msg;
+        if(clicked.kind === 'not-transposed') msg = 'Esa opción es ' + k('A') + ' tal cual, sin trasponer.';
+        if(clicked.kind === 'tweak-cell') msg = 'Esa opción tiene un número cambiado en una celda.';
+        if(clicked.kind === 'reversed') msg = current.cols > 1
+          ? 'Esa opción traspuso, pero además dio vuelta el orden de las filas.'
+          : 'Esa opción traspuso, pero además dio vuelta el orden de los números de la fila.';
+        return msg + ' ' + regla;
       }
     });
   })();

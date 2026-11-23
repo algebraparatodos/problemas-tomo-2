@@ -119,12 +119,12 @@
       check: function(current, value){ return value === 'correct'; },
       explain: function(current, correct, value){
         var clicked = current.choicesData.filter(function(o){ return o.value===value; })[0];
-        if(correct) return 'Correcto: cada entrada de A se multiplica por k.';
+        if(correct) return 'Cada entrada de A se multiplica por k.';
         var msg = 'Cada entrada de A se multiplica por k.';
         if(clicked.kind === 'forgot-cell') msg = 'Esa opción se olvidó de multiplicar una de las celdas.';
         if(clicked.kind === 'sign-cell') msg = 'Esa opción invirtió el signo en una de las celdas.';
         if(clicked.kind === 'tweak-cell') msg = 'Esa opción tiene un error de cálculo en una celda.';
-        return 'No es correcto. ' + msg;
+        return msg;
       }
     });
   })();

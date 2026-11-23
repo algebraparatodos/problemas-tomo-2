@@ -30,7 +30,6 @@
     function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
     function randChoice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
-    function randNonZero(min,max){ var v; do{ v=randInt(min,max); }while(v===0); return v; }
 
     function pivotOf(row){
       for(var c=0;c<row.length;c++) if(row[c]!==0) return c;
@@ -38,46 +37,43 @@
     }
 
     // ---------- Construcción de la RREF "semilla" (la respuesta correcta y única) ----------
-    function buildRow(pivotCol, pivotVal){
-      var row = new Array(COLS).fill(0);
-      row[pivotCol] = pivotVal;
-      for(var c=pivotCol+1;c<COLS;c++) row[c] = randNonZero(-9,9); // celdas libres nunca en 0
-      return row;
+    // Reparto de tipos: 60 % SCD, 30 % SCI y 10 % SI. Hasta acá (p. 31-34)
+    // el libro hizo Gauss-Jordan con un SCD (la solución se lee a simple
+    // vista) y con una matriz a la que le queda una variable libre; un SI
+    // en forma matricial todavía no apareció, aunque el tipo ya se vio en
+    // 1.1.2.1. Por eso el SCD es mayoría y el SI sale de vez en cuando.
+    // La columna 3 es la de los términos independientes: un pivote ahí es
+    // la fila (0 0 0 | 1) del SI.
+    var TYPES = [
+      { tipo:'SCD', weight:6, pivotSets:[[0,1,2]] },
+      { tipo:'SCI', weight:3, pivotSets:[[0,1],[0,1],[0,2]] },
+      { tipo:'SI',  weight:1, pivotSets:[[0,1,3],[0,2,3]] }
+    ];
+    function pickType(){
+      var total = 0;
+      TYPES.forEach(function(t){ total += t.weight; });
+      var x = Math.random()*total;
+      for(var i=0;i<TYPES.length;i++){
+        x -= TYPES[i].weight;
+        if(x < 0) return TYPES[i];
+      }
+      return TYPES[0];
     }
-    function buildSkeleton(){
-      // Rango 2 o 3 (nunca 1: un sistema de rango 1 siempre se ve con
-      // demasiados ceros sin importar cuánto se mezcle después, porque
-      // todas las filas son múltiplos de una sola dirección).
-      var rank = randChoice([3,3,3,2,2]);
+    // Pivotes en 1, ceros arriba y abajo de cada pivote y el resto enteros
+    // chicos: así la reducida es entera, como en los ejemplos del libro
+    // (además, la grilla sólo admite enteros).
+    function buildRREFSeed(pivots){
       var rows = [];
-      var lastPivot = -1;
       for(var r=0;r<ROWS;r++){
-        if(r >= rank){
-          rows.push(new Array(COLS).fill(0));
-          continue;
+        var row = new Array(COLS).fill(0);
+        if(r < pivots.length){
+          var p = pivots[r];
+          row[p] = 1;
+          for(var c=p+1;c<COLS;c++){
+            if(pivots.indexOf(c) === -1) row[c] = randInt(-5,5);
+          }
         }
-        var maxStart = COLS - (rank - r);
-        var pivotCol = randInt(lastPivot+1, maxStart);
-        rows.push(buildRow(pivotCol, 1));
-        lastPivot = pivotCol;
-      }
-      return rows;
-    }
-    function cleanPivotColumns(rows){
-      var r2 = rows.map(function(row){ return row.slice(); });
-      for(var r=0;r<r2.length;r++){
-        var p = pivotOf(r2[r]);
-        if(p===null) continue;
-        for(var i=0;i<r2.length;i++){
-          if(i!==r) r2[i][p] = 0;
-        }
-      }
-      return r2;
-    }
-    function buildRREFSeed(){
-      var rows = cleanPivotColumns(buildSkeleton());
-      if(rows.every(function(row){ return row.every(function(v){ return v===0; }); })){
-        return buildRREFSeed();
+        rows.push(row);
       }
       return rows;
     }
@@ -120,14 +116,41 @@
       }
       return M;
     }
+    // Una matriz para practicar: sin filas nulas (la del SCI tiene que
+    // aparecer al reducir, no venir dada), que no esté ya escalonada y con
+    // números chicos, como los del libro.
+    function isEchelonShape(M){
+      var lastPivot = -1, sawZero = false;
+      for(var r=0;r<M.length;r++){
+        var p = pivotOf(M[r]);
+        if(p === null){ sawZero = true; continue; }
+        if(sawZero || p <= lastPivot) return false;
+        lastPivot = p;
+      }
+      return true;
+    }
+    function goodShown(M){
+      if(maxAbs(M) > 30) return false;
+      if(M.some(function(row){ return pivotOf(row) === null; })) return false;
+      for(var c=0;c<COLS-1;c++){ // ninguna incógnita puede faltar en todas las ecuaciones
+        if(M.every(function(row){ return row[c]===0; })) return false;
+      }
+      var zeros = 0;
+      M.forEach(function(row){ row.forEach(function(v){ if(v===0) zeros++; }); });
+      if(zeros > 3) return false; // que no venga casi escalonada
+      var keys = M.map(function(row){ return row.join(','); });
+      if(keys[0]===keys[1] || keys[0]===keys[2] || keys[1]===keys[2]) return false; // ni filas repetidas
+      return !isEchelonShape(M);
+    }
     function generateShown(){
+      var type = pickType();
       var seed, shown, tries=0;
       do{
-        seed = buildRREFSeed();
-        shown = scramble(seed, randInt(8,11));
+        seed = buildRREFSeed(randChoice(type.pivotSets));
+        shown = scramble(seed, randInt(5,8));
         tries++;
-      } while(maxAbs(shown) > 45 && tries < 100);
-      return { seed: seed, shown: shown };
+      } while(!goodShown(shown) && tries < 300);
+      return { seed: seed, shown: shown, tipo: type.tipo };
     }
 
     // ---------- Checker estructural (echelon + pivote=1 + columna limpia) ----------
@@ -175,6 +198,23 @@
       return 'Es escalonada, pero no reducida: la columna del pivote de la fila ' + (v.refRow+1) + ' tiene otro valor no nulo en la fila ' + (v.badRow+1) + ' — el pivote debe ser el único elemento no nulo de su columna.';
     }
 
+    // Qué se lee en la reducida, como hace el libro al final de 1.1.3.2.
+    var VARS = ['x','y','z'];
+    function tex(s){ return window.katex.renderToString(s, { throwOnError:false }); }
+    function readingSentence(R){
+      var pivots = R.map(pivotOf);
+      if(pivots.indexOf(COLS-1) !== -1){
+        return ' La última fila dice ' + tex('0 = 1') + ', algo imposible: el SEL no tiene solución (SI).';
+      }
+      if(pivots.filter(function(p){ return p !== null; }).length === COLS-1){
+        return ' Ahora la solución se lee a simple vista: ' +
+          VARS.map(function(v,i){ return tex(v + ' = ' + R[i][COLS-1]); }).join(', ') + '.';
+      }
+      var free = VARS.filter(function(v,c){ return pivots.indexOf(c) === -1; });
+      return ' Quedó una fila nula y la columna de ' + tex(free[0]) + ' sin pivote: ' + tex(free[0]) +
+        ' es una variable libre, así que el SEL tiene infinitas soluciones (SCI).';
+    }
+
     window.AptActivity.init({
       mount: '#apt-u1a6',
       eyebrow: 'Unidad 1 · Matrices y SEL',
@@ -186,7 +226,7 @@
       grid: { rows: 3, cols: 4, dividerAfterCol: 3 },
       generate: function(){
         var g = generateShown();
-        return { matrix: g.shown, answer: g.seed };
+        return { matrix: g.shown, answer: g.seed, tipo: g.tipo };
       },
       renderContent: function(container, current){
         window.katex.render(matrixLatex(current.matrix), container, { throwOnError:false });
@@ -195,6 +235,14 @@
         if(hasEmpty){
           var nullRows = [[null,null,null,null],[null,null,null,null],[null,null,null,null]];
           return { correct:false, cellStatus:nullRows, feedbackText:'Dejaste alguna celda vacía (se tomó como 0 para revisar) — completá todas antes de comprobar la próxima vez.' };
+        }
+        // El motor ya filtra las celdas a enteros de hasta 2 cifras (con
+        // signo); esto es sólo por si algún día llega otra cosa.
+        var notInteger = M.some(function(row){ return row.some(function(v){
+          return typeof v !== 'number' || !isFinite(v) || Math.floor(v) !== v;
+        }); });
+        if(notInteger){
+          return { correct:false, cellStatus:[[null,null,null,null],[null,null,null,null],[null,null,null,null]], feedbackText:'Escribí un número entero en cada celda.' };
         }
         var structCheck = isReducedEchelon(M);
         if(!structCheck.ok){
@@ -207,13 +255,13 @@
           return {
             correct:true,
             cellStatus: [['correct','correct','correct','correct'],['correct','correct','correct','correct'],['correct','correct','correct','correct']],
-            feedbackText: '¡Correcto! Como la forma escalonada reducida es única, esta es exactamente la respuesta.'
+            feedbackText: 'Como la forma escalonada reducida es única, esta es exactamente la respuesta.' + readingSentence(current.answer)
           };
         }
         return {
           correct:false,
           cellStatus: [[null,null,null,null],[null,null,null,null],[null,null,null,null]],
-          feedbackText: 'Tu matriz sí está en forma escalonada reducida, pero no representa el mismo sistema que la original — revisá las operaciones de fila que aplicaste.'
+          feedbackText: 'Tu matriz sí está en forma escalonada reducida, pero no es la de esta matriz: no sale de la original con operaciones elementales por fila. Revisá las operaciones de fila que aplicaste.'
         };
       },
       getAnswerGrid: function(current){

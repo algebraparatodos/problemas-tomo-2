@@ -40,14 +40,31 @@
       return a;
     }
 
+    /* Todo cruce que importa para clasificar tiene que verse: dentro de
+       la ventana [-RANGE, RANGE] y con margen al borde. */
+    var VISIBLE = RANGE - 1;
+    /* En el caso «triángulo», los tres cruces tienen que estar bien
+       separados entre sí, para que no parezca que las rectas pasan por
+       un mismo punto (1 unidad = 30 px). */
+    var MIN_SEP = 1.5;
+
+    function cross(l1, l2){
+      var x = (l2.b - l1.b)/(l1.m - l2.m);
+      return [x, l1.m*x + l1.b];
+    }
+    function visible(p){ return Math.abs(p[0]) <= VISIBLE && Math.abs(p[1]) <= VISIBLE; }
+    function dist(p, q){ return Math.sqrt((p[0]-q[0])*(p[0]-q[0]) + (p[1]-q[1])*(p[1]-q[1])); }
+
     function generateCase(numLines){
       var category = randChoice(['SCD','SCI','SI']);
-      var lines = [];
+      var lines = [], kind = null;
       if(numLines === 2){
         if(category === 'SCD'){
           var m1 = randChoice(SLOPES);
           var m2 = randChoice(SLOPES.filter(function(s){return s!==m1;}));
-          lines = [{m:m1,b:randInt(-3,3)},{m:m2,b:randInt(-3,3)}];
+          do {
+            lines = [{m:m1,b:randInt(-3,3)},{m:m2,b:randInt(-3,3)}];
+          } while(!visible(cross(lines[0], lines[1])));
         } else if(category === 'SCI'){
           var m = randChoice(SLOPES), b = randInt(-3,3);
           lines = [{m:m,b:b},{m:m,b:b}];
@@ -65,16 +82,45 @@
         } else if(category === 'SCI'){
           var m4 = randChoice(SLOPES), b4 = randInt(-3,3);
           lines = [{m:m4,b:b4},{m:m4,b:b4},{m:m4,b:b4}];
-        } else {
+        } else if(Math.random() < 0.5){
+          /* Dos paralelas y una tercera que corta a las dos, como en la
+             Fig. 5 del libro: se ven dos cruces, pero ninguno está en las
+             tres rectas. */
+          kind = 'paralelas';
           var m5 = randChoice(SLOPES);
-          var b5 = randInt(-3,3), b6 = randInt(-3,3);
-          while(b6===b5) b6 = randInt(-3,3);
           var m6 = randChoice(SLOPES.filter(function(s){return s!==m5;}));
-          var b7 = randInt(-3,3);
+          var b5, b6, b7;
+          do {
+            b5 = randInt(-3,3); b6 = randInt(-3,3); b7 = randInt(-3,3);
+          } while(b6===b5 || !visible(cross({m:m5,b:b5},{m:m6,b:b7})) || !visible(cross({m:m5,b:b6},{m:m6,b:b7})));
           lines = shuffle([{m:m5,b:b5},{m:m5,b:b6},{m:m6,b:b7}]);
+        } else {
+          /* Tres rectas sin paralelas que se cortan de a dos en tres
+             puntos distintos (un triángulo): tampoco hay un punto común
+             a las tres. */
+          kind = 'triangulo';
+          var ms, ok;
+          do {
+            ms = shuffle(SLOPES).slice(0,3);
+            lines = ms.map(function(m){ return {m:m, b:randInt(-3,3)}; });
+            var p01 = cross(lines[0],lines[1]), p02 = cross(lines[0],lines[2]), p12 = cross(lines[1],lines[2]);
+            ok = visible(p01) && visible(p02) && visible(p12) &&
+                 dist(p01,p02) >= MIN_SEP && dist(p01,p12) >= MIN_SEP && dist(p02,p12) >= MIN_SEP;
+          } while(!ok);
         }
       }
-      return { category: category, lines: lines };
+      return { category: category, lines: lines, kind: kind };
+    }
+
+    /* Los cruces de a dos entre rectas no paralelas (sin repetir). */
+    function pairCrossings(lines){
+      var pts = [];
+      for(var i=0;i<lines.length;i++){
+        for(var j=i+1;j<lines.length;j++){
+          if(lines[i].m !== lines[j].m) pts.push(cross(lines[i], lines[j]));
+        }
+      }
+      return pts;
     }
 
     function toX(x){ return (x+RANGE)/(2*RANGE)*SIZE; }
@@ -97,7 +143,9 @@
       return [uniq[0], uniq[uniq.length-1]];
     }
 
-    function buildGraphSVG(lines, highlightPoint){
+    /* highlightPoint: la solución (SCD). missPoints: cruces de a dos que
+       NO son solución (SI con tres rectas), marcados en otro color. */
+    function buildGraphSVG(lines, highlightPoint, missPoints){
       var svg = '<svg viewBox="0 0 '+SIZE+' '+SIZE+'" xmlns="http://www.w3.org/2000/svg">';
       for(var i=-RANGE;i<=RANGE;i++){
         var isAxis = i===0;
@@ -126,6 +174,9 @@
           });
         }
       });
+      (missPoints || []).forEach(function(p){
+        svg += '<circle cx="'+toX(p[0])+'" cy="'+toY(p[1])+'" r="5.5" fill="#0A0A0D" stroke="#E5737A" stroke-width="2.5"/>';
+      });
       if(highlightPoint){
         svg += '<circle cx="'+toX(highlightPoint[0])+'" cy="'+toY(highlightPoint[1])+'" r="6.5" fill="#0A0A0D" stroke="#5BCD9A" stroke-width="3"/>';
       }
@@ -151,7 +202,8 @@
       if(category === 'SCD') return 'Las rectas se cruzan en un único punto: el sistema tiene exactamente una solución (SCD).';
       if(category === 'SCI') return 'Las '+n+' rectas coinciden exactamente — por eso se ven como un trazo punteado que alterna colores en vez de rectas separadas — así que el sistema tiene infinitas soluciones (SCI).';
       if(n === 2) return 'Las dos rectas son paralelas (misma pendiente): nunca se cruzan, por eso el sistema no tiene solución (SI).';
-      return 'Dos de las tres rectas son paralelas (misma pendiente): nunca se cruzan, por eso el sistema no tiene solución (SI), sin importar dónde esté la tercera.';
+      if(current.kind === 'triangulo') return 'Ninguna recta es paralela a otra: se cortan de a dos en tres puntos distintos (los marcados), pero no hay un punto que esté en las tres a la vez. Cada cruce verifica sólo dos de las ecuaciones, así que el sistema no tiene solución (SI).';
+      return 'Dos de las tres rectas son paralelas (misma pendiente): nunca se cruzan entre sí. La tercera corta a cada una en un punto distinto (los marcados), como en la Figura #5, pero ninguno de esos puntos está en las tres rectas a la vez. Por eso el sistema no tiene solución (SI).';
     }
 
     window.AptActivity.init({
@@ -182,6 +234,8 @@
       onAnswered: function(container, current, correct){
         if(current.category === 'SCD'){
           container.innerHTML = buildGraphSVG(current.lines, findCommonPoint(current.lines));
+        } else if(current.category === 'SI' && current.lines.length === 3){
+          container.innerHTML = buildGraphSVG(current.lines, null, pairCrossings(current.lines));
         }
       }
     });

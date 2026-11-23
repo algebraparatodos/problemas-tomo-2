@@ -49,6 +49,9 @@
       return suma;
     }
 
+    function tx(tex) { return window.katex.renderToString(tex, { throwOnError: false }); }
+    function linea(esFila, i) { return tx((esFila ? 'F_' : 'C_') + i); }
+
     function matrizAlAzar(n, min, max) {
       var M = [], r, c;
       for (r = 0; r < n; r++) { M.push([]); for (c = 0; c < n; c++) M[r].push(randInt(min, max)); }
@@ -68,7 +71,7 @@
       for (k = 0; k < n; k++) { if (esFila) M[i][k] = 0; else M[k][i] = 0; }
       return {
         M: M,
-        porque: (esFila ? 'la fila ' : 'la columna ') + (i + 1) + ' es toda ceros, así que por P3 el determinante es cero'
+        porque: (esFila ? 'la fila ' : 'la columna ') + linea(esFila, i + 1) + ' es toda ceros, así que por P3 el determinante es cero'
       };
     }
 
@@ -80,8 +83,8 @@
       for (var k = 0; k < n; k++) M[j][k] = factor * M[i][k];
       return {
         M: M,
-        porque: 'la fila ' + (j + 1) + ' es ' + factor + ' veces la fila ' + (i + 1) +
-          ', así que las filas no son linealmente independientes y el rango no llega a ' + n
+        porque: 'la fila ' + linea(true, j + 1) + ' es múltiplo de la fila ' + linea(true, i + 1) + ' (' +
+          tx('F_' + (j + 1) + ' = ' + factor + 'F_' + (i + 1)) + '), así que por P6 el determinante es cero'
       };
     }
 
@@ -90,11 +93,17 @@
       var a = randChoice([-2, -1, 1, 2]), b = randChoice([-2, -1, 1, 2]);
       var destino = randInt(2, n - 1);
       for (var k = 0; k < n; k++) M[destino][k] = a * M[0][k] + b * M[1][k];
-      var signo = b < 0 ? ' − ' + Math.abs(b) : ' + ' + b;
+      function termino(coef, fila, primero) {
+        var abs = Math.abs(coef), txt = (abs === 1 ? '' : abs) + 'F_' + fila;
+        if (primero) return (coef < 0 ? '-' : '') + txt;
+        return (coef < 0 ? ' - ' : ' + ') + txt;
+      }
+      var igualdad = 'F_' + (destino + 1) + ' = ' + termino(a, 1, true) + termino(b, 2, false);
+      var resta = 'F_' + (destino + 1) + termino(-a, 1, false) + termino(-b, 2, false);
       return {
         M: M,
-        porque: 'la fila ' + (destino + 1) + ' es ' + a + ' veces la fila 1' + signo +
-          ' veces la fila 2, así que las filas son linealmente dependientes y el rango no llega a ' + n
+        porque: 'la fila ' + linea(true, destino + 1) + ' sale de combinar las dos primeras (' + tx(igualdad) +
+          '). Si le hacés ' + tx(resta) + ', que por P7 no cambia el determinante, queda una fila de ceros, y por P3 el determinante es cero'
       };
     }
 
@@ -138,16 +147,17 @@
     }
 
     function matrixLatex(M) {
-      return '\\left[\\begin{array}{' + M[0].map(function () { return 'r'; }).join('') + '}' +
+      // Paréntesis, como en el libro (ver la nota de notación de engine.js).
+      return '\\left(\\begin{array}{' + M[0].map(function () { return 'r'; }).join('') + '}' +
         M.map(function (fila) { return fila.join(' & '); }).join(' \\\\ ') +
-        '\\end{array}\\right]';
+        '\\end{array}\\right)';
     }
 
     window.AptActivity.init({
       mount: '#apt-u1a24',
       eyebrow: 'Unidad 1 · Matrices y SEL',
       title: '¿Es invertible?',
-      subtitle: 'Antes de calcular el determinante, mirá la matriz: muchas veces se ve de entrada que las filas no son independientes.',
+      subtitle: 'Antes de calcular el determinante, mirá la matriz: muchas veces se ve de entrada, con las propiedades de los determinantes, que da cero.',
       nextLabel: 'Probar con otra matriz →',
       needsKatex: true,
       mode: 'choices',
@@ -163,18 +173,18 @@
         return (value === 'si') === current.invertible;
       },
       explain: function (current, correcto) {
-        var cabeza = correcto ? '¡Correcto! ' : 'No es correcto. ';
-
+        // Sólo lo que la U1 ya vio: el libro avisa (p. 127) que la
+        // independencia lineal es de la Unidad 2.
         if (current.invertible) {
-          return cabeza + 'Es invertible: su determinante vale ' + current.det +
-            ', distinto de cero. Y por el criterio de 1.2.6.7 eso arrastra todo lo demás — ' +
-            'su rango es ' + current.n + ', sus filas son linealmente independientes, ' +
-            'su forma escalonada reducida es la identidad, y el sistema Ax=b tiene solución única para cualquier b.';
+          return 'Es invertible: ' + tx('|A| = ' + current.det + ' \\neq 0') +
+            '. Y por el criterio de invertibilidad (1.2.6.7) eso arrastra todo lo demás: ' +
+            tx('\\mathrm{rg}(A) = ' + current.n) + ', su forma escalonada reducida es ' + tx('I_' + current.n) +
+            ' y el SEL ' + tx('Ax = b') + ' tiene solución única para todo ' + tx('b') + ' (SCD).';
         }
 
-        return cabeza + 'Es singular, y se ve sin calcular nada: ' + current.porque +
+        return 'Es singular, y se ve sin desarrollar el determinante: ' + current.porque +
           '. Como todas las condiciones del criterio son equivalentes, con que falle una fallan todas: ' +
-          'el determinante es cero, no hay inversa, y el sistema Ax=b no tiene solución única.';
+          tx('|A| = 0') + ', no hay inversa, ' + tx('\\mathrm{rg}(A) < ' + current.n) + ' y el SEL ' + tx('Ax = b') + ' no es SCD.';
       }
     });
   })();

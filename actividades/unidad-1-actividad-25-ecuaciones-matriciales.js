@@ -193,7 +193,7 @@
           explain: function (current, correcto) {
             var lado = current.porIzquierda ? 'izquierda' : 'derecha';
             var otro = current.porIzquierda ? 'derecha' : 'izquierda';
-            return (correcto ? '¡Correcto! ' : 'No es ese lado. ') +
+            return (correcto ? '' : 'No es ese lado. ') +
               'En ' + (current.porIzquierda ? 'A·X = B' : 'X·A = B') +
               ', la A toca a X por la ' + lado + ', así que hay que multiplicar por A⁻¹ por la ' + lado +
               ' en los dos miembros: así A⁻¹·A se cancela y queda X sola. ' +
@@ -226,8 +226,8 @@
               correct: todoBien,
               cellStatus: estado,
               feedbackText: todoBien
-                ? '¡Correcto! Podés comprobarlo multiplicando: ' + (current.porIzquierda ? 'A·X' : 'X·A') + ' tiene que dar B.'
-                : 'No es correcto. Revisá el orden del producto: ' + (current.porIzquierda ? 'A⁻¹·B' : 'B·A⁻¹') + ', en ese orden y no al revés.'
+                ? 'Podés comprobarlo multiplicando: ' + (current.porIzquierda ? 'A·X' : 'X·A') + ' tiene que dar B.'
+                : 'Revisá el orden del producto: ' + (current.porIzquierda ? 'A⁻¹·B' : 'B·A⁻¹') + ', en ese orden y no al revés.'
             };
           },
           getAnswerGrid: function (current) { return current.X; },

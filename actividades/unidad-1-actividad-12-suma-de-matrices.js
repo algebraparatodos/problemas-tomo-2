@@ -191,17 +191,17 @@
       var clicked = current.choicesData.filter(function(o){ return o.value===value; })[0];
       if(current.type === 'compatible'){
         if(clicked.kind === 'none'){
-          return (correct?'':'No es correcto. ') + 'Sí se puede sumar: A y B tienen el mismo tamaño (' + shapeTxt(current.shapeA) + '), así que A + B existe.';
+          return 'Sí se puede sumar: A y B tienen el mismo tamaño (' + shapeTxt(current.shapeA) + '), así que A + B existe.';
         }
         var msg = 'La suma correcta es A + B, sumando entrada por entrada.';
         if(clicked.kind === 'sub-error') msg = 'Esa opción resta en una celda en vez de sumar.';
         if(clicked.kind === 'tweak-error') msg = 'Esa opción tiene un error de cálculo en una celda.';
-        return (correct?'':'No es correcto. ') + msg;
+        return msg;
       }
       if(clicked.kind === 'none'){
-        return 'Correcto: A es ' + shapeTxt(current.shapeA) + ' y B es ' + shapeTxt(current.shapeB) + ' — al no compartir el mismo tamaño, A + B no está definida.';
+        return 'A es ' + shapeTxt(current.shapeA) + ' y B es ' + shapeTxt(current.shapeB) + ' — al no compartir el mismo tamaño, A + B no está definida.';
       }
-      return 'No es correcto. A (' + shapeTxt(current.shapeA) + ') y B (' + shapeTxt(current.shapeB) + ') no tienen el mismo tamaño: no se pueden sumar, así que ninguna de las matrices mostradas es una suma válida.';
+      return 'A (' + shapeTxt(current.shapeA) + ') y B (' + shapeTxt(current.shapeB) + ') no tienen el mismo tamaño: no se pueden sumar, así que ninguna de las matrices mostradas es una suma válida.';
     }
 
     // ---------- config del engine ----------

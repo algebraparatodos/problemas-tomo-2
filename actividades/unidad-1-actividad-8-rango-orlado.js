@@ -233,7 +233,7 @@
             } else {
               msg = 'No existe: cualquier menor de orden 2 que orle la entrada marcada da 0. Por lo tanto, rg(A) = 1.';
             }
-            return (correct ? '' : 'No es correcto. ') + msg;
+            return msg;
           },
           onAnswered: function(current, correct, value, contentEl){
             if(!correct) return;
@@ -267,7 +267,7 @@
             } else {
               msg = 'No existe: todos los menores de orden 3 que orlan al anterior dan 0. Por lo tanto, rg(A) = 2.';
             }
-            return (correct ? '' : 'No es correcto. ') + msg;
+            return msg;
           },
           onAnswered: function(current, correct, value, contentEl){
             if(!correct) return;

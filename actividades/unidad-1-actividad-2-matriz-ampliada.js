@@ -69,7 +69,7 @@
     function explainResults(results){
       var wrong = results.filter(function(r){ return !r.ok; });
       if(wrong.length === 0){
-        return 'Correcto: cada fila tiene los coeficientes de x, y, z (en ese orden) y, después de la barra, el término independiente.';
+        return 'Cada fila tiene los coeficientes de x, y, z (en ese orden) y, después de la barra, el término independiente.';
       }
       var first = wrong[0];
       var colName = first.col < 3 ? ('el coeficiente de ' + VARS[first.col]) : 'el término independiente';

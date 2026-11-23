@@ -67,8 +67,85 @@
       return M;
     }
 
+    /* ---------- Matrices de permutación (1.2.5.8) ----------
+
+       Notación de una línea, como en el libro: σ = (σ(1), ..., σ(n))
+       dice qué fila de la identidad terminó en el lugar i (permutación
+       de filas, matriz P); τ, lo mismo con las columnas (matriz Q).
+       Así, la fila i de P tiene su 1 en la columna σ(i), y la columna i
+       de Q tiene su 1 en la fila τ(i). La misma matriz leída como P y
+       como Q da permutaciones inversas (el ejemplo del libro: P y Q
+       iguales, con σ = (2,3,1) y τ = (3,1,2)), y esa es la confusión
+       que usamos como distractor principal.
+
+       Se eligen permutaciones que NO son su propia inversa (ciclos de
+       3 o de 4): así σ y τ nunca coinciden, y tampoco sale un simple
+       intercambio E(i,j), que ya tiene su propio caso. */
+
+    function inversa(p) {
+      var q = []; p.forEach(function (v, k) { q[v] = k; });
+      return q;
+    }
+    function mismaPerm(p, q) { return p.join() === q.join(); }
+    function permAleatoria(n) {
+      var base = [], k, p;
+      for (k = 0; k < n; k++) base.push(k);
+      do { p = shuffle(base); } while (mismaPerm(p, inversa(p)));
+      return p;
+    }
+
+    /* P con σ = p (base 0): la fila k de P es la fila p[k] de la identidad. */
+    function matrizDeFilas(p) {
+      var I = identidad(p.length);
+      return p.map(function (v) { return I[v].slice(); });
+    }
+
+    function unaLinea(p) {
+      return '(' + p.map(function (v) { return v + 1; }).join(',') + ')';
+    }
+
+    function tex(t) { return window.katex.renderToString(t, { throwOnError: false }); }
+
+    function generarPermutacion(n) {
+      var sub = randChoice(['sigma', 'tau', 'izquierda', 'derecha']);
+      // La matriz se arma desde una permutación de filas p; leída como
+      // Q, su τ es la inversa de p.
+      var sigma = permAleatoria(n), tau = inversa(sigma);
+      var M = matrizDeFilas(sigma);
+      var porFilas = (sub === 'sigma' || sub === 'izquierda');
+      var buena = porFilas ? sigma : tau, confusion = porFilas ? tau : sigma;
+
+      // Dos distractores más, distintos entre sí y de los dos anteriores.
+      var usadas = [buena, confusion];
+      while (usadas.length < 4) {
+        var r = shuffle(buena);
+        if (!usadas.some(function (u) { return mismaPerm(u, r); })) usadas.push(r);
+      }
+
+      function rotulo(q) {
+        if (sub === 'sigma') return { v: 'sigma=' + unaLinea(q), l: tex('\\sigma = ' + unaLinea(q)) };
+        if (sub === 'tau') return { v: 'tau=' + unaLinea(q), l: tex('\\tau = ' + unaLinea(q)) };
+        var letra = sub === 'izquierda' ? 'F' : 'C';
+        var lista = q.map(function (v) { return letra + '_{' + (v + 1) + '}'; }).join(',\\ ');
+        return { v: letra + unaLinea(q), l: tex('(' + lista + ')') };
+      }
+
+      return {
+        n: n, M: M, tipo: 'permutacion', sub: sub,
+        sigma: sigma, tau: tau,
+        correcta: rotulo(buena).v,
+        opciones: shuffle(usadas).map(function (q) {
+          var r = rotulo(q);
+          return { value: r.v, label: r.l };
+        })
+      };
+    }
+
     function generarCaso() {
       var n = randChoice([3, 3, 4]);
+      // Reparto: 60 % elementales (20 % de cada tipo), 40 % permutaciones
+      // (10 % de cada pregunta: σ, τ, P·A y A·Q).
+      if (Math.random() < 0.4) return generarPermutacion(n);
       var tipo = randChoice(['intercambio', 'escalar', 'combinacion']);
 
       var i = randInt(0, n - 1), j;
@@ -123,12 +200,62 @@
     }
 
     function matrixLatex(M) {
-      return '\\left[\\begin{array}{' + M[0].map(function () { return 'r'; }).join('') + '}' +
+      return '\\left(\\begin{array}{' + M[0].map(function () { return 'r'; }).join('') + '}' +
         M.map(function (fila) { return fila.join(' & '); }).join(' \\\\ ') +
-        '\\end{array}\\right]';
+        '\\end{array}\\right)';
+    }
+
+    var PREGUNTAS = {
+      sigma: 'Leída como matriz de permutación de filas $P$, ¿qué $\\sigma$ le corresponde?',
+      tau: 'Leída como matriz de permutación de columnas $Q$, ¿qué $\\tau$ le corresponde?',
+      izquierda: 'Es una matriz de permutación de filas $P$. Al calcular $P \\cdot A$, ¿qué filas de $A$ quedan, de arriba hacia abajo?',
+      derecha: 'Es una matriz de permutación de columnas $Q$. Al calcular $A \\cdot Q$, ¿qué columnas de $A$ quedan, de izquierda a derecha?'
+    };
+
+    function pregunta(current) {
+      var t = current.tipo === 'permutacion' ? PREGUNTAS[current.sub] :
+        'Se obtuvo aplicándole a la identidad una única operación elemental por filas. ¿Qué matriz elemental es?';
+      return t.split(/(\$[^$]+\$)/g).map(function (parte) {
+        return parte.charAt(0) === '$' ? tex(parte.slice(1, -1)) : parte;
+      }).join('');
+    }
+
+    function enLista(arr) { return arr.slice(0, -1).join(', ') + ' y ' + arr[arr.length - 1]; }
+
+    function explicarPermutacion(current) {
+      var sigma = current.sigma, tau = current.tau, texto;
+      var s = tex('\\sigma = ' + unaLinea(sigma)), t = tex('\\tau = ' + unaLinea(tau));
+
+      if (current.sub === 'sigma' || current.sub === 'izquierda') {
+        texto = 'Mirá fila por fila dónde está el 1: ' + enLista(sigma.map(function (v, k) {
+          return 'la fila ' + (k + 1) + ' lo tiene en la columna ' + (v + 1);
+        })) + '. Eso dice qué fila de la identidad terminó en cada lugar, así que como permutación de filas es ' + s + '.';
+        if (current.sub === 'izquierda') {
+          texto += ' Al multiplicar por izquierda, ' + tex('P \\cdot A') + ' reordena igual las filas de ' + tex('A') +
+            ': en el lugar ' + tex('i') + ' queda la fila ' + tex('\\sigma(i)') + ' de ' + tex('A') +
+            '. De arriba hacia abajo: ' +
+            tex('(' + sigma.map(function (v) { return 'F_{' + (v + 1) + '}'; }).join(',\\ ') + ')') + '.';
+        } else {
+          texto += ' Ojo con leerla por columnas: eso da ' + t + ', que es la lectura como permutación de columnas.';
+        }
+        return texto;
+      }
+      texto = 'Mirá columna por columna dónde está el 1: ' + enLista(tau.map(function (v, k) {
+        return 'la columna ' + (k + 1) + ' lo tiene en la fila ' + (v + 1);
+      })) + '. Eso dice qué columna de la identidad terminó en cada lugar, así que como permutación de columnas es ' + t + '.';
+      if (current.sub === 'derecha') {
+        texto += ' Al multiplicar por derecha, ' + tex('A \\cdot Q') + ' reordena igual las columnas de ' + tex('A') +
+          ': en el lugar ' + tex('i') + ' queda la columna ' + tex('\\tau(i)') + ' de ' + tex('A') +
+          '. De izquierda a derecha: ' +
+          tex('(' + tau.map(function (v) { return 'C_{' + (v + 1) + '}'; }).join(',\\ ') + ')') + '.';
+      } else {
+        texto += ' Ojo con leerla por filas: eso da ' + s + ', que es la lectura como permutación de filas.';
+      }
+      return texto;
     }
 
     function explicar(current, correcto) {
+      if (current.tipo === 'permutacion') return explicarPermutacion(current);
       var i = current.i + 1, j = current.j + 1;
       var texto;
 
@@ -149,14 +276,14 @@
           ' estaría en la posición (' + j + ',' + i + ').';
       }
 
-      return (correcto ? '¡Correcto! ' : 'No es correcto. ') + texto;
+      return texto;
     }
 
     window.AptActivity.init({
       mount: '#apt-u1a19',
       eyebrow: 'Unidad 1 · Matrices y SEL',
       title: '¿Qué operación hace esta elemental?',
-      subtitle: 'Esta matriz se obtuvo aplicándole a la identidad una única operación elemental por filas. Identificá cuál, con la notación del libro.',
+      subtitle: 'Cada matriz sale de la identidad, con una operación elemental o reordenando sus filas o columnas. Identificá qué hace, con la notación del libro.',
       nextLabel: 'Probar con otra matriz →',
       needsKatex: true,
       mode: 'choices',
@@ -164,7 +291,8 @@
       choices: function (current) { return current.opciones; },
       generate: generarCaso,
       renderContent: function (container, current) {
-        window.katex.render(matrixLatex(current.M), container, { throwOnError: false });
+        container.innerHTML = '<p class="apt-act__question">' + pregunta(current) + '</p>' +
+          '<div>' + tex(matrixLatex(current.M)) + '</div>';
       },
       check: function (current, value) { return value === current.correcta; },
       explain: explicar

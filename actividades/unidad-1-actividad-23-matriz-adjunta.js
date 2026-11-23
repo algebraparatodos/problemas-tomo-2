@@ -230,8 +230,8 @@
               feedbackText: hayVacias
                 ? 'Te quedó la celda vacía. Completala antes de comprobar.'
                 : ok
-                  ? '¡Correcto! Como det(A) = ' + conSigno(current.det) + ' ≠ 0, A es invertible.'
-                  : 'No es correcto. Revisá la cuenta: podés usar Sarrus o desarrollar por cofactores por la fila o la columna que tenga más ceros.'
+                  ? 'Como det(A) = ' + conSigno(current.det) + ' ≠ 0, A es invertible.'
+                  : 'Revisá la cuenta: podés usar Sarrus o desarrollar por cofactores por la fila o la columna que tenga más ceros.'
             };
           },
           getAnswerGrid: function (current) { return [[current.det]]; },
@@ -269,7 +269,7 @@
             if (todoBien) {
               return {
                 correct: true, cellStatus: estado,
-                feedbackText: '¡Correcto! Ya tenés adj(A). Queda el último paso: dividirla por det(A) = ' + conSigno(current.det) + '.'
+                feedbackText: 'Ya tenés adj(A). Queda el último paso: dividirla por det(A) = ' + conSigno(current.det) + '.'
               };
             }
 
@@ -307,8 +307,8 @@
           explain: function (current, correcto, value) {
             var base = 'A⁻¹ = adj(A)/det(A): cada entrada de la adjunta dividida por det(A) = ' + conSigno(current.det) +
               ', y simplificada. Si querés comprobarlo, A·A⁻¹ tiene que dar la identidad.';
-            if (correcto) return '¡Correcto! ' + base;
-            return 'No es correcto. ' + (POR_QUE_NO[value] ? POR_QUE_NO[value] + ' ' : '') + base;
+            if (correcto) return base;
+            return (POR_QUE_NO[value] ? POR_QUE_NO[value] + ' ' : '') + base;
           }
         }
       ]

@@ -119,33 +119,39 @@
     }
 
     function matrixLatex(M) {
-      return '\\left[\\begin{array}{' + M[0].map(function () { return 'r'; }).join('') + '}' +
+      // Paréntesis, como en el libro (ver la nota de notación de engine.js).
+      return 'A = \\left(\\begin{array}{' + M[0].map(function () { return 'r'; }).join('') + '}' +
         M.map(function (fila) { return fila.join(' & '); }).join(' \\\\ ') +
-        '\\end{array}\\right]';
+        '\\end{array}\\right)';
     }
 
     function generarCaso() {
-      var n = Math.random() < 0.45 ? 2 : 3;
+      // El ejemplo del libro es 3×3: esa es la mayoría; 2×2 para entrar en calor.
+      var n = Math.random() < 0.25 ? 2 : 3;
       var A = generarInvertible(n);
       return { n: n, A: A, respuesta: inversa(A) };
     }
 
+    /* El libro todavía no usa determinantes en este punto (p. 81-83): la
+       explicación habla sólo de Gauss-Jordan y de la comprobación con el
+       producto, como en el ejemplo #2. */
+    function k(tex) { return window.katex.renderToString(tex, { throwOnError: false }); }
     function explicar(current, correcto) {
-      var det = determinante(current.A);
-      var base = correcto
-        ? '¡Correcto! '
-        : 'No es correcto. ';
-      return base +
-        'El determinante de esta matriz vale ' + det + ', así que es invertible y ' +
-        'su inversa tiene todas las entradas enteras. Para comprobar el resultado ' +
-        'alcanza con multiplicar: A · A⁻¹ tiene que dar la identidad.';
+      var comprobar = 'Para comprobar el resultado, alcanza con multiplicar: ' +
+        k('A\\cdot A^{-1}') + ' tiene que dar la identidad ' + k('I') + '.';
+      if (correcto) {
+        return 'Llegaste a ' + k('(I\\,|\\,A^{-1})') + ': en el lugar donde estaba ' + k('I') +
+          ' quedó la inversa. ' + comprobar;
+      }
+      return 'Las celdas en rojo no coinciden con la inversa. Revisá las operaciones: cada una ' +
+        'se hace en toda la fila, en la parte de ' + k('A') + ' y también en la de ' + k('I') + '. ' + comprobar;
     }
 
     window.AptActivity.init({
       mount: '#apt-u1a16',
       eyebrow: 'Unidad 1 · Matrices y SEL',
       title: 'Calculá la inversa por Gauss-Jordan',
-      subtitle: 'Escribí la matriz ampliada (A | I), escalonala hasta llegar a (I | A⁻¹), y completá acá la inversa que te quedó. Todas las entradas son números enteros.',
+      subtitle: 'Escribí la matriz ampliada $(A\\,|\\,I)$, escalonala hasta llegar a $(I\\,|\\,A^{-1})$, y completá acá la inversa que te quedó. En estas matrices, todas las entradas de la inversa son números enteros.',
       nextLabel: 'Probar con otra matriz →',
       needsKatex: true,
       mode: 'grid',

@@ -265,7 +265,9 @@
       if (esNula(current.A)) {
         msg += ' La matriz nula cumple varias a la vez: es igual a su traspuesta y a la opuesta de su traspuesta, su cuadrado es ella misma, y su primera potencia ya es nula.';
       } else if (clases.ortogonal && clases.involutiva && clases.simetrica) {
-        msg += ' Es un caso donde se juntan tres: al ser simétrica, A^t = A, así que la condición de ortogonal A^t·A = I pasa a ser A² = I, que es la de involutiva.';
+        var tx = function (tex) { return window.katex.renderToString(tex, { throwOnError: false }); };
+        msg += ' Es un caso donde se juntan tres: al ser simétrica, ' + tx('A^t = A') + ', así que la condición de ortogonal ' +
+          tx('A^t A = I') + ' pasa a ser ' + tx('A^2 = I') + ', que es la de involutiva.';
       } else if (clases.involutiva && clases.ortogonal) {
         msg += ' Toda involutiva que además sea simétrica resulta ortogonal, por el mismo motivo.';
       } else if (clases.antisimetrica && clases.nilpotente) {
@@ -274,7 +276,7 @@
         msg += ' Las idempotentes simétricas son las matrices de proyección, que vas a volver a encontrar en la Unidad 2.';
       }
 
-      return (correcto ? '' : 'No es correcto. ') + msg;
+      return msg;
     }
 
     window.AptActivity.init({

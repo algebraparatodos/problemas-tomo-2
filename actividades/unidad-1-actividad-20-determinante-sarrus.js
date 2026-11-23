@@ -72,9 +72,9 @@
       var todos = p.suman.concat(p.restan);
       return [
         { valor: todos.reduce(function (s, v) { return s + v; }, 0),
-          motivo: 'sumaste los seis productos: los tres de las diagonales que bajan hacia la izquierda van restando' },
+          motivo: 'sumaste los seis productos: los tres de las diagonales ascendentes van restando' },
         { valor: -det3(M),
-          motivo: 'te quedó el signo cambiado: fijate cuáles diagonales suman y cuáles restan' },
+          motivo: 'te quedó el signo cambiado: a la suma de las descendentes se le resta la de las ascendentes, no al revés' },
         { valor: p.suman[0] - p.restan[0],
           motivo: 'usaste sólo la diagonal principal y la secundaria; Sarrus tiene tres diagonales de cada lado' }
       ];
@@ -167,15 +167,29 @@
         '\\end{array}\\right|';
     }
 
+    function tx(tex) { return window.katex.renderToString(tex, { throwOnError: false }); }
+
+    /* Una suma escrita como en el libro (p. 106): «4 - 12 + 3», nunca
+       «4 + -12 + 3». */
+    function sumaFirmada(arr) {
+      return arr.map(function (v, i) {
+        if (i === 0) return String(v);
+        return v < 0 ? ' - ' + (-v) : ' + ' + v;
+      }).join('');
+    }
+    function entreParentesisSiNegativo(v) { return v < 0 ? '(' + v + ')' : String(v); }
+
     function explicar(current, correcto, elegido) {
       var p = productosSarrus(current.M);
-      var cuenta = 'Con la Regla de Sarrus, las tres diagonales que bajan hacia la derecha suman ' +
-        p.suman.join(' + ') + ' = ' + (p.suman[0] + p.suman[1] + p.suman[2]) +
-        ', y las tres que bajan hacia la izquierda restan ' +
-        p.restan.join(' + ') + ' = ' + (p.restan[0] + p.restan[1] + p.restan[2]) +
-        '. El determinante es la diferencia: ' + current.det + '.';
+      var s = p.suman[0] + p.suman[1] + p.suman[2];
+      var r = p.restan[0] + p.restan[1] + p.restan[2];
+      var cuenta = 'Con la regla de Sarrus, los productos de las tres diagonales descendentes suman ' +
+        tx(sumaFirmada(p.suman) + ' = ' + s) +
+        ', y los de las tres ascendentes, ' + tx(sumaFirmada(p.restan) + ' = ' + r) +
+        '. Restando la segunda suma a la primera: ' +
+        tx('|A| = ' + s + ' - ' + entreParentesisSiNegativo(r) + ' = ' + current.det) + '.';
 
-      if (correcto) return '¡Correcto! ' + cuenta;
+      if (correcto) return cuenta;
 
       // Si el número que eligió corresponde a un error conocido, se lo
       // nombramos: es más útil que repetirle la cuenta buena.
@@ -185,9 +199,9 @@
       }
 
       if (suErro && suErro.motivo) {
-        return 'No es correcto: ' + suErro.motivo + '. ' + cuenta;
+        return suErro.motivo.charAt(0).toUpperCase() + suErro.motivo.slice(1) + '. ' + cuenta;
       }
-      return 'No es correcto. ' + cuenta;
+      return cuenta;
     }
 
     window.AptActivity.init({

@@ -191,7 +191,7 @@
       else if(cls.escalar) msg += ' Por ser escalar, también es diagonal, triangular superior y triangular inferior a la vez.';
       else if(cls.diagonal) msg += ' Por ser diagonal, también es triangular superior y triangular inferior a la vez.';
 
-      return (correct ? '' : 'No es correcto. ') + msg;
+      return msg;
     }
 
     window.AptActivity.init({

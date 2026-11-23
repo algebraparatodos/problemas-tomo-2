@@ -191,7 +191,7 @@
             var cual = current.mejores.length === 1
               ? 'La mejor es ' + current.mejores[0] + ', que tiene ' + cuantos + ' ceros'
               : 'Las mejores son ' + current.mejores.join(' y ') + ', con ' + cuantos + ' ceros cada una';
-            return (correcto ? '¡Correcto! ' : 'No es la que menos trabajo deja. ') + cual +
+            return (correcto ? '' : 'No es la que menos trabajo deja. ') + cual +
               '. Cada cero de la línea por la que desarrollás borra un menor entero del cálculo: con ' +
               cuantos + ' ceros te queda ' + (4 - cuantos) +
               ' determinante de 3×3 en vez de cuatro.';
@@ -203,8 +203,7 @@
           choices: function (current) { return current.opcionesDet; },
           check: function (current, value) { return Number(value) === current.det; },
           explain: function (current, correcto) {
-            return (correcto ? '¡Correcto! ' : 'No es correcto. ') +
-              'El determinante vale ' + current.det +
+            return 'El determinante vale ' + current.det +
               '. Acordate del signo del cofactor: el de la posición (i,j) lleva (−1)^(i+j), así que ' +
               'los de las posiciones donde i+j es impar cambian de signo. Ese es el paso donde más se falla.';
           }

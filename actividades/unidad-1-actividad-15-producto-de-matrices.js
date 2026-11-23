@@ -119,12 +119,27 @@
           return c;
         });
 
-        var allOpts = [
-          { kind:'product', matrix:correct, correct:true },
+        // En 1×1, el cambio de signo es uno solo y puede coincidir con el
+        // error de cálculo: en ese caso se vuelve a sortear este último.
+        if(matricesEqual(d1,d2)){
+          d1 = buildDistinctVariant(correct, [d2,d3], function(){
+            var c = correct.map(function(r){ return r.slice(); });
+            var r = randInt(0,outRows-1), col = randInt(0,outCols-1);
+            c[r][col] = c[r][col] + randNonZero(-4,4);
+            return c;
+          });
+        }
+        // Como en la suma (#12): la opción «No es posible multiplicar» está
+        // SIEMPRE, también cuando sí se puede. Si no, verla regalaba la
+        // respuesta. Van la correcta, dos de los tres errores típicos y esa.
+        var wrongs = shuffleArr([
           { kind:'tweak-cell', matrix:d1, correct:false },
           { kind:'sign-term', matrix:d2, correct:false },
           { kind:'missing-term', matrix:d3, correct:false }
-        ];
+        ]).slice(0,2);
+        var allOpts = [{ kind:'product', matrix:correct, correct:true }]
+          .concat(wrongs)
+          .concat([{ kind:'none', correct:false }]);
         var wrongIdx = 0;
         choicesData = allOpts.map(function(o){
           var value = o.correct ? 'correct' : ('w'+(wrongIdx++));
@@ -189,15 +204,16 @@
       explain: function(current, correct, value){
         var clicked = current.choicesData.filter(function(o){ return o.value===value; })[0];
         if(current.type === 'compatible'){
-          if(clicked.kind === 'none') return (correct?'':'No es correcto. ') + 'Sí se puede multiplicar: las columnas de A (' + current.n + ') coinciden con las filas de B (' + current.p + ').';
-          var msg = 'El producto se calcula fila de A por columna de B, sumando los productos.';
+          var tam = 'A es ' + shapeTxt(current.m,current.n) + ' y B es ' + shapeTxt(current.p,current.q) + ': las columnas de A (' + current.n + ') coinciden con las filas de B (' + current.p + '), así que A · B existe y es ' + shapeTxt(current.m,current.q) + '.';
+          if(clicked.kind === 'none') return 'Sí se puede multiplicar. ' + tam;
+          var msg = tam + ' Cada entrada se calcula fila de A por columna de B, sumando los productos.';
           if(clicked.kind === 'tweak-cell') msg = 'Esa opción tiene un error de cálculo en una celda.';
           if(clicked.kind === 'sign-term') msg = 'Esa opción invirtió el signo de uno de los términos de la suma en una celda.';
           if(clicked.kind === 'missing-term') msg = 'Esa opción se olvidó de sumar uno de los términos en una celda.';
-          return (correct?'':'No es correcto. ') + msg;
+          return msg;
         }
-        if(clicked.kind === 'none') return 'Correcto: A es ' + shapeTxt(current.m,current.n) + ' y B es ' + shapeTxt(current.p,current.q) + ' — las columnas de A (' + current.n + ') no coinciden con las filas de B (' + current.p + '), así que A · B no está definido.';
-        return 'No es correcto. Las columnas de A (' + current.n + ') no coinciden con las filas de B (' + current.p + '): no se pueden multiplicar.';
+        if(clicked.kind === 'none') return 'A es ' + shapeTxt(current.m,current.n) + ' y B es ' + shapeTxt(current.p,current.q) + ': las columnas de A (' + current.n + ') no coinciden con las filas de B (' + current.p + '), así que A · B no está definido.';
+        return 'Las columnas de A (' + current.n + ') no coinciden con las filas de B (' + current.p + '): no se pueden multiplicar, así que ninguna de las matrices mostradas es A · B.';
       }
     });
   })();

@@ -25,7 +25,10 @@
 
 
   (function(){
-    var VARS = ['x','y','z','t','u'];
+    // Como en los ejemplos del libro (p. 35-37): 4 incógnitas x, y, z, t
+    // y 1 o 2 variables libres.
+    var VARS = ['x','y','z','t'];
+    var NUM_VARS = 4;
 
     function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
     function randChoice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
@@ -76,31 +79,43 @@
     }
 
     // ---------- Generador ----------
-    function choosePivotCols(numVars, rank){
-      var idx = Array.from({length:numVars}, function(_,i){ return i; });
+    /* Columnas libres: la primera columna (x) siempre lleva pivote, como en
+       el libro; las libres se eligen entre y, z, t. Los pivotes son las
+       columnas restantes, en orden creciente (fila r → pivote r-ésimo). */
+    function chooseFreeCols(numVars, dof){
+      var idx = Array.from({length:numVars-1}, function(_,i){ return i+1; });
       for(var i=idx.length-1;i>0;i--){
         var j = randInt(0,i);
         var t = idx[i]; idx[i]=idx[j]; idx[j]=t;
       }
-      return idx.slice(0,rank).sort(function(a,b){ return a-b; });
+      return idx.slice(0,dof).sort(function(a,b){ return a-b; });
     }
 
+    /* Matriz escalonada reducida de verdad:
+       - cada fila tiene su pivote (un 1) más a la derecha que la anterior;
+       - en la columna de cada pivote, todo lo demás es 0;
+       - una columna libre sólo puede tener números en las filas cuyo pivote
+         está a su izquierda (en las filas de abajo, que empiezan después,
+         tiene que haber 0).
+       Además cada columna libre tiene algún número distinto de 0, para que
+       la variable libre aparezca en la solución. */
     function generateSystem(){
-      var dof = randChoice([1,2,3]);
-      var maxRank = 5 - dof;
-      var rank = randInt(1, maxRank);
-      var numVars = rank + dof;
-      var pivotCols = choosePivotCols(numVars, rank);
-      var freeCols = Array.from({length:numVars}, function(_,i){ return i; }).filter(function(c){ return pivotCols.indexOf(c) === -1; });
-
-      var M = [];
-      for(var r=0;r<rank;r++){
-        var row = new Array(numVars+1).fill(0);
-        row[pivotCols[r]] = 1;
-        freeCols.forEach(function(fc){ row[fc] = randInt(-4,4); });
-        row[numVars] = randInt(-6,6);
-        M.push(row);
-      }
+      var numVars = NUM_VARS;
+      var dof = randChoice([1,2]);
+      var rank = numVars - dof;
+      var freeCols, M, pivotCols;
+      do {
+        freeCols = chooseFreeCols(numVars, dof);
+        pivotCols = Array.from({length:numVars}, function(_,i){ return i; }).filter(function(c){ return freeCols.indexOf(c) === -1; });
+        M = [];
+        for(var r=0;r<rank;r++){
+          var row = new Array(numVars+1).fill(0);
+          row[pivotCols[r]] = 1;
+          freeCols.forEach(function(fc){ if(fc > pivotCols[r]) row[fc] = randInt(-4,4); });
+          row[numVars] = randInt(-6,6);
+          M.push(row);
+        }
+      } while(!freeCols.every(function(fc){ return M.some(function(row){ return row[fc] !== 0; }); }));
 
       var p = new Array(numVars).fill(0);
       pivotCols.forEach(function(pc,r){ p[pc] = M[r][numVars]; });
@@ -129,34 +144,57 @@
     }
 
     // ---------- Render de la matriz (KaTeX, con las variables como cabecera) ----------
+    /* Como en el libro, arriba de cada columna va su incógnita. Para que la
+       cabecera quede alineada con la matriz, todas las celdas (cabecera y
+       matriz) tienen el mismo ancho fijo; las dos filas van centradas, y los
+       paréntesis son simétricos, así que las columnas coinciden. */
+    function cell(tex){ return '\\hphantom{-}\\mathclap{' + tex + '}\\hphantom{-}'; }
     function systemLatex(current){
       var n = current.numVars;
+      var header = VARS.slice(0,n).map(cell).join(' & ') + ' & ' + cell('');
       var rows = current.M.map(function(row){
-        return row.slice(0,n).join(' & ') + ' & ' + row[n];
+        return row.map(function(v){ return cell(String(v)); }).join(' & ');
       }).join(' \\\\ ');
-      return '\\left(\\begin{array}{' + new Array(n+1).join('c') + '|c}' + rows + '\\end{array}\\right)';
+      var spec = new Array(n+1).join('c');
+      return '\\begin{array}{c}' +
+        '\\begin{array}{' + spec + 'c}' + header + '\\end{array} \\\\[-2pt]' +
+        '\\left(\\begin{array}{' + spec + '|c}' + rows + '\\end{array}\\right)' +
+        '\\end{array}';
+    }
+    function m(tex){ return window.katex.renderToString(tex, { throwOnError:false }); }
+    function listNames(cols){
+      var names = cols.map(function(c){ return m(VARS[c]); });
+      if(names.length === 1) return names[0];
+      return names.slice(0,-1).join(', ') + ' y ' + names[names.length-1];
     }
 
     // ---------- Textos ----------
     function explainGdl(current, correct){
-      var freeNames = current.freeCols.map(function(c){ return VARS[c]; }).join(', ');
-      if(correct) return 'Las columnas sin pivote (' + freeNames + ') son las variables libres — ese es el grado de libertad del sistema.';
-      return 'No es correcto. Las variables libres son ' + freeNames + ': hay ' + current.dof + ' columna' + (current.dof>1?'s':'') + ' sin pivote, así que el sistema tiene ' + current.dof + ' grado' + (current.dof>1?'s':'') + ' de libertad.';
+      var d = current.dof, pl = d > 1;
+      var principales = 'Los pivotes están en las columnas de ' + listNames(current.pivotCols) +
+        ': esas son las variables principales. ';
+      var libres = (pl ? 'Las columnas de ' : 'La columna de ') + listNames(current.freeCols) +
+        (pl ? ' no tienen pivote: son las variables libres. ' : ' no tiene pivote: es la variable libre. ');
+      var cierre = 'Como hay ' + d + ' variable' + (pl?'s':'') + ' libre' + (pl?'s':'') + ', el sistema tiene ' + d + ' grado' + (pl?'s':'') + ' de libertad.';
+      return principales + libres + cierre;
     }
 
     function explainSolution(current, pOk, homOks, collectiveIssue, hasEmpty){
       if(hasEmpty) return 'Dejaste alguna celda vacía (se tomó como 0 para revisar) — completá todas antes de comprobar la próxima vez.';
       var allHom = homOks.every(Boolean);
-      if(pOk && allHom && !collectiveIssue) return '¡Correcto! Tu solución particular verifica el sistema, y cada vector dirección resuelve el sistema homogéneo. Juntos describen todas las soluciones posibles.';
+      if(pOk && allHom && !collectiveIssue) return 'Tu solución particular verifica el sistema, y cada vector dirección resuelve el sistema homogéneo. Juntos describen todas las soluciones posibles.';
       var parts = [];
       if(!pOk) parts.push('la solución particular no verifica el sistema (revisá que, al multiplicarla por cada fila de la matriz, dé el término independiente)');
       var badIdx = homOks.map(function(ok,i){ return ok ? null : i; }).filter(function(i){ return i!==null; });
       if(badIdx.length){
-        var labels = badIdx.map(function(i){ return VARS[current.freeCols[i]]; }).join(', ');
-        parts.push('el vector que acompaña a ' + labels + ' no es correcto');
+        var labels = listNames(badIdx.map(function(i){ return current.freeCols[i]; }));
+        parts.push(badIdx.length > 1
+          ? 'los vectores que acompañan a ' + labels + ' no son correctos (cada uno tiene que resolver el sistema homogéneo)'
+          : 'el vector que acompaña a ' + labels + ' no es correcto (tiene que resolver el sistema homogéneo)');
       }
       if(collectiveIssue) parts.push('tus vectores sí resuelven el sistema homogéneo, pero entre todos no llegan a cubrir todos los grados de libertad — revisá que no hayas puesto el mismo vector (o un múltiplo de él) para más de un parámetro');
-      return 'No es correcto: ' + parts.join('; ') + '.';
+      var txt = parts.join('; ') + '.';
+      return txt.charAt(0).toUpperCase() + txt.slice(1);
     }
 
     window.AptActivity.init({
@@ -177,15 +215,14 @@
           question: '¿Cuántos grados de libertad tiene este sistema?',
           choices: [
             { value:1, label:'1', sub:'grado de libertad' },
-            { value:2, label:'2', sub:'grados de libertad' },
-            { value:3, label:'3', sub:'grados de libertad' }
+            { value:2, label:'2', sub:'grados de libertad' }
           ],
           check: function(current, value){ return value === current.dof; },
           explain: function(current, correct){ return explainGdl(current, correct); }
         },
         {
           mode: 'vectors',
-          question: 'Completá la solución general:<br><small style="font-size:12px;font-style:italic;opacity:.85;">La solución no es única: puede haber otra solución particular distinta a la tuya, y tus vectores pueden ser distintos a los de otra persona y aun así estar bien, siempre que verifiquen el sistema.</small>',
+          question: 'Completá la solución general (cada vector, de arriba hacia abajo: $x$, $y$, $z$, $t$):<br><small style="font-size:12px;font-style:italic;opacity:.85;">La solución no es única: puede haber otra solución particular distinta a la tuya, y tus vectores pueden ser distintos a los de otra persona y aun así estar bien, siempre que verifiquen el sistema.</small>',
           vectors: {
             rows: function(current){ return current.numVars; },
             count: function(current){ return current.dof; },

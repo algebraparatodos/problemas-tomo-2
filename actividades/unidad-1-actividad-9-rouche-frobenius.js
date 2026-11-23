@@ -152,7 +152,7 @@
             } else {
               msg = 'rg(A) = ' + current.rankA + ': orlando se llega a un menor de orden ' + current.rankA + ' no nulo, y cualquier menor de orden mayor dentro de A se anula.';
             }
-            return (correct ? '' : 'No es correcto. ') + msg;
+            return msg;
           }
         },
         {
@@ -167,7 +167,7 @@
             } else {
               msg = 'rg(A|B) = ' + current.rankAB + ' (igual que rg(A)): todo menor que incluya la columna B, de orden mayor a ' + current.rankA + ', se anula.';
             }
-            return (correct ? '' : 'No es correcto. ') + msg;
+            return msg;
           }
         },
         {
@@ -188,7 +188,7 @@
             } else {
               msg = 'rg(A) = rg(A|B) = ' + current.rankA + ', menor al número de incógnitas (' + current.n + '), así que el sistema es compatible indeterminado (SCI): infinitas soluciones.';
             }
-            return (correct ? '' : 'No es correcto. ') + msg;
+            return msg;
           }
         }
       ]

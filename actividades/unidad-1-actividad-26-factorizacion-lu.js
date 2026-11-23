@@ -153,7 +153,7 @@
       ? 'L es cuadrada, de ' + rows + '×' + rows + ': tantas filas y columnas como filas tiene A.'
       : 'U tiene el mismo tamaño que A, ' + rows + '×' + cols + ': es la matriz escalonada que deja la eliminación de Gauss.' +
         (rows > cols ? ' Como A tiene más filas que columnas, la última fila de U queda en cero.' : '');
-    return correct ? texto : 'No es correcto. ' + texto;
+    return texto;
   }
 
   function matrixLatex(M){
@@ -209,8 +209,8 @@
         }
         var feedbackText;
         if(hasEmpty) feedbackText = 'Dejaste alguna celda vacía (se tomó como 0 para revisar) — completá todas antes de comprobar la próxima vez.';
-        else if(correct) feedbackText = kind === 'L' ? '¡Correcto! Debajo de la diagonal, L guarda los opuestos de los multiplicadores de la eliminación de Gauss.' : '¡Completaste la factorización! A = L · U.';
-        else feedbackText = 'No es correcto — revisá los números marcados en rojo.';
+        else if(correct) feedbackText = kind === 'L' ? 'Debajo de la diagonal, L guarda los opuestos de los multiplicadores de la eliminación de Gauss.' : '¡Completaste la factorización! A = L · U.';
+        else feedbackText = 'Revisá los números marcados en rojo.';
         return { correct: correct, cellStatus: cellStatus, feedbackText: feedbackText };
       },
       getAnswerGrid: function(current){ return kind === 'L' ? current.L : current.U; },
