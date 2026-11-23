@@ -1,6 +1,6 @@
 /* ============================================================
    ÁLGEBRA PARA TODOS · Unidad 1 · Actividad 19
-   "¿Qué operación hace esta elemental?"
+   "¿Qué operación hace esta matriz?"
    ------------------------------------------------------------
    Toda la infraestructura común (CSS, sonido, mute, footer, modal
    de reporte, catálogo, KaTeX y fuentes) viene de engine.js.
@@ -282,7 +282,7 @@
     window.AptActivity.init({
       mount: '#apt-u1a19',
       eyebrow: 'Unidad 1 · Matrices y SEL',
-      title: '¿Qué operación hace esta elemental?',
+      title: '¿Qué operación hace esta matriz?',
       subtitle: 'Cada matriz sale de la identidad, con una operación elemental o reordenando sus filas o columnas. Identificá qué hace, con la notación del libro.',
       nextLabel: 'Probar con otra matriz →',
       needsKatex: true,
