@@ -59,12 +59,8 @@
       { setL:'\\mathbb{R}^*', op:'+', isLCI:false, cx:'2 + (-2) = 0, que no pertenece a ℝ*.' },
       { setL:'\\mathbb{R}^*', op:'-', isLCI:false, cx:'2 - 2 = 0, que no pertenece a ℝ*.' },
       { setL:'\\mathbb{R}^*', op:'\\times', isLCI:true },
-      { setL:'\\mathbb{R}^*', op:'\\div', isLCI:true },
-
-      { setL:'\\mathbb{R}^+', op:'+', isLCI:true },
-      { setL:'\\mathbb{R}^+', op:'-', isLCI:false, cx:'2 - 5 = -3, que no pertenece a ℝ⁺ (no es positivo).' },
-      { setL:'\\mathbb{R}^+', op:'\\times', isLCI:true },
-      { setL:'\\mathbb{R}^+', op:'\\div', isLCI:true }
+      { setL:'\\mathbb{R}^*', op:'\\div', isLCI:true }
+      // Sin ℝ⁺: el libro no lo define (sí define el asterisco, en 2.4.1).
     ];
 
     var showCount = CASES.map(function(){ return 0; });

@@ -25,62 +25,15 @@
 
 
   (function(){
+    /* Las 5 operaciones de 2.2, siempre con conjuntos finitos de números,
+       como en los ejemplos del libro. (Antes la mitad de los casos de ∪, ∩,
+       \ y △ eran con intervalos de ℝ, una notación que el libro no usa.) */
     function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
-    function randBool(){ return Math.random() < 0.5; }
     function randChoice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
     function shuffleArr(arr){
       var a = arr.slice();
       for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
       return a;
-    }
-
-    function inInterval(x, iv){
-      if(x < iv.lo || x > iv.hi) return false;
-      if(x === iv.lo) return iv.loClosed;
-      if(x === iv.hi) return iv.hiClosed;
-      return true;
-    }
-    function memberOf(x, A, B, op){
-      var a = inInterval(x,A), b = inInterval(x,B);
-      if(op==='union') return a || b;
-      if(op==='intersection') return a && b;
-      if(op==='difference') return a && !b;
-      if(op==='symdiff') return a !== b;
-    }
-    function computeResult(A, B, op){
-      var ptsSet = {};
-      [A.lo,A.hi,B.lo,B.hi].forEach(function(p){ ptsSet[p]=true; });
-      var pts = Object.keys(ptsSet).map(Number).sort(function(a,b){ return a-b; });
-      var segments = [];
-      for(var i=0;i<pts.length;i++){
-        segments.push({ type:'point', x:pts[i], in: memberOf(pts[i],A,B,op) });
-        if(i<pts.length-1){
-          var mid = (pts[i]+pts[i+1])/2;
-          segments.push({ type:'open', lo:pts[i], hi:pts[i+1], in: memberOf(mid,A,B,op) });
-        }
-      }
-      var results = [];
-      var idx = 0;
-      while(idx < segments.length){
-        if(!segments[idx].in){ idx++; continue; }
-        var j = idx;
-        while(j<segments.length && segments[j].in) j++;
-        var first = segments[idx], last = segments[j-1];
-        var lo, loClosed, hi, hiClosed;
-        if(first.type==='point'){ lo=first.x; loClosed=true; } else { lo=first.lo; loClosed=false; }
-        if(last.type==='point'){ hi=last.x; hiClosed=true; } else { hi=last.hi; hiClosed=false; }
-        if(lo<hi || (lo===hi && loClosed && hiClosed)){
-          results.push({ lo:lo, hi:hi, loClosed:loClosed, hiClosed:hiClosed });
-        }
-        idx = j;
-      }
-      return results;
-    }
-    function intervalsEqual(a,b){ return a.lo===b.lo && a.hi===b.hi && a.loClosed===b.loClosed && a.hiClosed===b.hiClosed; }
-    function resultsEqual(R1,R2){
-      if(R1.length!==R2.length) return false;
-      for(var i=0;i<R1.length;i++) if(!intervalsEqual(R1[i],R2[i])) return false;
-      return true;
     }
 
     var OPERATIONS = ['union','intersection','difference','symdiff','cartesian'];
@@ -195,105 +148,14 @@
       };
     }
 
-    function buildIntervalAB(){
-      var lo1 = randInt(-5,3), width1 = randInt(2,5), hi1 = lo1+width1;
-      var A = { lo:lo1, hi:hi1, loClosed:randBool(), hiClosed:randBool() };
-      var lo2 = randInt(lo1-3, hi1+1), width2 = randInt(2,5), hi2 = lo2+width2;
-      var B = { lo:lo2, hi:hi2, loClosed:randBool(), hiClosed:randBool() };
-      return { A:A, B:B };
-    }
-    function cloneInterval(iv){ return { lo:iv.lo, hi:iv.hi, loClosed:iv.loClosed, hiClosed:iv.hiClosed }; }
-    function pieceText(iv){
-      var l = iv.loClosed ? '[' : '(';
-      var r = iv.hiClosed ? ']' : ')';
-      return l + iv.lo + ', ' + iv.hi + r;
-    }
-
-    function flipOneBoundaryWithDetail(pieces){
-      var out = pieces.map(cloneInterval);
-      var pi = randInt(0, out.length-1);
-      var side, wasClosedWord, nowClosedWord;
-      if(randBool()){
-        out[pi].loClosed = !out[pi].loClosed;
-        side = 'izquierdo (' + out[pi].lo + ')';
-        wasClosedWord = pieces[pi].loClosed ? 'cerrado' : 'abierto';
-        nowClosedWord = out[pi].loClosed ? 'cerrado' : 'abierto';
-      } else {
-        out[pi].hiClosed = !out[pi].hiClosed;
-        side = 'derecho (' + out[pi].hi + ')';
-        wasClosedWord = pieces[pi].hiClosed ? 'cerrado' : 'abierto';
-        nowClosedWord = out[pi].hiClosed ? 'cerrado' : 'abierto';
-      }
-      var detail = 'Esa opción tiene el extremo ' + side + ' ' + nowClosedWord + ', pero en la respuesta correcta es ' + wasClosedWord + '.';
-      return { value: out, detail: detail };
-    }
-    function shiftOneEndpointWithDetail(pieces){
-      var out = pieces.map(cloneInterval);
-      var pi = randInt(0, out.length-1);
-      var delta = randChoice([-1,1]);
-      var side, correctVal, wrongVal;
-      if(randBool()){
-        correctVal = out[pi].lo; out[pi].lo += delta; wrongVal = out[pi].lo;
-        if(out[pi].lo >= out[pi].hi) return { value: pieces, detail: 'Tiene mal uno de los extremos del intervalo.' };
-        side = 'izquierdo';
-      } else {
-        correctVal = out[pi].hi; out[pi].hi += delta; wrongVal = out[pi].hi;
-        if(out[pi].lo >= out[pi].hi) return { value: pieces, detail: 'Tiene mal uno de los extremos del intervalo.' };
-        side = 'derecho';
-      }
-      return { value: out, detail: 'El extremo ' + side + ' debería ser ' + correctVal + ', no ' + wrongVal + '.' };
-    }
-
-    function intervalOptions(A,B,op){
-      var union = computeResult(A,B,'union');
-      var intersection = computeResult(A,B,'intersection');
-      var diffAB = computeResult(A,B,'difference');
-      var diffBA = computeResult(B,A,'difference');
-      var symdiff = computeResult(A,B,'symdiff');
-
-      var correct, confuseValue, confuseDetail;
-      if(op==='union'){ correct=union; confuseValue=intersection; confuseDetail='Esa opción es ' + OP_NAME.intersection + ', no ' + OP_NAME.union + '.'; }
-      else if(op==='intersection'){ correct=intersection; confuseValue=union; confuseDetail='Esa opción es ' + OP_NAME.union + ', no ' + OP_NAME.intersection + '.'; }
-      else if(op==='difference'){ correct=diffAB; confuseValue=diffBA; confuseDetail='Esa opción invirtió el orden: calculó B\\A en vez de A\\B.'; }
-      else { correct=symdiff; confuseValue=union; confuseDetail='Esa opción es ' + OP_NAME.union + ' — a la diferencia simétrica hay que sacarle la intersección.'; }
-
-      var opts = [{ kind:'confused-op', value:confuseValue, detail:confuseDetail }];
-
-      if(correct.length===2){
-        var missIdx = randInt(0,1);
-        var missingPiece = correct[missIdx];
-        var onePieceMissing = [correct[1-missIdx]];
-        opts.push({ kind:'missing-piece', value:onePieceMissing, detail:'A esa opción le falta el tramo ' + pieceText(missingPiece) + '.' });
-        var r2 = flipOneBoundaryWithDetail(correct);
-        opts.push({ kind:'flip-boundary', value:r2.value, detail:r2.detail });
-      } else if(correct.length===1){
-        var rFlip = flipOneBoundaryWithDetail(correct);
-        opts.push({ kind:'flip-boundary', value:rFlip.value, detail:rFlip.detail });
-        var rShift = shiftOneEndpointWithDetail(correct);
-        opts.push({ kind:'shift-endpoint', value:rShift.value, detail:rShift.detail });
-      } else {
-        opts.push({ kind:'not-empty', value:[A], detail:'El resultado correcto es el conjunto vacío (∅) — no debería quedar ningún intervalo.' });
-        opts.push({ kind:'not-empty', value:[B], detail:'El resultado correcto es el conjunto vacío (∅) — no debería quedar ningún intervalo.' });
-      }
-
-      return { correct:correct, opts:opts, equalFn:resultsEqual };
-    }
-
     function generateCase(){
       var attempt = 0, result;
       do{
         attempt++;
         var op = peekLeastUsedOp();
-        var flavor = op === 'cartesian' ? 'finite' : (randBool() ? 'finite' : 'interval');
-        var A, B, built;
-        if(flavor==='finite'){
-          var ab = op === 'cartesian' ? buildFiniteABForCartesian() : buildFiniteAB();
-          A=ab.A; B=ab.B;
-          built = finiteSetOptions(A,B,op);
-        } else {
-          var ab2 = buildIntervalAB(); A=ab2.A; B=ab2.B;
-          built = intervalOptions(A,B,op);
-        }
+        var ab = op === 'cartesian' ? buildFiniteABForCartesian() : buildFiniteAB();
+        var A = ab.A, B = ab.B;
+        var built = finiteSetOptions(A,B,op);
         var allValues = [built.correct].concat(built.opts.map(function(o){ return o.value; }));
         var allDistinct = true;
         for(var i=0;i<allValues.length && allDistinct;i++){
@@ -302,7 +164,7 @@
           }
         }
         if(allDistinct){
-          result = { flavor:flavor, A:A, B:B, op:op, correct:built.correct, distractors:built.opts, equalFn:built.equalFn };
+          result = { A:A, B:B, op:op, correct:built.correct, distractors:built.opts, equalFn:built.equalFn };
           opShowCount[op]++;
         }
       } while(!result && attempt<25);
@@ -326,29 +188,17 @@
       }).join('');
       return '<span style="display:inline-flex;flex-wrap:wrap;align-items:center;justify-content:center;row-gap:4px;">' + brace + inner + closeBrace + '</span>';
     }
-    function intervalLatex(iv){
-      var l = iv.loClosed ? '[' : '(';
-      var r = iv.hiClosed ? ']' : ')';
-      return '\\left' + l + iv.lo + ',\\ ' + iv.hi + '\\right' + r;
-    }
-    function intervalResultLatex(pieces){
-      if(pieces.length===0) return '\\varnothing';
-      return pieces.map(intervalLatex).join(' \\cup ');
-    }
     function optionLabel(current, value){
       if(current.op==='cartesian') return pairsHTML(value);
-      var latex = current.flavor==='finite' ? finiteSetLatex(value) : intervalResultLatex(value);
-      return window.katex.renderToString(latex, { throwOnError:false });
+      return window.katex.renderToString(finiteSetLatex(value), { throwOnError:false });
     }
 
     var OP_SYMBOL = { union:'\\cup', intersection:'\\cap', difference:'\\setminus', symdiff:'\\triangle', cartesian:'\\times' };
 
     function renderContent(container, current){
-      var aLatex = current.flavor==='finite' ? finiteSetLatex(current.A) : intervalLatex(current.A);
-      var bLatex = current.flavor==='finite' ? finiteSetLatex(current.B) : intervalLatex(current.B);
       container.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;"><div class="apt-row-a"></div><div class="apt-row-b"></div><div class="apt-row-q"></div></div>';
-      window.katex.render('A = ' + aLatex, container.querySelector('.apt-row-a'), { throwOnError:false });
-      window.katex.render('B = ' + bLatex, container.querySelector('.apt-row-b'), { throwOnError:false });
+      window.katex.render('A = ' + finiteSetLatex(current.A), container.querySelector('.apt-row-a'), { throwOnError:false });
+      window.katex.render('B = ' + finiteSetLatex(current.B), container.querySelector('.apt-row-b'), { throwOnError:false });
       window.katex.render('A \\ ' + OP_SYMBOL[current.op] + ' \\ B \\ = \\ ?', container.querySelector('.apt-row-q'), { throwOnError:false });
     }
 
@@ -359,7 +209,7 @@
       choicesGrid: true,
       eyebrow: 'Unidad 2 · Subespacios vectoriales',
       title: 'Operaciones con conjuntos',
-      subtitle: 'Mirá los conjuntos A y B (a veces son finitos, a veces intervalos) y elegí el resultado de la operación pedida.',
+      subtitle: 'Mirá los conjuntos A y B y elegí el resultado de la operación pedida.',
 
       generate: generateCase,
       renderContent: renderContent,
@@ -380,8 +230,8 @@
       check: function(current, value){ return value === 'correct'; },
       explain: function(current, correct, value){
         if(correct) return 'Correcto: eso es ' + OP_NAME[current.op] + '.';
-        var clicked = current._choicesData.filter(function(o){ return o.value===value; })[0];
-        return 'No es correcto. ' + (clicked.detail || 'Revisá el cálculo.');
+        var clicked = (current._choicesData || []).filter(function(o){ return o.value===value; })[0];
+        return 'No es correcto. ' + ((clicked && clicked.detail) || 'Revisá el cálculo.');
       }
     });
   })();

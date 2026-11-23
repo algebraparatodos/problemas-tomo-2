@@ -29,7 +29,10 @@
     function randChoice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
     function randNonZero(min,max){ var v; do{ v=randInt(min,max); }while(v===0); return v; }
 
-    var DIM = { R2:2, R3:3, M22:4, P2:3 };
+    /* Sólo ℝ² y ℝ³: en 2.10 el libro dice «Veamos algunos ejemplos de ℝ²
+       y ℝ³», y a matrices y polinomios llega más adelante (sus coordenadas
+       en la base canónica recién aparecen en 2.11). */
+    var DIM = { R2:2, R3:3 };
 
     function buildVectorsWithRank(d, n, r){
       var pivotCols = [];
@@ -76,7 +79,7 @@
     }
 
     function generateCase(){
-      var space = randChoice(['R2','R3','M22','P2']);
+      var space = randChoice(['R2','R3']);
       var d = DIM[space];
       var questionType = Math.random() < 0.5 ? 'genera' : 'base';
       var n, r, targetYes;
@@ -103,27 +106,10 @@
       return { space:space, d:d, n:n, r:r, vectors:vectors, generates:generates, isBasis:isBasis, questionType:questionType };
     }
 
-    var SPACE_LABEL = { R2:'\\mathbb{V} = \\mathbb{R}^2', R3:'\\mathbb{V} = \\mathbb{R}^3', M22:'\\mathbb{V} = M_{2\\times2}(\\mathbb{R})', P2:'\\mathbb{V} = P_2(\\mathbb{R})' };
+    var SPACE_LABEL = { R2:'\\mathbb{V} = \\mathbb{R}^2', R3:'\\mathbb{V} = \\mathbb{R}^3' };
 
-    function polyToLatex(coefs){
-      var terms = [];
-      var labels = ['','x','x^2'];
-      for(var i=2;i>=0;i--){
-        var c = coefs[i];
-        if(c===0) continue;
-        var abs = Math.abs(c);
-        var coefStr = (i===0) ? String(abs) : (abs===1 ? '' : String(abs));
-        var term = coefStr + labels[i];
-        if(terms.length===0) terms.push((c<0?'-':'') + term);
-        else terms.push((c<0?' - ':' + ') + term);
-      }
-      return terms.length ? terms.join('') : '0';
-    }
     function vectorToLatex(space, v){
-      if(space==='R2') return '(' + v[0] + ',\\ ' + v[1] + ')';
-      if(space==='R3') return '(' + v[0] + ',\\ ' + v[1] + ',\\ ' + v[2] + ')';
-      if(space==='M22') return '\\begin{pmatrix}' + v[0] + ' & ' + v[1] + '\\\\ ' + v[2] + ' & ' + v[3] + '\\end{pmatrix}';
-      return polyToLatex(v);
+      return '(' + v.join(',\\ ') + ')';
     }
 
     function setHTML(items, bigBraces){
@@ -145,7 +131,7 @@
       container.querySelector('.row-g').innerHTML =
         '<span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;">' +
           window.katex.renderToString('G=', { throwOnError:false }) +
-          setHTML(vectorLatexList, current.space==='M22') +
+          setHTML(vectorLatexList, false) +
         '</span>';
       window.katex.render(question, container.querySelector('.row-q'), { throwOnError:false });
     }

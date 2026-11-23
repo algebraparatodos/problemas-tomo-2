@@ -25,70 +25,61 @@
 
 
   (function(){
+  /* Sin P₂(ℝ) ni GL₂(ℝ): el libro los presenta después de este QR. Los
+     conjuntos por comprensión van con «/», como en el libro. */
   var CASES = [
-    // ---------- Válidas con K=R (20) ----------
+    // ---------- Válidas con K=R (16) ----------
     { k:'\\mathbb{R}', v:'\\mathbb{R}^2', f:'(\\lambda x,\\ \\lambda y)', isLCE:true },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^3', f:'(\\lambda x,\\ \\lambda y,\\ \\lambda z)', isLCE:true },
     { k:'\\mathbb{R}', v:'M_{2\\times2}(\\mathbb{R})', f:'\\lambda A', isLCE:true },
-    { k:'\\mathbb{R}', v:'P_2(\\mathbb{R})', f:'\\lambda p', isLCE:true },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^2', f:'(\\lambda^2 x,\\ \\lambda^2 y)', isLCE:true },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^2', f:'(|\\lambda| x,\\ |\\lambda| y)', isLCE:true },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^3', f:'(\\lambda x,\\ \\lambda y,\\ 0)', isLCE:true },
-    { k:'\\mathbb{R}', v:'\\{A\\in M_{2\\times2}(\\mathbb{R}) : A^t=A\\}\\ \\text{(matrices simétricas)}', f:'\\lambda A', isLCE:true },
-    { k:'\\mathbb{R}', v:'\\{A\\in M_{2\\times2}(\\mathbb{R}) : \\text{triangular superior}\\}', f:'\\lambda A', isLCE:true },
-    { k:'\\mathbb{R}', v:'\\{p\\in P_2(\\mathbb{R}) : a_0=0\\}', f:'\\lambda p', isLCE:true },
+    { k:'\\mathbb{R}', v:'\\{A\\in M_{2\\times2}(\\mathbb{R}) \\ / \\ A^t=A\\}\\ \\text{(matrices simétricas)}', f:'\\lambda A', isLCE:true },
+    { k:'\\mathbb{R}', v:'\\{A\\in M_{2\\times2}(\\mathbb{R}) \\ / \\ \\text{triangular superior}\\}', f:'\\lambda A', isLCE:true },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^2', f:'(\\lambda x,\\ y)', isLCE:true },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^3', f:'(\\lambda x,\\ \\lambda y,\\ z)', isLCE:true },
     { k:'\\mathbb{R}', v:'M_{2\\times2}(\\mathbb{R})', f:'\\lambda^2 A', isLCE:true },
-    { k:'\\mathbb{R}', v:'P_2(\\mathbb{R})', f:'\\lambda^3 p', isLCE:true },
-    { k:'\\mathbb{R}', v:'\\{(x,y)\\in\\mathbb{R}^2 : xy\\ge0\\}', f:'(\\lambda x,\\ \\lambda y)', isLCE:true },
+    { k:'\\mathbb{R}', v:'\\{(x,y)\\in\\mathbb{R}^2 \\ / \\ xy\\ge0\\}', f:'(\\lambda x,\\ \\lambda y)', isLCE:true },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^3', f:'(0,\\ 0,\\ 0)', isLCE:true },
     { k:'\\mathbb{R}', v:'M_{2\\times2}(\\mathbb{R})', f:'\\lambda A^t', isLCE:true },
-    { k:'\\mathbb{R}', v:'P_2(\\mathbb{R})', f:'p(\\lambda x)', isLCE:true },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^2', f:'(\\lambda y,\\ \\lambda x)', isLCE:true },
-    { k:'\\mathbb{R}', v:'\\{(x,y,z)\\in\\mathbb{R}^3 : x+y+z=0\\}', f:'(\\lambda x,\\ \\lambda y,\\ \\lambda z)', isLCE:true },
+    { k:'\\mathbb{R}', v:'\\{(x,y,z)\\in\\mathbb{R}^3 \\ / \\ x+y+z=0\\}', f:'(\\lambda x,\\ \\lambda y,\\ \\lambda z)', isLCE:true },
 
-    // ---------- No válidas, K=R: V restringido y la fórmula no lo respeta (10) ----------
-    { k:'\\mathbb{R}', v:'\\{(x,y)\\in\\mathbb{R}^2 : x\\ge0\\}', f:'(\\lambda x,\\ \\lambda y)', isLCE:false, cx:'Con λ=-1 y v=(1,0): el resultado es (-1,0), y -1<0.' },
-    { k:'\\mathbb{R}', v:'\\{v\\in\\mathbb{R}^2 : \\|v\\|=1\\}\\ \\text{(vectores unitarios)}', f:'\\lambda v', isLCE:false, cx:'La norma del resultado es |λ|. Con λ=2: la norma pasa a ser 2, no 1.' },
-    { k:'\\mathbb{R}', v:'GL_2(\\mathbb{R})\\ \\text{(matrices invertibles)}', f:'\\lambda A', isLCE:false, cx:'Con λ=0: el resultado es la matriz nula, que no es invertible.' },
-    { k:'\\mathbb{R}', v:'\\{p\\in P_2(\\mathbb{R}) : a_2\\ne0\\}\\ \\text{(grado exactamente 2)}', f:'\\lambda p', isLCE:false, cx:'Con λ=0: el resultado es el polinomio nulo, que no tiene grado 2.' },
-    { k:'\\mathbb{R}', v:'\\{(x,y,z)\\in\\mathbb{R}^3 : x+y+z=1\\}', f:'\\lambda v', isLCE:false, cx:'Con λ=2 y v=(1,0,0) (que cumple x+y+z=1): el resultado (2,0,0) da x+y+z=2≠1.' },
+    // ---------- No válidas, K=R: V restringido y la fórmula no lo respeta (8) ----------
+    { k:'\\mathbb{R}', v:'\\{(x,y)\\in\\mathbb{R}^2 \\ / \\ x\\ge0\\}', f:'(\\lambda x,\\ \\lambda y)', isLCE:false, cx:'Con λ=-1 y v=(1,0): el resultado es (-1,0), y -1<0.' },
+    { k:'\\mathbb{R}', v:'\\{v\\in\\mathbb{R}^2 \\ / \\ \\|v\\|=1\\}\\ \\text{(vectores unitarios)}', f:'\\lambda v', isLCE:false, cx:'La norma del resultado es |λ|. Con λ=2: la norma pasa a ser 2, no 1.' },
+    { k:'\\mathbb{R}', v:'\\{(x,y,z)\\in\\mathbb{R}^3 \\ / \\ x+y+z=1\\}', f:'\\lambda v', isLCE:false, cx:'Con λ=2 y v=(1,0,0) (que cumple x+y+z=1): el resultado (2,0,0) da x+y+z=2≠1.' },
     { k:'\\mathbb{R}', v:'\\mathbb{Z}^2\\ \\text{(coordenadas enteras)}', f:'(\\lambda x,\\ \\lambda y)', isLCE:false, cx:'Con λ=1/2 y v=(1,0): el resultado es (1/2, 0), que no tiene coordenadas enteras.' },
-    { k:'\\mathbb{R}', v:'\\{(x,y)\\in\\mathbb{R}^2 : x>0\\}', f:'(\\lambda x,\\ \\lambda y)', isLCE:false, cx:'Con λ=0: el resultado es (0,0), y 0 no es >0.' },
-    { k:'\\mathbb{R}', v:'\\{A\\in M_{2\\times2}(\\mathbb{R}) : A^t=A\\}\\ \\text{(matrices simétricas)}', f:'A + \\begin{pmatrix}0 & \\lambda\\\\ 0 & 0\\end{pmatrix}', isLCE:false, cx:'Con λ=1: solo se suma en la entrada (1,2), rompiendo la simetría.' },
-    { k:'\\mathbb{R}', v:'\\{v\\in\\mathbb{R}^3 : \\|v\\|=1\\}\\ \\text{(vectores unitarios)}', f:'v + \\lambda(1,0,0)', isLCE:false, cx:'Con λ=1 y v=(0,1,0): el resultado es (1,1,0), cuya norma es √2, no 1.' },
-    { k:'\\mathbb{R}', v:'\\{(x,y,z)\\in\\mathbb{R}^3 : z=0\\}', f:'(\\lambda x,\\ \\lambda y,\\ \\lambda z+1)', isLCE:false, cx:'Como z=0 en todo vector de 𝕍, la tercera coordenada del resultado es siempre 1, nunca 0.' },
+    { k:'\\mathbb{R}', v:'\\{(x,y)\\in\\mathbb{R}^2 \\ / \\ x>0\\}', f:'(\\lambda x,\\ \\lambda y)', isLCE:false, cx:'Con λ=0: el resultado es (0,0), y 0 no es >0.' },
+    { k:'\\mathbb{R}', v:'\\{A\\in M_{2\\times2}(\\mathbb{R}) \\ / \\ A^t=A\\}\\ \\text{(matrices simétricas)}', f:'A + \\begin{pmatrix}0 & \\lambda\\\\ 0 & 0\\end{pmatrix}', isLCE:false, cx:'Con λ=1: solo se suma en la entrada (1,2), rompiendo la simetría.' },
+    { k:'\\mathbb{R}', v:'\\{v\\in\\mathbb{R}^3 \\ / \\ \\|v\\|=1\\}\\ \\text{(vectores unitarios)}', f:'v + \\lambda(1,0,0)', isLCE:false, cx:'Con λ=1 y v=(0,1,0): el resultado es (1,1,0), cuya norma es √2, no 1.' },
+    { k:'\\mathbb{R}', v:'\\{(x,y,z)\\in\\mathbb{R}^3 \\ / \\ z=0\\}', f:'(\\lambda x,\\ \\lambda y,\\ \\lambda z+1)', isLCE:false, cx:'Como z=0 en todo vector de 𝕍, la tercera coordenada del resultado es siempre 1, nunca 0.' },
 
-    // ---------- No válidas, K=R: fórmula no bien definida (10) ----------
+    // ---------- No válidas, K=R: fórmula no bien definida (8) ----------
     { k:'\\mathbb{R}', v:'\\mathbb{R}^2', f:'(\\lambda x,\\ y/\\lambda)', isLCE:false, cx:'No está definida en λ=0 (se dividiría por 0).' },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^2', f:'(x/\\lambda,\\ \\lambda y)', isLCE:false, cx:'No está definida en λ=0.' },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^3', f:'(\\lambda x,\\ \\lambda y,\\ x/z)', isLCE:false, cx:'No está definida cuando z=0.' },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^2', f:'(\\sqrt{\\lambda}\\,x,\\ \\sqrt{\\lambda}\\,y)', isLCE:false, cx:'No da un número real cuando λ<0 (ej. λ=-1).' },
     { k:'\\mathbb{R}', v:'M_{2\\times2}(\\mathbb{R})', f:'\\dfrac{1}{\\lambda}A', isLCE:false, cx:'No está definida en λ=0.' },
-    { k:'\\mathbb{R}', v:'P_2(\\mathbb{R})', f:'\\dfrac{a_0}{\\lambda}+a_1x+a_2x^2', isLCE:false, cx:'No está definida en λ=0.' },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^2', f:'(x,\\ \\lambda y/x)', isLCE:false, cx:'No está definida cuando x=0.' },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^3', f:'(\\lambda x,\\ \\lambda y,\\ \\sqrt{z})', isLCE:false, cx:'No da un número real cuando z<0.' },
     { k:'\\mathbb{R}', v:'M_{2\\times2}(\\mathbb{R})', f:'\\lambda A^{-1}', isLCE:false, cx:'No está definida cuando A no es invertible (y M2×2(ℝ) incluye matrices no invertibles).' },
-    { k:'\\mathbb{R}', v:'P_2(\\mathbb{R})', f:'\\lambda\\, p / p(0)', isLCE:false, cx:'No está definida cuando p(0)=0.' },
 
-    // ---------- No válidas, K=R: tipo de resultado incorrecto (6) ----------
+    // ---------- No válidas, K=R: tipo de resultado incorrecto (5) ----------
     { k:'\\mathbb{R}', v:'\\mathbb{R}^2', f:'\\lambda\\|(x,y)\\|', isLCE:false, cx:'El resultado es un número real (la norma escalada), no un vector de ℝ².' },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^3', f:'(\\lambda x,\\ \\lambda y)', isLCE:false, cx:'El resultado tiene 2 componentes, no 3: no es un elemento de ℝ³.' },
     { k:'\\mathbb{R}', v:'M_{2\\times2}(\\mathbb{R})', f:'\\lambda \\det(A)', isLCE:false, cx:'El resultado es un número real (el determinante escalado), no una matriz.' },
-    { k:'\\mathbb{R}', v:'P_2(\\mathbb{R})', f:'\\lambda\\, p(1)', isLCE:false, cx:'El resultado es un número real (el polinomio evaluado en 1), no un polinomio.' },
     { k:'\\mathbb{R}', v:'\\mathbb{R}^2', f:'(\\lambda x,\\ \\lambda y,\\ 0)', isLCE:false, cx:'El resultado tiene 3 componentes, no 2: no es un elemento de ℝ².' },
     { k:'\\mathbb{R}', v:'M_{2\\times2}(\\mathbb{R})', f:'\\lambda\\,\\operatorname{Tr}(A)', isLCE:false, cx:'El resultado es un número real (la traza escalada), no una matriz.' },
 
-    // ---------- Nuevos: variando K (10) ----------
+    // ---------- Variando K (8) ----------
     { k:'\\mathbb{Z}', v:'\\mathbb{R}^2', f:'(\\lambda x,\\ \\lambda y)', isLCE:true },
     { k:'\\mathbb{Z}', v:'\\mathbb{Z}^2\\ \\text{(coordenadas enteras)}', f:'(\\lambda x,\\ \\lambda y)', isLCE:true },
     { k:'\\mathbb{Q}', v:'\\mathbb{Q}^2', f:'(\\lambda x,\\ \\lambda y)', isLCE:true },
     { k:'\\mathbb{Q}', v:'\\mathbb{Z}^2\\ \\text{(coordenadas enteras)}', f:'(\\lambda x,\\ \\lambda y)', isLCE:false, cx:'Con λ=1/2 y v=(1,0): el resultado (1/2, 0) no tiene coordenadas enteras.' },
-    { k:'\\mathbb{Z}', v:'\\{A\\in M_{2\\times2} : \\text{entradas enteras}\\}', f:'\\lambda A', isLCE:true },
-    { k:'\\mathbb{Q}', v:'\\{A\\in M_{2\\times2} : \\text{entradas enteras}\\}', f:'\\lambda A', isLCE:false, cx:'Con λ=1/2, una entrada igual a 1 pasa a valer 0,5, que no es entera.' },
-    { k:'\\mathbb{Z}', v:'\\{p\\in P_2(\\mathbb{R}) : \\text{coeficientes enteros}\\}', f:'\\lambda p', isLCE:true },
-    { k:'\\mathbb{Q}', v:'\\{p\\in P_2(\\mathbb{R}) : \\text{coeficientes enteros}\\}', f:'\\lambda p', isLCE:false, cx:'Con λ=1/3, un coeficiente igual a 1 pasa a valer 1/3, que no es entero.' },
+    { k:'\\mathbb{Z}', v:'\\{A\\in M_{2\\times2} \\ / \\ \\text{entradas enteras}\\}', f:'\\lambda A', isLCE:true },
+    { k:'\\mathbb{Q}', v:'\\{A\\in M_{2\\times2} \\ / \\ \\text{entradas enteras}\\}', f:'\\lambda A', isLCE:false, cx:'Con λ=1/2, una entrada igual a 1 pasa a valer 0,5, que no es entera.' },
     { k:'\\mathbb{N}', v:'\\mathbb{R}', f:'\\lambda x', isLCE:true },
     { k:'\\mathbb{Z}', v:'\\mathbb{R}^+\\ \\text{(reales positivos)}', f:'\\lambda x', isLCE:false, cx:'Con λ=-1 (entero) y x=2: el resultado es -2, que no es positivo.' }
   ];

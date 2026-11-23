@@ -27,9 +27,14 @@
   (function(){
 
   /* Generador completo de 2.16.5 "Complemento ortogonal". S^perp = núcleo
-     de la matriz generadora de S (producto escalar estándar sobre
-     coordenadas canónicas). Respuesta abierta (space-basis), con fase
-     previa de "cuántos vectores" para no delatar la respuesta. */
+     de la matriz cuyas filas son la base de S (producto escalar usual).
+     Respuesta abierta (space-basis), con fase previa de "cuántos
+     vectores" para no delatar la respuesta.
+
+     Sólo en ℝⁿ (ℝ³, ℝ⁴ y ℝ⁵, como el ejemplo del libro): el producto
+     escalar entre matrices o polinomios el libro lo define recién en
+     2.17.3 y 2.17.4, después de este QR. Y S se da con una base, B(S),
+     que es de donde parte el libro. */
 
   function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
   function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
@@ -111,15 +116,32 @@
     return arr;
   }
 
+  /* ℝ⁵ no está entre los espacios del engine: se arma acá con la misma
+     forma que los demás ℝⁿ (vectores columna, como en el libro). */
+  function makeRn(n) {
+    return {
+      id: 'R' + n, family: 'rn', label: 'R' + n, dim: n,
+      labelTex: '\\mathbb{R}^' + n,
+      shape: { kind: 'column', rows: n },
+      toCoords: function (v) { return v.slice(); },
+      fromCoords: function (c) { return c.slice(); },
+      toKatex: function (v) { return '\\begin{pmatrix} ' + v.join(' \\\\ ') + ' \\end{pmatrix}'; }
+    };
+  }
+  var POOL = [AptActivity.SPACES.R3, AptActivity.SPACES.R4, makeRn(5)];
+
   function generateCase() {
-    var pool = [AptActivity.SPACES.R3, AptActivity.SPACES.R4, AptActivity.SPACES.M2x2, AptActivity.SPACES.M2x3, AptActivity.SPACES.M3x2, AptActivity.SPACES.P2, AptActivity.SPACES.P3];
-    var space = pick(pool);
+    var space = pick(POOL);
     var n = space.dim;
     var kMin = Math.max(1, n-3);
     var kMax = Math.min(3, n-1);
     var k = randInt(kMin, kMax);
 
-    var Scoords = scramble(buildLiCoords(n, k), k);
+    // Cada vector de B(S) con al menos dos coordenadas no nulas, para que
+    // las ecuaciones de S⊥ no salgan ya resueltas (como en el ejemplo del libro).
+    var Scoords;
+    do { Scoords = scramble(buildLiCoords(n, k), k); }
+    while (Scoords.some(function (v) { return v.filter(function (x) { return x !== 0; }).length < 2; }));
     var Snative = Scoords.map(function(c){ return space.fromCoords(c); });
 
     var orthComplementCoords = nullSpaceBasis(Scoords);
@@ -140,7 +162,7 @@
       mode: 'phases',
       eyebrow: 'Unidad 2 · Subespacios vectoriales',
       title: 'Complemento ortogonal',
-      subtitle: 'Te damos un conjunto generador de S. Encontrá una base de S⊥ (el complemento ortogonal de S).',
+      subtitle: 'Te damos una base de S. Encontrá una base de S⊥ (el complemento ortogonal de S): pedí que el vector genérico sea ortogonal a cada vector de B(S).',
       needsKatex: true,
       generate: generateCase,
       renderContent: function (el, current) {
@@ -148,7 +170,7 @@
         el.className = 'apt-act__content apt-act__content--sev';
         el.innerHTML = '<div class="apt-act__content-ambient"></div><div class="apt-sev-basis-wrap"></div>';
         window.katex.render(ambientLatex, el.querySelector('.apt-act__content-ambient'), { throwOnError:false });
-        AptActivity.renderSevAsBasisWrapped(el.querySelector('.apt-sev-basis-wrap'), current.space, current.Snative, 'S');
+        AptActivity.renderBasisWrapped(el.querySelector('.apt-sev-basis-wrap'), current.space, current.Snative, 'B(S)');
       },
       phases: [
         {
@@ -160,9 +182,12 @@
           choicesStacked: false,
           check: function (current, value) { return Number(value) === current.m; },
           explain: function (current, correct) {
-            return correct
-              ? 'Correcto: la dimensión de S⊥ es ' + current.m + ' (Dim(𝕍) − Dim(S) = ' + current.n + ' − ' + current.k + ').'
-              : 'La dimensión real de S⊥ es ' + current.m + ' (Dim(𝕍) − Dim(S) = ' + current.n + ' − ' + current.k + ').';
+            var porque = (current.k === 1
+              ? 'Pedir que un vector sea ortogonal al vector de B(S) da 1 ecuación implícita'
+              : 'Pedir que un vector sea ortogonal a cada uno de los ' + current.k + ' vectores de B(S) da ' + current.k + ' ecuaciones implícitas LI') +
+              ', así que ' +
+              AptActivity.renderTextWithMath('$\\operatorname{Dim}(S^{\\perp}) = ' + current.n + ' - ' + current.k + ' = ' + current.m + '$.');
+            return (correct ? 'Correcto: ' : 'La dimensión de S⊥ es ' + current.m + '. ') + porque;
           }
         },
         {

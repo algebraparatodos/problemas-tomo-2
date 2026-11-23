@@ -91,7 +91,7 @@
     { space:'P2', cond:'a_0 = a_2', isSEV:true },
     { space:'P2', cond:'\\text{cualquier } p \\in P_2(\\mathbb{R})', isSEV:true },
 
-    { space:'P2', cond:'p(1) = 1', isSEV:false, cx:'El polinomio nulo cumple q(1)=0 ≠ 1, así que no pertenece. Todo SEV tiene que contener al polinomio nulo.' },
+    { space:'P2', cond:'p(1) = 1', isSEV:false, cx:'El polinomio nulo cumple p(1)=0 ≠ 1, así que no pertenece. Todo SEV tiene que contener al polinomio nulo.' },
     { space:'P2', cond:'a_0 = 2', isSEV:false, cx:'El polinomio nulo tiene a₀ = 0 ≠ 2, así que no pertenece.' },
     { space:'P2', cond:'p(0) = 3', isSEV:false, cx:'El polinomio nulo tiene p(0) = 0 ≠ 3, así que no pertenece.' },
     { space:'P2', cond:'a_2 = 1', isSEV:false, cx:'El polinomio nulo tiene a₂ = 0 ≠ 1, así que no pertenece.' },
@@ -127,8 +127,9 @@
     function generateCase(){ return CASES[pickLeastUsedIdx()]; }
 
     function renderContent(container, current){
+      // Por comprensión con «/», como en el libro: {(x, y) ∈ ℝ² / ...}.
       var latex = SPACE_LABEL[current.space] +
-                  ' \\\\[8pt] S = \\{\\ ' + SPACE_ELEMENT[current.space] + ' \\in \\mathbb{V} \\ : \\ ' + current.cond + '\\ \\}';
+                  ' \\\\[8pt] S = \\{\\ ' + SPACE_ELEMENT[current.space] + ' \\in \\mathbb{V} \\ / \\ ' + current.cond + '\\ \\}';
       window.katex.render(latex, container, { throwOnError:false });
     }
 

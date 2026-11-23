@@ -84,10 +84,11 @@
 
     var SPACE_LABEL = { R2:'\\mathbb{V} = \\mathbb{R}^2', R3:'\\mathbb{V} = \\mathbb{R}^3', M22:'\\mathbb{V} = M_{2\\times2}(\\mathbb{R})', P2:'\\mathbb{V} = P_2(\\mathbb{R})' };
 
+    // De menor a mayor grado, como en el libro: 2 + x, -1 + x².
     function polyToLatex(coefs){
       var terms = [];
       var labels = ['','x','x^2'];
-      for(var i=2;i>=0;i--){
+      for(var i=0;i<=2;i++){
         var c = coefs[i];
         if(c===0) continue;
         var abs = Math.abs(c);
