@@ -1,6 +1,6 @@
 # Pendientes — Problemas del Tomo II
 
-**Al día el 23/11/2026.**
+**Al día el 24/11/2026.**
 
 - **Lo que quedó del control de los 72 QR (23/11), que sólo se arregla en el
   motor (`engine.js`) o que no estaba en el encargo.** — Claude, cuando Juani
